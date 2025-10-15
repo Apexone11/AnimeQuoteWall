@@ -20,7 +20,7 @@ A C# desktop application that automatically generates and sets beautiful anime q
 
 ## 📸 Screenshots
 
-_Add your screenshots here after generating some wallpapers!_
+
 
 ## 🚀 Quick Start
 
