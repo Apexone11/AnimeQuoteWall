@@ -1,0 +1,7 @@
+C:\Users\Abdul PC\AnimeQuoteWall\bin\Release\net10.0\win-x64\publish\AnimeQuoteWall.exe
+C:\Users\Abdul PC\AnimeQuoteWall\bin\Release\net10.0\win-x64\publish\AnimeQuoteWall.dll
+C:\Users\Abdul PC\AnimeQuoteWall\bin\Release\net10.0\win-x64\publish\AnimeQuoteWall.deps.json
+C:\Users\Abdul PC\AnimeQuoteWall\bin\Release\net10.0\win-x64\publish\AnimeQuoteWall.runtimeconfig.json
+C:\Users\Abdul PC\AnimeQuoteWall\bin\Release\net10.0\win-x64\publish\AnimeQuoteWall.pdb
+C:\Users\Abdul PC\AnimeQuoteWall\bin\Release\net10.0\win-x64\publish\Microsoft.Win32.SystemEvents.dll
+C:\Users\Abdul PC\AnimeQuoteWall\bin\Release\net10.0\win-x64\publish\System.Drawing.Common.dll

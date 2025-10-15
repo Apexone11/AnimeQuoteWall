@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "84FkmIUFH10=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Abdul PC\\AnimeQuoteWall\\AnimeQuoteWall.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Abdul PC\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0\\microsoft.win32.systemevents.8.0.0.nupkg.sha512",
+    "C:\\Users\\Abdul PC\\.nuget\\packages\\system.drawing.common\\8.0.21\\system.drawing.common.8.0.21.nupkg.sha512"
+  ],
+  "logs": []
+}
