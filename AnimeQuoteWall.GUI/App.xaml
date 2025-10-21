@@ -1,4 +1,4 @@
-<Application x:Class="AnimeQuoteWall.GUI.App"
+﻿<Application x:Class="AnimeQuoteWall.GUI.App"
           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="SimpleMainWindow.xaml">

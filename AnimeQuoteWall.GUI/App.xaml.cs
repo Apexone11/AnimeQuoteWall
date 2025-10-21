@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 
 namespace AnimeQuoteWall.GUI;
@@ -20,3 +20,4 @@ public partial class App : System.Windows.Application
         }
     }
 }
+

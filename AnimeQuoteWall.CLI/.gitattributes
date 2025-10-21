@@ -1,0 +1,31 @@
+* text=auto
+
+# Source files
+*.cs text diff=csharp
+*.csproj text
+*.sln text
+
+# Documentation
+*.md text
+
+# Scripts
+*.ps1 text
+*.sh text
+
+# JSON files
+*.json text
+
+# Git files
+.gitignore text
+.gitattributes text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.bmp binary
+*.ico binary
+*.dll binary
+*.exe binary
+*.pdb binary

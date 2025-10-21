@@ -31,7 +31,7 @@ A beautiful desktop application that generates custom wallpapers featuring anime
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Apexone11/AnimeQuoteWall.git
+   git clone https://github.com/YOUR_USERNAME/AnimeQuoteWall.git
    cd AnimeQuoteWall
    ```
 
@@ -151,6 +151,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [ ] Wallpaper history
 - [ ] Auto-wallpaper rotation
 
+
+
 ## 🐛 Known Issues
 
 - None currently reported
@@ -167,9 +169,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-Abdul Rahman Fornah - [@Apexone11](https://github.com/Apexone11)
+Your Name - [@yourhandle](https://twitter.com/yourhandle)
 
-Project Link: [https://github.com/Apexone11/AnimeQuoteWall](https://github.com/Apexone11/AnimeQuoteWall)
+Project Link: [https://github.com/YOUR_USERNAME/AnimeQuoteWall](https://github.com/YOUR_USERNAME/AnimeQuoteWall)
 
 ---
 
