@@ -33,7 +33,7 @@ public class AppConfiguration
     /// Gets the base directory for application data (default location).
     /// </summary>
     public static string DefaultBaseDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), 
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "AnimeQuotes");
 
     /// <summary>
@@ -49,7 +49,7 @@ public class AppConfiguration
         get
         {
             LoadSettings();
-            return !string.IsNullOrWhiteSpace(_userSettings?.CustomBackgroundsPath) && 
+            return !string.IsNullOrWhiteSpace(_userSettings?.CustomBackgroundsPath) &&
                    Directory.Exists(_userSettings.CustomBackgroundsPath)
                 ? _userSettings.CustomBackgroundsPath
                 : Path.Combine(DefaultBaseDirectory, "backgrounds");
@@ -69,7 +69,7 @@ public class AppConfiguration
         get
         {
             LoadSettings();
-            return !string.IsNullOrWhiteSpace(_userSettings?.CustomQuotesPath) && 
+            return !string.IsNullOrWhiteSpace(_userSettings?.CustomQuotesPath) &&
                    File.Exists(_userSettings.CustomQuotesPath)
                 ? _userSettings.CustomQuotesPath
                 : Path.Combine(DefaultBaseDirectory, "quotes.json");
@@ -208,11 +208,11 @@ public class AppConfiguration
 
             // Ensure path doesn't try to escape using relative paths
             var fullPath = Path.GetFullPath(path);
-            
+
             // Don't allow system directories
             var systemPath = Environment.GetFolderPath(Environment.SpecialFolder.System);
             var windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            
+
             if (fullPath.StartsWith(systemPath, StringComparison.OrdinalIgnoreCase) ||
                 fullPath.StartsWith(windowsPath, StringComparison.OrdinalIgnoreCase))
                 return false;
