@@ -2,7 +2,7 @@
 
 A beautiful desktop application that generates custom wallpapers featuring anime quotes. Built with .NET 8 and WPF.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 ![.NET](https://img.shields.io/badge/.NET-8.0-purple)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -13,12 +13,17 @@ A beautiful desktop application that generates custom wallpapers featuring anime
 - **💬 Quote Library**: Manage 200+ anime quotes from popular series
 - **🌄 Custom Backgrounds**: Add and manage your own background images
 - **⚡ One-Click Apply**: Set generated wallpapers as your desktop background instantly
-- **🎯 Simple UI**: Clean, intuitive interface that's easy to use
+- **🎯 Modern UI**: Clean, intuitive interface with theme support
 - **🔄 Live Preview**: See your wallpaper before applying it
+- **🌙 Dark Mode**: Follow system theme or choose Light/Dark mode (applies instantly)
+- **📁 Custom Paths**: Configure backgrounds folder, quotes file, and output location
 
-## 📸 Screenshots
+## 🆕 What's New in v1.1.0
 
-*Coming soon - Add your screenshots here*
+- **Theme System**: Full dark mode support with system theme detection
+- **Custom Paths**: Browse dialogs for backgrounds, quotes, and output paths
+- **Settings UI**: Complete settings panel with theme selector and path management
+- **Live Updates**: Theme changes apply immediately without restart
 
 ## 🚀 Quick Start
 
@@ -63,26 +68,34 @@ A beautiful desktop application that generates custom wallpapers featuring anime
    - Add images with "➕ Add Images"
    - Delete backgrounds you don't want
 
+5. **Customize Settings**
+   - Go to "⚙️ Settings" tab
+   - **Theme**: Choose "System Default", "Light", or "Dark" (applies immediately)
+   - **Paths**: Use Browse buttons to customize:
+     - Backgrounds folder location
+     - Quotes JSON file location
+     - Output wallpaper path
+   - Click "🔄 Reset to Defaults" to restore default paths
+
 ## 📁 Project Structure
 
 ```
 AnimeQuoteWall/
-├── AnimeQuoteWall.exe          # Main launcher (double-click to run)
+├── AnimeQuoteWall.exe          # Main launcher
 ├── Launch-AnimeQuoteWall.bat   # Alternative launcher
-├── Launch-AnimeQuoteWall.ps1   # PowerShell launcher
 ├── AnimeQuoteWall.CLI/         # Command-line interface
 ├── AnimeQuoteWall.Core/        # Core business logic
-│   ├── Models/                 # Data models (Quote, WallpaperSettings)
-│   ├── Services/               # Services (WallpaperService, QuoteService)
+│   ├── Configuration/          # AppConfiguration & settings
+│   ├── Models/                 # Data models
+│   ├── Services/               # Services
 │   └── Interfaces/             # Service interfaces
 ├── AnimeQuoteWall.GUI/         # WPF Desktop application
-│   ├── Resources/              # App icons and resources
+│   ├── Resources/
+│   │   └── Themes/             # Light & Dark theme resources
 │   ├── SimpleMainWindow.xaml   # Main UI
+│   ├── ThemeManager.cs         # Theme switching logic
 │   └── App.xaml                # Application configuration
-├── Launcher/                   # Silent launcher project
-├── docs/                       # Documentation
-├── scripts/                    # Utility scripts
-└── quotes.json                 # Quote database (200+ quotes)
+└── docs/                       # Documentation
 ```
 
 ## 🛠️ Development
@@ -101,15 +114,9 @@ dotnet build
 dotnet publish -c Release
 ```
 
-### Running Tests
-
-```bash
-dotnet test
-```
-
 ### Adding Quotes
 
-Edit `AnimeQuoteWall.CLI/quotes.json`:
+Edit your quotes file (default: `%LOCALAPPDATA%\AnimeQuotes\quotes.json`) or use the GUI:
 
 ```json
 {
@@ -119,19 +126,25 @@ Edit `AnimeQuoteWall.CLI/quotes.json`:
 }
 ```
 
-### Adding Backgrounds
-
-Place images in `AnimeQuoteWall.CLI/backgrounds/` or use the GUI to add them.
-
 ## 🎨 Customization
 
-### Wallpaper Settings
+### Theme Settings
 
-Modify `AnimeQuoteWall.Core/Models/WallpaperSettings.cs` to customize:
-- Background colors
-- Text font and size
-- Quote positioning
-- Image effects
+The app supports three theme modes:
+- **System Default**: Follows Windows theme (updates automatically)
+- **Light**: Always use light theme
+- **Dark**: Always use dark theme
+
+Settings are saved in `%LOCALAPPDATA%\AnimeQuotes\settings.json`
+
+### Custom Paths
+
+You can customize where the app stores files:
+- **Backgrounds**: Choose any folder containing background images
+- **Quotes**: Point to any JSON file with quotes
+- **Output**: Set where `current.png` is saved
+
+All paths are validated for security and stored in settings.
 
 ## 🤝 Contributing
 
@@ -151,8 +164,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [ ] Wallpaper history
 - [ ] Auto-wallpaper rotation
 
-
-
 ## 🐛 Known Issues
 
 - None currently reported
@@ -164,14 +175,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Anime quotes sourced from popular anime series
-- Icons from various emoji libraries
 - Built with love for the anime community ❤️
-
-## 📧 Contact
-
-Your Name - [@yourhandle](https://twitter.com/yourhandle)
-
-Project Link: [https://github.com/YOUR_USERNAME/AnimeQuoteWall](https://github.com/YOUR_USERNAME/AnimeQuoteWall)
 
 ---
 

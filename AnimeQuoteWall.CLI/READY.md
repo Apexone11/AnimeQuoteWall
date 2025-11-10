@@ -68,7 +68,7 @@ Your **AnimeQuoteWall** project is now professionally structured and ready to up
 ## 🔒 Security & Privacy Verified
 
 ### ✅ No Private Information
-- [x] No username "Abdul PC" in any code
+- [x] No personal usernames in any code
 - [x] No hardcoded personal paths
 - [x] Using `Environment.SpecialFolder.LocalApplicationData` for paths
 - [x] All user data in `.gitignore`

@@ -6,27 +6,10 @@
         Height="750"
         Width="1100"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F7FA"
+        Background="{StaticResource WindowBackground}"
         x:Name="MainWindowElement">
 
     <Window.Resources>
-        <!-- Modern Color Palette -->
-        <SolidColorBrush x:Key="WindowBackground" Color="#F5F7FA"/>
-        <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="PrimaryColor" Color="#6366F1"/>
-        <SolidColorBrush x:Key="PrimaryDark" Color="#4F46E5"/>
-        <SolidColorBrush x:Key="PrimaryLight" Color="#818CF8"/>
-        <SolidColorBrush x:Key="SuccessColor" Color="#10B981"/>
-        <SolidColorBrush x:Key="SuccessDark" Color="#059669"/>
-        <SolidColorBrush x:Key="DangerColor" Color="#EF4444"/>
-        <SolidColorBrush x:Key="DangerDark" Color="#DC2626"/>
-        <SolidColorBrush x:Key="SecondaryColor" Color="#64748B"/>
-        <SolidColorBrush x:Key="TextPrimary" Color="#1E293B"/>
-        <SolidColorBrush x:Key="TextSecondary" Color="#64748B"/>
-        <SolidColorBrush x:Key="TextTertiary" Color="#94A3B8"/>
-        <SolidColorBrush x:Key="BorderColor" Color="#E2E8F0"/>
-        <SolidColorBrush x:Key="HoverBackground" Color="#F1F5F9"/>
-
         <!-- Modern Button Style with Hover Effects -->
         <Style x:Key="ModernPrimaryButton" TargetType="Button">
             <Setter Property="Background">
@@ -653,14 +636,22 @@
                                                Foreground="{StaticResource TextPrimary}"
                                                Margin="0,0,0,16"/>
 
-                                    <CheckBox x:Name="DarkModeToggle"
-                                              Content="Enable Dark Mode (Coming Soon)"
-                                              FontSize="14"
-                                              Foreground="{StaticResource TextSecondary}"
-                                              IsEnabled="False"
-                                              Padding="8,4"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <TextBlock Text="Theme:"
+                                                   FontSize="14"
+                                                   Foreground="{StaticResource TextSecondary}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,12,0"/>
+                                        <ComboBox x:Name="ThemeModeComboBox"
+                                                  Width="200"
+                                                  SelectionChanged="ThemeModeComboBox_SelectionChanged">
+                                            <ComboBoxItem Content="System Default"/>
+                                            <ComboBoxItem Content="Light"/>
+                                            <ComboBoxItem Content="Dark"/>
+                                        </ComboBox>
+                                    </StackPanel>
 
-                                    <TextBlock Text="Theme changes will apply immediately after restart"
+                                    <TextBlock Text="Theme changes apply immediately"
                                                FontSize="12"
                                                Foreground="{StaticResource TextTertiary}"
                                                Margin="8,8,0,0"/>
@@ -693,17 +684,18 @@
                                                      IsReadOnly="True"
                                                      Padding="12"
                                                      Margin="0,0,10,0"
-                                                     Background="#F8FAFC"
+                                                     Background="{StaticResource HoverBackground}"
                                                      BorderBrush="{StaticResource BorderColor}"
                                                      BorderThickness="1"
                                                      FontSize="13"
                                                      Foreground="{StaticResource TextPrimary}"/>
-                                            <Button Grid.Column="1"
+                                            <Button x:Name="BrowseBackgroundsButton"
+                                                    Grid.Column="1"
                                                     Content="📂 Browse"
                                                     MinWidth="120"
                                                     Height="38"
                                                     FontSize="12"
-                                                    IsEnabled="False"
+                                                    Click="BrowseBackgroundsButton_Click"
                                                     Style="{StaticResource ModernSecondaryButton}"/>
                                         </Grid>
                                     </StackPanel>
@@ -725,26 +717,61 @@
                                                      IsReadOnly="True"
                                                      Padding="12"
                                                      Margin="0,0,10,0"
-                                                     Background="#F8FAFC"
+                                                     Background="{StaticResource HoverBackground}"
                                                      BorderBrush="{StaticResource BorderColor}"
                                                      BorderThickness="1"
                                                      FontSize="13"
                                                      Foreground="{StaticResource TextPrimary}"/>
-                                            <Button Grid.Column="1"
+                                            <Button x:Name="BrowseQuotesButton"
+                                                    Grid.Column="1"
                                                     Content="📄 Browse"
                                                     MinWidth="120"
                                                     Height="38"
                                                     FontSize="12"
-                                                    IsEnabled="False"
+                                                    Click="BrowseQuotesButton_Click"
                                                     Style="{StaticResource ModernSecondaryButton}"/>
                                         </Grid>
                                     </StackPanel>
 
-                                    <Button Content="🔄 Reset to Defaults"
+                                    <!-- Output Path -->
+                                    <StackPanel Margin="0,0,0,20">
+                                        <TextBlock Text="Output Wallpaper Path:"
+                                                   FontSize="13"
+                                                   FontWeight="Medium"
+                                                   Foreground="{StaticResource TextSecondary}"
+                                                   Margin="0,0,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="OutputPathTextBox"
+                                                     Grid.Column="0"
+                                                     IsReadOnly="True"
+                                                     Padding="12"
+                                                     Margin="0,0,10,0"
+                                                     Background="{StaticResource HoverBackground}"
+                                                     BorderBrush="{StaticResource BorderColor}"
+                                                     BorderThickness="1"
+                                                     FontSize="13"
+                                                     Foreground="{StaticResource TextPrimary}"/>
+                                            <Button x:Name="BrowseOutputButton"
+                                                    Grid.Column="1"
+                                                    Content="💾 Browse"
+                                                    MinWidth="120"
+                                                    Height="38"
+                                                    FontSize="12"
+                                                    Click="BrowseOutputButton_Click"
+                                                    Style="{StaticResource ModernSecondaryButton}"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <Button x:Name="ResetDefaultsButton"
+                                            Content="🔄 Reset to Defaults"
                                             MinWidth="200"
                                             Height="40"
                                             FontSize="13"
-                                            IsEnabled="False"
+                                            Click="ResetDefaultsButton_Click"
                                             Style="{StaticResource ModernSecondaryButton}"
                                             HorizontalAlignment="Left"/>
 

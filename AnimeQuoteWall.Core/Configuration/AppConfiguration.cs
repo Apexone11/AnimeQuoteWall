@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Win32;
 
 namespace AnimeQuoteWall.Core.Configuration;
 
@@ -7,10 +8,15 @@ namespace AnimeQuoteWall.Core.Configuration;
 /// </summary>
 public class UserSettings
 {
-    public string? CustomBackgroundsPath { get; set; }
-    public string? CustomQuotesPath { get; set; }
-    public bool UseDarkMode { get; set; } = false;
+    public string? CustomBackgroundsPath { get; set; } // Custom background path
+    public string? CustomQuotesPath { get; set; } // Custom quotes path
+    public bool UseDarkMode { get; set; } = false; // Light or dark mode
     public string ThemeColor { get; set; } = "#5E35B1"; // Default purple
+
+    public string ThemeFont { get; set; } = "System"; // System font or a custom font
+
+    public string? CustomOutputPath { get; set; } // Custom output path for the wallpaper
+    public string ThemeMode { get; set; } = "System"; // "System" | "Light" | "Dark"
 }
 
 /// <summary>
@@ -49,10 +55,13 @@ public class AppConfiguration
         get
         {
             LoadSettings();
-            return !string.IsNullOrWhiteSpace(_userSettings?.CustomBackgroundsPath) &&
-                   Directory.Exists(_userSettings.CustomBackgroundsPath)
-                ? _userSettings.CustomBackgroundsPath
-                : Path.Combine(DefaultBaseDirectory, "backgrounds");
+            // Return the configured custom path if set, regardless of current existence.
+            // Directory creation is handled by EnsureDirectories().
+            if (!string.IsNullOrWhiteSpace(_userSettings?.CustomBackgroundsPath))
+            {
+                return _userSettings.CustomBackgroundsPath;
+            }
+            return Path.Combine(DefaultBaseDirectory, "backgrounds");
         }
     }
 
@@ -69,17 +78,50 @@ public class AppConfiguration
         get
         {
             LoadSettings();
-            return !string.IsNullOrWhiteSpace(_userSettings?.CustomQuotesPath) &&
-                   File.Exists(_userSettings.CustomQuotesPath)
-                ? _userSettings.CustomQuotesPath
-                : Path.Combine(DefaultBaseDirectory, "quotes.json");
+            // Return the configured custom file path if set, regardless of current existence.
+            // File creation is handled by QuoteService.EnsureQuotesFileAsync.
+            if (!string.IsNullOrWhiteSpace(_userSettings?.CustomQuotesPath))
+            {
+                return _userSettings.CustomQuotesPath;
+            }
+            return Path.Combine(DefaultBaseDirectory, "quotes.json");
         }
     }
 
     /// <summary>
     /// Gets the path to the current wallpaper file.
     /// </summary>
-    public static string CurrentWallpaperPath => Path.Combine(DefaultBaseDirectory, "current.png");
+    public static string CurrentWallpaperPath
+    {
+        get
+        {
+            LoadSettings();
+
+            var defaultPath = Path.Combine(DefaultBaseDirectory, "current.png"); // Default output path for the wallpaper
+            var custom = _userSettings?.CustomOutputPath; // Custom output path for the wallpaper
+
+            if (!string.IsNullOrWhiteSpace(custom)) // Check if custom output path is set
+            {
+                var fullPath = Path.GetFullPath(custom); // Prevent path traversal attacks
+
+                // Validate the path is safe
+                if (!IsPathSafe(fullPath))
+                    return defaultPath;
+
+                // If it looks like a directory (exists or no extension), use current.png inside it
+                var hasExtension = Path.HasExtension(fullPath);
+                if (!hasExtension || Directory.Exists(fullPath))
+                {
+                    return Path.Combine(fullPath, "current.png");
+                }
+
+                //otherwise, treat it as a file and return it
+                return fullPath;
+            }
+
+            return defaultPath;
+        }
+    }
 
     /// <summary>
     /// Gets the supported image file extensions.
@@ -90,23 +132,42 @@ public class AppConfiguration
     };
 
     /// <summary>
-    /// Gets or sets the dark mode setting.
+    /// Theme mode persisted setting. Allowed values: "System" | "Light" | "Dark".
     /// </summary>
-    public static bool IsDarkMode
+    public static string ThemeMode
     {
         get
         {
             LoadSettings();
-            return _userSettings?.UseDarkMode ?? false;
+            return _userSettings?.ThemeMode ?? "System";
         }
         set
         {
             LoadSettings();
             if (_userSettings != null)
             {
-                _userSettings.UseDarkMode = value;
+                _userSettings.ThemeMode = string.IsNullOrWhiteSpace(value) ? "System" : value;
                 SaveSettings();
             }
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the dark mode setting.
+    /// </summary>
+    public static bool IsDarkMode
+    {
+        get
+        {
+            // Back-compat for older callers: map to ThemeMode
+            var mode = ThemeMode;
+            return mode.Equals("Dark", StringComparison.OrdinalIgnoreCase)
+                || (mode.Equals("System", StringComparison.OrdinalIgnoreCase) && GetSystemThemeIsDark());
+        }
+        set
+        {
+            // Back-compat: setting IsDarkMode flips ThemeMode to Light/Dark explicitly
+            ThemeMode = value ? "Dark" : "Light";
         }
     }
 
@@ -128,6 +189,36 @@ public class AppConfiguration
                 _userSettings.ThemeColor = value;
                 SaveSettings();
             }
+        }
+    }
+
+    /// <summary>
+    /// Returns effective dark mode based on ThemeMode and system theme when applicable.
+    /// </summary>
+    public static bool GetEffectiveIsDark()
+    {
+        var mode = ThemeMode;
+        return mode.Equals("Dark", StringComparison.OrdinalIgnoreCase)
+            || (mode.Equals("System", StringComparison.OrdinalIgnoreCase) && GetSystemThemeIsDark());
+    }
+
+    /// <summary>
+    /// Reads the Windows AppsUseLightTheme setting. Returns true when system theme is dark.
+    /// </summary>
+    private static bool GetSystemThemeIsDark()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
+            if (key == null) return false;
+            var valueObj = key.GetValue("AppsUseLightTheme");
+            if (valueObj is int i) return i == 0; // 0 = dark, 1 = light
+            if (valueObj is long l) return l == 0;
+            return false;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -182,6 +273,47 @@ public class AppConfiguration
     }
 
     /// <summary>
+    /// Sets a custom output file or directory path for the generated wallpaper.
+    /// Pass null or empty to clear and use the default path.
+    /// </summary>
+    public static void SetCustomOutputPath(string? path)
+    {
+        LoadSettings();
+        if (_userSettings != null)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                _userSettings.CustomOutputPath = null;
+                SaveSettings();
+                return;
+            }
+
+            var fullPath = Path.GetFullPath(path);
+            if (!IsPathSafe(fullPath))
+            {
+                throw new UnauthorizedAccessException("Invalid or unsafe path specified.");
+            }
+
+            // Ensure directory exists depending on path type
+            if (Path.HasExtension(fullPath))
+            {
+                var dir = Path.GetDirectoryName(fullPath);
+                if (!string.IsNullOrWhiteSpace(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+            }
+            else
+            {
+                Directory.CreateDirectory(fullPath);
+            }
+
+            _userSettings.CustomOutputPath = fullPath;
+            SaveSettings();
+        }
+    }
+
+    /// <summary>
     /// Resets custom paths to defaults.
     /// </summary>
     public static void ResetToDefaults()
@@ -191,6 +323,7 @@ public class AppConfiguration
         {
             _userSettings.CustomBackgroundsPath = null;
             _userSettings.CustomQuotesPath = null;
+            _userSettings.CustomOutputPath = null;
             SaveSettings();
         }
     }
@@ -239,6 +372,26 @@ public class AppConfiguration
             {
                 var json = File.ReadAllText(_settingsFilePath);
                 _userSettings = JsonSerializer.Deserialize<UserSettings>(json) ?? new UserSettings();
+
+                // Backward compatibility migration:
+                // If ThemeMode property was missing in the existing settings file,
+                // migrate from legacy UseDarkMode to ThemeMode and persist.
+                try
+                {
+                    using var doc = JsonDocument.Parse(json);
+                    var hasThemeMode = doc.RootElement.ValueKind == JsonValueKind.Object
+                        && doc.RootElement.TryGetProperty("ThemeMode", out _);
+
+                    if (!hasThemeMode && _userSettings != null)
+                    {
+                        _userSettings.ThemeMode = _userSettings.UseDarkMode ? "Dark" : "Light";
+                        SaveSettings();
+                    }
+                }
+                catch
+                {
+                    // If JSON inspection fails, do not migrate to avoid unintended overrides.
+                }
             }
             else
             {
@@ -283,5 +436,12 @@ public class AppConfiguration
         Directory.CreateDirectory(DefaultBaseDirectory);
         Directory.CreateDirectory(BackgroundsDirectory);
         Directory.CreateDirectory(FramesDirectory);
+
+        // Ensure the output directory exists for the current wallpaper path
+        var outputDir = Path.GetDirectoryName(CurrentWallpaperPath);
+        if (!string.IsNullOrWhiteSpace(outputDir) && !Directory.Exists(outputDir))
+        {
+            Directory.CreateDirectory(outputDir);
+        }
     }
 }

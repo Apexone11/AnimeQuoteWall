@@ -3,9 +3,9 @@
 ## ✅ Fixes Applied
 
 ### 1. **Changed Storage Location**
-- **Old Path:** `%USERPROFILE%\OneDrive\Pictures\AnimeQuotes\`
-- **New Path:** `%LOCALAPPDATA%\AnimeQuotes\` (C:\Users\Abdul PC\AppData\Local\AnimeQuotes\)
-- **Reason:** OneDrive synced folders can cause issues with Windows wallpaper API
+- **Old Path:** Example: `%USERPROFILE%\OneDrive\Pictures\AnimeQuotes\`
+- **New Path:** `%LOCALAPPDATA%\AnimeQuotes\`
+- **Reason:** OneDrive-synced folders can interfere with Windows wallpaper API
 
 ### 2. **Improved API Call**
 - Added `CharSet = CharSet.Auto` to the P/Invoke declaration
@@ -73,9 +73,9 @@ Some Windows display modes can affect wallpaper display.
 Restart-Service -Name "Desktop Window Manager Session Manager" -Force
 ```
 
-## 📂 File Locations
+## 📂 File Locations (Examples)
 
-- **Application:** `c:\Users\Abdul PC\AnimeQuoteWall\`
+- **Application (source):** `AnimeQuoteWall\` (repository root)
 - **Wallpaper Images:** `%LOCALAPPDATA%\AnimeQuotes\` 
 - **Current Wallpaper:** `%LOCALAPPDATA%\AnimeQuotes\current.png`
 - **Background Images:** `%LOCALAPPDATA%\AnimeQuotes\backgrounds\`
@@ -100,7 +100,7 @@ powershell -ExecutionPolicy Bypass -File "SetWallpaper.ps1" -ImagePath "%LOCALAP
 
 ### Generate New Wallpaper
 ```bash
-cd "c:\Users\Abdul PC\AnimeQuoteWall"
+cd AnimeQuoteWall
 dotnet run
 ```
 
@@ -127,7 +127,7 @@ If none of the above works, try this comprehensive reset:
 del "%LOCALAPPDATA%\AnimeQuotes\current.png"
 
 # 2. Run application
-cd "c:\Users\Abdul PC\AnimeQuoteWall"
+cd AnimeQuoteWall
 dotnet run
 
 # 3. Force wallpaper refresh with PowerShell

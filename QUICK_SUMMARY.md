@@ -1,78 +1,111 @@
-# Quick Summary - What Changed
+# Quick Summary - Latest Update
 
-## ✅ Done - Your App is Now Secure!
+## 🆕 Version 1.1.0 - Theme & Custom Paths Update
 
-### No More Personal Info
-- Removed all "Abdul PC" paths from code
-- Scripts now use relative paths
-- Documentation uses generic examples
-- **Safe to share on GitHub!**
+### ✅ New Features
 
-### Secure File Storage
-Your app now stores files here:
-```
-C:\Users\<AnyUsername>\AppData\Local\AnimeQuotes\
-```
+**Theme System**
+- Full dark mode support with Light/Dark themes
+- System theme detection (follows Windows theme automatically)
+- Instant theme switching (no restart required)
+- Settings persist across sessions
 
-**Why this is better:**
-- Works for ANY Windows user
-- Each person gets their own folder
-- Can't accidentally hack other users
+**Custom Path Configuration**
+- Browse dialogs for backgrounds folder
+- Browse dialog for quotes JSON file
+- Browse dialog for output wallpaper path
+- Reset to defaults button
+- All paths validated for security
+
+**Settings UI**
+- Complete settings panel in the app
+- Theme mode selector (System/Light/Dark)
+- Path display and management
+- Default paths information
+
+### 🔒 Security
+
+**Secure File Storage**
+Default location: `%LOCALAPPDATA%\AnimeQuotes\`
+- Works for any Windows user
+- Each user gets their own folder
 - Standard Windows location
+- Safe and secure
 
-### Settings Tab Added
-New Settings tab shows:
-- Where your files are stored
-- Dark mode toggle (coming soon)
-- Option to change file locations (coming soon)
+**Path Validation**
+- Prevents directory traversal attacks
+- Blocks system directories
+- Validates all custom paths
+- Creates directories as needed
 
-### GitHub Ready
-- `.gitignore` prevents junk files
-- README.md explains the project
-- MIT License included
-- No personal info anywhere
+### 📁 File Locations
 
-## What You Can Do Now
+**Default Paths:**
+```
+%LOCALAPPDATA%\AnimeQuotes\
+├── backgrounds/          # Background images
+├── frames/              # Frame overlays (if used)
+├── quotes.json          # Your quotes database
+├── current.png          # Generated wallpaper
+└── settings.json        # App settings (theme, paths)
+```
 
-### Use the App
-Everything works like before:
+**Custom Paths:**
+- All paths can be customized via Settings tab
+- Use Browse buttons to select new locations
+- Click Reset to restore defaults
+
+### 🎨 Theme Modes
+
+1. **System Default** (recommended)
+   - Automatically follows Windows theme
+   - Updates when Windows theme changes
+   - Best user experience
+
+2. **Light Mode**
+   - Always uses light theme
+   - Clean, bright interface
+
+3. **Dark Mode**
+   - Always uses dark theme
+   - Easy on the eyes
+
+### 🚀 How to Use
+
+**Change Theme:**
+1. Open Settings tab
+2. Select theme from dropdown
+3. Theme applies immediately
+
+**Change Paths:**
+1. Open Settings tab
+2. Click Browse next to the path you want to change
+3. Select new location
+4. App reloads data from new location
+
+**Reset Everything:**
+1. Open Settings tab
+2. Click "Reset to Defaults"
+3. All paths return to default locations
+
+### ✨ What Works
+
 - Generate wallpapers ✅
 - Add/delete quotes ✅
 - Add/delete backgrounds ✅
 - Apply wallpaper ✅
+- Theme switching ✅
+- Custom paths ✅
+- Settings persistence ✅
 
-### Share on GitHub
-```bash
-git init
-git add .
-git commit -m "Initial release"
-git push
-```
+### 📝 Technical Details
 
-**It's safe!** No personal info will be uploaded.
+- Settings stored in JSON format
+- Theme resources in `Resources/Themes/`
+- Path validation in `AppConfiguration.cs`
+- Theme manager handles switching
+- System theme watcher for auto-updates
 
-### Test the Security
-1. Run the app
-2. Check `C:\Users\<YourName>\AppData\Local\AnimeQuotes\`
-3. Your files are there, in YOUR folder
-4. Another user? Their files go to THEIR folder
+---
 
-## What's "Coming Soon"
-
-The Settings tab buttons say "Coming Soon" because:
-- The UI is done ✅
-- The security code is done ✅
-- Just need to connect them (10-20 lines of code)
-
-This means the app is:
-- **100% secure** - No security holes
-- **100% functional** - All features work
-- **100% shareable** - GitHub ready
-- **95% complete** - Just missing button handlers for new features
-
-## Bottom Line
-
-**Before**: Had your username in code, not safe to share
-**Now**: Professional, secure, ready for the world!
-
-The app works perfectly and is safe for anyone to download and use. 🎉
+**The app is fully functional and ready to use!** 🎉

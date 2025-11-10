@@ -209,7 +209,7 @@ var animeFonts = new[]
 
 ### Generate New Wallpaper:
 ```bash
-cd "c:\Users\Abdul PC\AnimeQuoteWall"
+cd AnimeQuoteWall
 dotnet run
 ```
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using AnimeQuoteWall.Core.Configuration;
 
 namespace AnimeQuoteWall.GUI;
 
@@ -12,7 +13,17 @@ public partial class App : System.Windows.Application
     {
         try
         {
+            // Apply theme before any window is created
+            ThemeManager.ApplyTheme();
+            ThemeManager.StartSystemThemeWatch();
+
+            // Ensure directories exist early
+            AppConfiguration.EnsureDirectories();
+
             base.OnStartup(e);
+
+            var window = new SimpleMainWindow();
+            window.Show();
         }
         catch (Exception ex)
         {

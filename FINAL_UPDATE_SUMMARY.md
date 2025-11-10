@@ -5,7 +5,7 @@
 ### 🔒 Security Enhancements
 
 #### 1. **Personal Information Removed**
-✅ All hardcoded paths with "Abdul PC" removed:
+✅ All hardcoded, user-specific paths removed:
 - `scripts/convert_icon.ps1` - Now uses relative paths
 - `docs/PROFESSIONAL_LAUNCHER.md` - Generic placeholders
 - All documentation files cleaned
@@ -83,7 +83,7 @@
 #### ✅ **No Hardcoded Paths**
 - Uses `Environment.GetFolderPath()` everywhere
 - Works on any user account
-- No "C:\Users\Abdul PC\" anywhere in code
+- No user-specific absolute paths anywhere in code
 
 #### ✅ **Path Validation** 
 ```csharp
@@ -112,7 +112,7 @@ private static bool IsPathSafe(string path)
 
 ### First Run:
 1. **Double-click** `AnimeQuoteWall.exe` (or run from Visual Studio)
-2. **Automatic Setup**: App creates `C:\Users\<YourName>\AppData\Local\AnimeQuotes\`
+2. **Automatic Setup**: App creates `%LOCALAPPDATA%\AnimeQuotes\`
 3. **Start Using**: Add quotes, add backgrounds, generate wallpaper!
 
 ### It's Safe Because:
@@ -166,8 +166,6 @@ AnimeQuoteWall/
 - [x] All existing features work
 
 ### 🔄 For Future Implementation:
-- [ ] Dark mode toggle functionality
-- [ ] Custom path browser dialogs
 - [ ] Settings persistence integration
 - [ ] App restart after settings change
 
@@ -206,7 +204,7 @@ git push -u origin main
 ## What Changed from Original
 
 ### Before:
-❌ Hardcoded paths: `C:\Users\Abdul PC\...`
+❌ Hardcoded user-specific paths
 ❌ Files in program directory
 ❌ Personal info in documentation
 ❌ No settings tab

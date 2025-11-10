@@ -3,7 +3,7 @@
 ## ✅ Completed Security Enhancements
 
 ### 1. **Personal Information Removed**
-- ✅ Removed all hardcoded paths containing "Abdul PC"
+- ✅ Removed all hardcoded, user-specific paths
 - ✅ Updated `scripts/convert_icon.ps1` to use relative paths
 - ✅ Updated documentation to use generic placeholders
 - ✅ No personal usernames in any code files
@@ -64,9 +64,9 @@ AppConfiguration.ResetToDefaults();
 
 ### For Users Downloading This Project
 
-1. **First Run** - The app will automatically create:
+1. **First Run** - The app will automatically create a secure local folder, for example:
    ```
-   C:\Users\<YourUsername>\AppData\Local\AnimeQuotes\
+   %LOCALAPPDATA%\AnimeQuotes\
    ```
 
 2. **Custom Paths** (Optional):
@@ -75,9 +75,9 @@ AppConfiguration.ResetToDefaults();
    - Select your preferred location
    - App will restart to apply changes
 
-3. **Dark Mode**:
+3. **Theme Mode**:
    - Go to **Settings** tab
-   - Check "Enable Dark Mode"
+   - Choose System / Light / Dark
    - Changes apply immediately
 
 ### For Developers
@@ -200,14 +200,6 @@ The code-behind file (`SimpleMainWindow.xaml.cs`) needs:
 
 These can be added gradually without breaking existing functionality.
 
-### Testing Checklist:
-- [ ] Build project successfully
-- [ ] Run app and verify AppData folder creation
-- [ ] Add quotes and backgrounds
-- [ ] Generate wallpaper
-- [ ] Test settings tab (when implemented)
-- [ ] Toggle dark mode (when implemented)
-- [ ] Change file paths (when implemented)
 
 ## 📝 Notes for GitHub Users
 
@@ -222,6 +214,6 @@ The app is designed to be **secure by default** and **flexible by choice**.
 
 ---
 
-**Last Updated**: 2025-10-21  
-**Version**: 1.0  
-**Status**: Security enhancements complete, dark mode implementation in progress
+**Last Updated**: 2025-11-10  
+**Version**: 1.1  
+**Status**: Security enhancements complete; theme and custom paths implemented

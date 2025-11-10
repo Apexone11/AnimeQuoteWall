@@ -10,10 +10,12 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
+using AnimeQuoteWall.Core.Configuration;
 using AnimeQuoteWall.Core.Interfaces;
 using AnimeQuoteWall.Core.Models;
 using AnimeQuoteWall.Core.Services;
 using Microsoft.Win32;
+using Forms = System.Windows.Forms;
 
 namespace AnimeQuoteWall.GUI;
 
@@ -23,22 +25,11 @@ public partial class SimpleMainWindow : Window
     private readonly IBackgroundService _backgroundService;
     private readonly IWallpaperService _wallpaperService;
 
-    private readonly string _quotesPath;
-    private readonly string _backgroundsPath;
-    private readonly string _currentWallpaperPath;
-
     private List<Quote> _quotes = new();
 
     public SimpleMainWindow()
     {
         InitializeComponent();
-
-        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        _quotesPath = Path.Combine(baseDirectory, "quotes.json");
-        _backgroundsPath = Path.Combine(baseDirectory, "backgrounds");
-        _currentWallpaperPath = Path.Combine(baseDirectory, "current.png");
-
-        Directory.CreateDirectory(_backgroundsPath);
 
         _quoteService = new QuoteService();
         _backgroundService = new BackgroundService();
@@ -49,6 +40,15 @@ public partial class SimpleMainWindow : Window
 
     private async Task InitializeAsync()
     {
+        try
+        {
+            AppConfiguration.EnsureDirectories();
+            UpdatePathsUI();
+            UpdateThemeCombo();
+            UpdateDefaultsInfo();
+        }
+        catch { /* ignore UI init errors */ }
+
         await LoadQuotesAsync();
         LoadBackgrounds();
         LoadCurrentWallpaper();
@@ -91,22 +91,22 @@ public partial class SimpleMainWindow : Window
         {
             GenerateButton.IsEnabled = false;
 
-            var backgrounds = _backgroundService.GetAllBackgroundImages(_backgroundsPath);
+            var backgrounds = _backgroundService.GetAllBackgroundImages(AppConfiguration.BackgroundsDirectory);
 
             if (_quotes.Count == 0)
             {
-                MessageBox.Show("No quotes available. Please add quotes first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show("No quotes available. Please add quotes first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             if (backgrounds.Count == 0)
             {
-                MessageBox.Show("No background images available. Please add backgrounds first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show("No background images available. Please add backgrounds first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             var randomQuote = _quoteService.GetRandomQuote(_quotes);
-            var randomBackground = _backgroundService.GetRandomBackgroundImage(_backgroundsPath);
+            var randomBackground = _backgroundService.GetRandomBackgroundImage(AppConfiguration.BackgroundsDirectory);
 
             var screenWidth = (int)SystemParameters.PrimaryScreenWidth;
             var screenHeight = (int)SystemParameters.PrimaryScreenHeight;
@@ -129,15 +129,15 @@ public partial class SimpleMainWindow : Window
             await Task.Run(() =>
              {
                  using var bitmap = _wallpaperService.CreateWallpaperImage(randomBackground, randomQuote, settings);
-                 _wallpaperService.SaveImageAsync(bitmap, _currentWallpaperPath).Wait();
+                 _wallpaperService.SaveImageAsync(bitmap, AppConfiguration.CurrentWallpaperPath).Wait();
              });
 
             LoadCurrentWallpaper();
-            MessageBox.Show($"Wallpaper generated!\n\nQuote: \"{randomQuote.Text}\"\nBy: {randomQuote.Character}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show($"Wallpaper generated!\n\nQuote: \"{randomQuote.Text}\"\nBy: {randomQuote.Character}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Failed to generate wallpaper: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show($"Failed to generate wallpaper: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {
@@ -148,31 +148,32 @@ public partial class SimpleMainWindow : Window
     private void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
         LoadCurrentWallpaper();
-        MessageBox.Show("Preview refreshed!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        System.Windows.MessageBox.Show("Preview refreshed!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void ApplyButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            if (!File.Exists(_currentWallpaperPath))
+            if (!File.Exists(AppConfiguration.CurrentWallpaperPath))
             {
-                MessageBox.Show("No wallpaper to apply. Generate one first!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show("No wallpaper to apply. Generate one first!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            SetWallpaper(_currentWallpaperPath);
-            MessageBox.Show("Wallpaper applied successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            SetWallpaper(AppConfiguration.CurrentWallpaperPath);
+            System.Windows.MessageBox.Show("Wallpaper applied successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Failed to apply wallpaper: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show($"Failed to apply wallpaper: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
     private void LoadCurrentWallpaper()
     {
-        if (File.Exists(_currentWallpaperPath))
+        var path = AppConfiguration.CurrentWallpaperPath;
+        if (File.Exists(path))
         {
             try
             {
@@ -185,7 +186,7 @@ public partial class SimpleMainWindow : Window
                 bitmap.BeginInit();
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                bitmap.UriSource = new Uri(_currentWallpaperPath, UriKind.Absolute);
+                bitmap.UriSource = new Uri(path, UriKind.Absolute);
                 bitmap.EndInit();
                 bitmap.Freeze(); // Freeze to release file handle
 
@@ -209,8 +210,8 @@ public partial class SimpleMainWindow : Window
     {
         try
         {
-            await _quoteService.EnsureQuotesFileAsync(_quotesPath);
-            _quotes = await _quoteService.LoadQuotesAsync(_quotesPath);
+            await _quoteService.EnsureQuotesFileAsync(AppConfiguration.QuotesFilePath);
+            _quotes = await _quoteService.LoadQuotesAsync(AppConfiguration.QuotesFilePath);
             QuotesListBox.ItemsSource = null;
             QuotesListBox.ItemsSource = _quotes;
 
@@ -227,7 +228,7 @@ public partial class SimpleMainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Failed to load quotes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show($"Failed to load quotes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -246,14 +247,14 @@ public partial class SimpleMainWindow : Window
                 };
 
                 _quotes.Add(newQuote);
-                await _quoteService.SaveQuotesAsync(_quotes, _quotesPath);
+                await _quoteService.SaveQuotesAsync(_quotes, AppConfiguration.QuotesFilePath);
                 await LoadQuotesAsync();
-                MessageBox.Show($"Quote added: \"{newQuote.Text}\"", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"Quote added: \"{newQuote.Text}\"", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Failed to add quote: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show($"Failed to add quote: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -261,7 +262,7 @@ public partial class SimpleMainWindow : Window
     {
         if (QuotesListBox.SelectedItem is Quote selectedQuote)
         {
-            var result = MessageBox.Show(
+            var result = System.Windows.MessageBox.Show(
                        $"Delete this quote?\n\n\"{selectedQuote.Text}\"\n� {selectedQuote.Character}",
            "Confirm Delete",
           MessageBoxButton.YesNo,
@@ -272,19 +273,19 @@ public partial class SimpleMainWindow : Window
                 try
                 {
                     _quotes.Remove(selectedQuote);
-                    await _quoteService.SaveQuotesAsync(_quotes, _quotesPath);
+                    await _quoteService.SaveQuotesAsync(_quotes, AppConfiguration.QuotesFilePath);
                     await LoadQuotesAsync();
-                    MessageBox.Show("Quote deleted.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show("Quote deleted.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to delete quote: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"Failed to delete quote: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
         else
         {
-            MessageBox.Show("Please select a quote to delete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show("Please select a quote to delete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 
@@ -292,7 +293,7 @@ public partial class SimpleMainWindow : Window
     {
         try
         {
-            var backgrounds = _backgroundService.GetAllBackgroundImages(_backgroundsPath);
+            var backgrounds = _backgroundService.GetAllBackgroundImages(AppConfiguration.BackgroundsDirectory);
             BackgroundsListBox.ItemsSource = null;
             BackgroundsListBox.ItemsSource = backgrounds.Select(Path.GetFileName);
 
@@ -309,13 +310,13 @@ public partial class SimpleMainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Failed to load backgrounds: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show($"Failed to load backgrounds: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
     private void AddBackgroundButton_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog
+        var dialog = new Microsoft.Win32.OpenFileDialog
         {
             Title = "Select Background Images",
             Filter = "Image Files (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp",
@@ -331,7 +332,7 @@ public partial class SimpleMainWindow : Window
                 try
                 {
                     var fileName = Path.GetFileName(file);
-                    var destPath = Path.Combine(_backgroundsPath, fileName);
+                    var destPath = Path.Combine(AppConfiguration.BackgroundsDirectory, fileName);
 
                     if (!File.Exists(destPath))
                     {
@@ -341,7 +342,7 @@ public partial class SimpleMainWindow : Window
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to copy {Path.GetFileName(file)}: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"Failed to copy {Path.GetFileName(file)}: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
 
@@ -349,7 +350,7 @@ public partial class SimpleMainWindow : Window
 
             if (copiedCount > 0)
             {
-                MessageBox.Show($"{copiedCount} background image(s) added!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show($"{copiedCount} background image(s) added!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }
@@ -358,9 +359,9 @@ public partial class SimpleMainWindow : Window
     {
         if (BackgroundsListBox.SelectedItem is string selectedFileName)
         {
-            var fullPath = Path.Combine(_backgroundsPath, selectedFileName);
+            var fullPath = Path.Combine(AppConfiguration.BackgroundsDirectory, selectedFileName);
 
-            var result = MessageBox.Show(
+            var result = System.Windows.MessageBox.Show(
          $"Delete this background?\n\n{selectedFileName}",
                        "Confirm Delete",
                 MessageBoxButton.YesNo,
@@ -372,18 +373,56 @@ public partial class SimpleMainWindow : Window
                 {
                     File.Delete(fullPath);
                     LoadBackgrounds();
-                    MessageBox.Show("Background deleted.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show("Background deleted.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to delete background: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"Failed to delete background: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
         else
         {
-            MessageBox.Show("Please select a background to delete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show("Please select a background to delete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+    }
+
+    private void UpdatePathsUI()
+    {
+        try
+        {
+            BackgroundsPathTextBox.Text = AppConfiguration.BackgroundsDirectory;
+            QuotesPathTextBox.Text = AppConfiguration.QuotesFilePath;
+            OutputPathTextBox.Text = AppConfiguration.CurrentWallpaperPath;
+        }
+        catch { /* ignore */ }
+    }
+
+    private void UpdateDefaultsInfo()
+    {
+        try
+        {
+            var baseDir = AppConfiguration.DefaultBaseDirectory;
+            DefaultPathsInfo.Text =
+                $"Base: {baseDir}\n" +
+                $"Backgrounds: {System.IO.Path.Combine(baseDir, "backgrounds")}\n" +
+                $"Quotes: {System.IO.Path.Combine(baseDir, "quotes.json")}\n" +
+                $"Output: {System.IO.Path.Combine(baseDir, "current.png")}";
+        }
+        catch { /* ignore */ }
+    }
+
+    private void UpdateThemeCombo()
+    {
+        try
+        {
+            var mode = AppConfiguration.ThemeMode;
+            // 0: System Default, 1: Light, 2: Dark
+            var index = mode.Equals("Light", StringComparison.OrdinalIgnoreCase) ? 1 :
+                        mode.Equals("Dark", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
+            ThemeModeComboBox.SelectedIndex = index;
+        }
+        catch { /* ignore */ }
     }
 
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
@@ -397,6 +436,100 @@ public partial class SimpleMainWindow : Window
     {
         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
     }
+
+    private void BrowseBackgroundsButton_Click(object sender, RoutedEventArgs e)
+    {
+        using var dialog = new Forms.FolderBrowserDialog
+        {
+            Description = "Select backgrounds folder"
+        };
+        if (dialog.ShowDialog() == Forms.DialogResult.OK)
+        {
+            try
+            {
+                AppConfiguration.SetCustomBackgroundsPath(dialog.SelectedPath);
+                UpdatePathsUI();
+                LoadBackgrounds();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Invalid backgrounds path: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void BrowseQuotesButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Select quotes JSON file",
+            Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*",
+            CheckFileExists = false
+        };
+        if (dialog.ShowDialog() == true)
+        {
+            try
+            {
+                AppConfiguration.SetCustomQuotesPath(dialog.FileName);
+                UpdatePathsUI();
+                _ = LoadQuotesAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Invalid quotes file path: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void BrowseOutputButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Select output wallpaper path",
+            Filter = "PNG Image (*.png)|*.png|All Files (*.*)|*.*",
+            FileName = "current.png"
+        };
+        if (dialog.ShowDialog() == true)
+        {
+            try
+            {
+                AppConfiguration.SetCustomOutputPath(dialog.FileName);
+                UpdatePathsUI();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Invalid output path: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void ResetDefaultsButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            AppConfiguration.ResetToDefaults();
+            AppConfiguration.SetCustomOutputPath(null);
+            UpdatePathsUI();
+            _ = LoadQuotesAsync();
+            LoadBackgrounds();
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Failed to reset paths: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void ThemeModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        try
+        {
+            var index = ThemeModeComboBox.SelectedIndex;
+            var mode = index == 1 ? "Light" : index == 2 ? "Dark" : "System";
+            AppConfiguration.ThemeMode = mode;
+            ThemeManager.ApplyTheme();
+        }
+        catch { /* ignore */ }
+    }
 }
 
 // Simple dialog for adding quotes without external dependencies
@@ -406,9 +539,9 @@ public partial class SimpleQuoteDialog : Window
     public string CharacterName { get; private set; } = "";
     public string? AnimeName { get; private set; }
 
-    private readonly TextBox _quoteTextBox;
-    private readonly TextBox _characterTextBox;
-    private readonly TextBox _animeTextBox;
+    private readonly System.Windows.Controls.TextBox _quoteTextBox;
+    private readonly System.Windows.Controls.TextBox _characterTextBox;
+    private readonly System.Windows.Controls.TextBox _animeTextBox;
 
     public SimpleQuoteDialog()
     {
@@ -416,7 +549,7 @@ public partial class SimpleQuoteDialog : Window
         Width = 560;
         Height = 480;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        Background = new SolidColorBrush(Color.FromRgb(245, 247, 250));
+        Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 247, 250));
         ResizeMode = ResizeMode.NoResize;
 
         var mainGrid = new Grid { Margin = new Thickness(0) };
@@ -427,10 +560,10 @@ public partial class SimpleQuoteDialog : Window
         var headerBorder = new Border
         {
             Background = new LinearGradientBrush(
-                Color.FromRgb(129, 140, 248),
-                Color.FromRgb(99, 102, 241),
-                new Point(0, 0),
-                new Point(1, 1)),
+                System.Windows.Media.Color.FromRgb(129, 140, 248),
+                System.Windows.Media.Color.FromRgb(99, 102, 241),
+                new System.Windows.Point(0, 0),
+                new System.Windows.Point(1, 1)),
             Padding = new Thickness(24),
             Effect = new DropShadowEffect
             {
@@ -446,13 +579,13 @@ public partial class SimpleQuoteDialog : Window
             Text = "✨ Add New Quote",
             FontSize = 22,
             FontWeight = FontWeights.Bold,
-            Foreground = Brushes.White
+            Foreground = System.Windows.Media.Brushes.White
         };
         var headerSubtitle = new TextBlock
         {
             Text = "Fill in the details below to add a new quote",
             FontSize = 13,
-            Foreground = new SolidColorBrush(Color.FromRgb(224, 231, 255)),
+            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(224, 231, 255)),
             Margin = new Thickness(0, 6, 0, 0)
         };
         headerStack.Children.Add(headerTitle);
@@ -464,7 +597,7 @@ public partial class SimpleQuoteDialog : Window
         // Content Area
         var contentBorder = new Border
         {
-            Background = Brushes.White,
+            Background = System.Windows.Media.Brushes.White,
             Padding = new Thickness(28),
             Margin = new Thickness(0),
             Effect = new DropShadowEffect
@@ -489,14 +622,14 @@ public partial class SimpleQuoteDialog : Window
             Text = "Quote Text",
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 41, 59)),
             Margin = new Thickness(0, 0, 0, 8)
         };
         Grid.SetRow(quoteLabel, 0);
         contentGrid.Children.Add(quoteLabel);
 
         // Quote Text Box
-        _quoteTextBox = new TextBox
+        _quoteTextBox = new System.Windows.Controls.TextBox
         {
             Height = 110,
             TextWrapping = TextWrapping.Wrap,
@@ -505,8 +638,8 @@ public partial class SimpleQuoteDialog : Window
             Margin = new Thickness(0, 0, 0, 20),
             Padding = new Thickness(12),
             FontSize = 14,
-            Background = new SolidColorBrush(Color.FromRgb(248, 250, 252)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+            Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(248, 250, 252)),
+            BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(226, 232, 240)),
             BorderThickness = new Thickness(1)
         };
         Grid.SetRow(_quoteTextBox, 1);
@@ -518,20 +651,20 @@ public partial class SimpleQuoteDialog : Window
             Text = "Character Name",
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 41, 59)),
             Margin = new Thickness(0, 0, 0, 8)
         };
         Grid.SetRow(characterLabel, 2);
         contentGrid.Children.Add(characterLabel);
 
         // Character Text Box
-        _characterTextBox = new TextBox
+        _characterTextBox = new System.Windows.Controls.TextBox
         {
             Margin = new Thickness(0, 0, 0, 20),
             Padding = new Thickness(12),
             FontSize = 14,
-            Background = new SolidColorBrush(Color.FromRgb(248, 250, 252)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+            Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(248, 250, 252)),
+            BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(226, 232, 240)),
             BorderThickness = new Thickness(1)
         };
         Grid.SetRow(_characterTextBox, 3);
@@ -543,20 +676,20 @@ public partial class SimpleQuoteDialog : Window
             Text = "Anime Name (Optional)",
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 41, 59)),
             Margin = new Thickness(0, 0, 0, 8)
         };
         Grid.SetRow(animeLabel, 4);
         contentGrid.Children.Add(animeLabel);
 
         // Anime Text Box
-        _animeTextBox = new TextBox
+        _animeTextBox = new System.Windows.Controls.TextBox
         {
             Margin = new Thickness(0, 0, 0, 24),
             Padding = new Thickness(12),
             FontSize = 14,
-            Background = new SolidColorBrush(Color.FromRgb(248, 250, 252)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+            Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(248, 250, 252)),
+            BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(226, 232, 240)),
             BorderThickness = new Thickness(1)
         };
         Grid.SetRow(_animeTextBox, 5);
@@ -565,19 +698,19 @@ public partial class SimpleQuoteDialog : Window
         // Buttons
         var buttonPanel = new StackPanel
         {
-            Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Right,
+            Orientation = System.Windows.Controls.Orientation.Horizontal,
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Right,
             Margin = new Thickness(0, 8, 0, 0)
         };
 
-        var cancelButton = new Button
+        var cancelButton = new System.Windows.Controls.Button
         {
             Content = "Cancel",
             MinWidth = 100,
             Height = 40,
             Margin = new Thickness(0, 0, 12, 0),
-            Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)),
-            Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)),
+            Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(241, 245, 249)),
+            Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(71, 85, 105)),
             BorderThickness = new Thickness(0),
             FontSize = 14,
             FontWeight = FontWeights.SemiBold,
@@ -585,17 +718,17 @@ public partial class SimpleQuoteDialog : Window
         };
         cancelButton.Click += (s, e) => { DialogResult = false; Close(); };
 
-        var okButton = new Button
+        var okButton = new System.Windows.Controls.Button
         {
             Content = "➕ Add Quote",
             MinWidth = 130,
             Height = 40,
             Background = new LinearGradientBrush(
-                Color.FromRgb(129, 140, 248),
-                Color.FromRgb(99, 102, 241),
-                new Point(0, 0),
-                new Point(0, 1)),
-            Foreground = Brushes.White,
+                System.Windows.Media.Color.FromRgb(129, 140, 248),
+                System.Windows.Media.Color.FromRgb(99, 102, 241),
+                new System.Windows.Point(0, 0),
+                new System.Windows.Point(0, 1)),
+            Foreground = System.Windows.Media.Brushes.White,
             BorderThickness = new Thickness(0),
             FontSize = 14,
             FontWeight = FontWeights.SemiBold,
@@ -623,7 +756,7 @@ public partial class SimpleQuoteDialog : Window
     {
         if (string.IsNullOrWhiteSpace(_quoteTextBox.Text) || string.IsNullOrWhiteSpace(_characterTextBox.Text))
         {
-            MessageBox.Show("Please fill in both Quote Text and Character Name.", "Missing Information", MessageBoxButton.OK, MessageBoxImage.Warning);
+            System.Windows.MessageBox.Show("Please fill in both Quote Text and Character Name.", "Missing Information", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 

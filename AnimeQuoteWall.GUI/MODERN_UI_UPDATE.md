@@ -97,13 +97,13 @@ Created a stunning SVG icon featuring:
 
 ### Running the App
 ```bash
-cd "c:\Users\Abdul PC\AnimeQuoteWall\AnimeQuoteWall.GUI"
+cd AnimeQuoteWall/AnimeQuoteWall.GUI
 dotnet run
 ```
 
 ### Building
 ```bash
-cd "c:\Users\Abdul PC\AnimeQuoteWall\AnimeQuoteWall.GUI"
+cd AnimeQuoteWall/AnimeQuoteWall.GUI
 dotnet build
 ```
 
