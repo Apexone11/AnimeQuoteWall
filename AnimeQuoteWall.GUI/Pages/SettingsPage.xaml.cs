@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using AnimeQuoteWall.Core.Configuration;
+using AnimeQuoteWall.Core.Services;
 using AnimeQuoteWall.GUI;
 using Microsoft.Win32;
 using Forms = System.Windows.Forms;
@@ -30,6 +33,11 @@ public partial class SettingsPage : Page
     }
 
     /// <summary>
+    /// Monitor service for detecting monitors.
+    /// </summary>
+    private readonly MonitorService _monitorService = new MonitorService();
+
+    /// <summary>
     /// Initializes the settings page by loading current values.
     /// </summary>
     private void InitializeSettings()
@@ -38,6 +46,7 @@ public partial class SettingsPage : Page
         UpdateThemeCombo();
         UpdateDefaultsInfo();
         UpdateBehaviorSettings();
+        UpdateMonitorSettings();
     }
 
     /// <summary>
@@ -259,6 +268,160 @@ public partial class SettingsPage : Page
     private void AutoSaveHistoryCheckBox_Unchecked(object sender, RoutedEventArgs e)
     {
         AppConfiguration.AutoSaveToHistory = false;
+    }
+
+    /// <summary>
+    /// Updates the monitor settings UI with current configuration.
+    /// </summary>
+    private void UpdateMonitorSettings()
+    {
+        try
+        {
+            // Update monitor mode combo box
+            var mode = AppConfiguration.MultiMonitorMode;
+            var modeIndex = mode switch
+            {
+                "All" => 1,
+                "Span" => 2,
+                _ => 0 // Primary
+            };
+            MonitorModeComboBox.SelectedIndex = modeIndex;
+
+            // Refresh monitor list
+            RefreshMonitorList();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error updating monitor settings: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Refreshes the monitor checkboxes list.
+    /// </summary>
+    private void RefreshMonitorList()
+    {
+        try
+        {
+            MonitorCheckboxesPanel.Children.Clear();
+
+            var monitors = _monitorService.GetAllMonitors();
+            var enabledIndices = AppConfiguration.EnabledMonitorIndices;
+
+            if (monitors.Count == 0)
+            {
+                var noMonitorsText = new TextBlock
+                {
+                    Text = "No monitors detected",
+                    FontSize = 12,
+                    Foreground = System.Windows.Media.Brushes.Gray,
+                    Margin = new Thickness(0, 4, 0, 0)
+                };
+                MonitorCheckboxesPanel.Children.Add(noMonitorsText);
+                return;
+            }
+
+            foreach (var monitor in monitors)
+            {
+                var checkBox = new System.Windows.Controls.CheckBox
+                {
+                    Content = $"{monitor.Name} ({monitor.Width}x{monitor.Height}){(monitor.IsPrimary ? " [Primary]" : "")}",
+                    FontSize = 13,
+                    Margin = new Thickness(0, 0, 0, 8),
+                    IsChecked = enabledIndices.Count == 0 || enabledIndices.Contains(monitor.Index),
+                    Tag = monitor.Index
+                };
+                checkBox.SetResourceReference(FrameworkElement.StyleProperty, "ModernCheckBox");
+                checkBox.Checked += MonitorCheckbox_Checked;
+                checkBox.Unchecked += MonitorCheckbox_Unchecked;
+                MonitorCheckboxesPanel.Children.Add(checkBox);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error refreshing monitor list: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handles monitor mode combo box selection change.
+    /// </summary>
+    private void MonitorModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        try
+        {
+            if (MonitorModeComboBox.SelectedItem is ComboBoxItem item && item.Tag is string mode)
+            {
+                AppConfiguration.MultiMonitorMode = mode;
+                
+                // Update monitor selection panel visibility
+                // Only show checkboxes for "All" mode (per-monitor selection)
+                MonitorSelectionPanel.Visibility = mode == "All" ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error changing monitor mode: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handles monitor checkbox checked event.
+    /// </summary>
+    private void MonitorCheckbox_Checked(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is System.Windows.Controls.CheckBox checkBox && checkBox.Tag is int index)
+            {
+                var enabledIndices = AppConfiguration.EnabledMonitorIndices.ToList();
+                if (!enabledIndices.Contains(index))
+                {
+                    enabledIndices.Add(index);
+                    AppConfiguration.EnabledMonitorIndices = enabledIndices;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error checking monitor: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handles monitor checkbox unchecked event.
+    /// </summary>
+    private void MonitorCheckbox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is System.Windows.Controls.CheckBox checkBox && checkBox.Tag is int index)
+            {
+                var enabledIndices = AppConfiguration.EnabledMonitorIndices.ToList();
+                enabledIndices.Remove(index);
+                AppConfiguration.EnabledMonitorIndices = enabledIndices;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error unchecking monitor: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handles refresh monitors button click.
+    /// </summary>
+    private void RefreshMonitorsButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            RefreshMonitorList();
+            System.Windows.MessageBox.Show($"Refreshed monitor list. Found {_monitorService.GetMonitorCount()} monitor(s).", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Failed to refresh monitors: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 }
 

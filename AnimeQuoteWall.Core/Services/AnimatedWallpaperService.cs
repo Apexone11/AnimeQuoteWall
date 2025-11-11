@@ -117,8 +117,9 @@ public class AnimatedWallpaperService
     /// Sets an animated wallpaper using Wallpaper Engine API or fallback method.
     /// </summary>
     /// <param name="videoPath">Path to the animated wallpaper file (GIF/MP4)</param>
+    /// <param name="monitorIndex">Optional monitor index to apply wallpaper to. Null uses settings default.</param>
     /// <returns>True if successful, false otherwise</returns>
-    public bool SetAnimatedWallpaper(string videoPath)
+    public bool SetAnimatedWallpaper(string videoPath, int? monitorIndex = null)
     {
         if (string.IsNullOrWhiteSpace(videoPath) || !File.Exists(videoPath))
             return false;
@@ -130,7 +131,7 @@ public class AnimatedWallpaperService
             // Try Wallpaper Engine integration first
             if (IsWallpaperEngineAvailable() && (extension == ".mp4" || extension == ".webm" || extension == ".mov"))
             {
-                return SetWallpaperEngineWallpaper(videoPath);
+                return SetWallpaperEngineWallpaper(videoPath, monitorIndex);
             }
 
             // Fallback: Extract first frame for GIFs or use static frame extraction
@@ -154,14 +155,16 @@ public class AnimatedWallpaperService
     /// Sets wallpaper using Wallpaper Engine API.
     /// Wallpaper Engine provides a web API on localhost:7070.
     /// </summary>
-    private bool SetWallpaperEngineWallpaper(string videoPath)
+    /// <param name="videoPath">Path to the video file</param>
+    /// <param name="monitorIndex">Optional monitor index. Null uses settings default (-1 for all monitors)</param>
+    private bool SetWallpaperEngineWallpaper(string videoPath, int? monitorIndex = null)
     {
         try
         {
             var fullPath = Path.GetFullPath(videoPath);
             
             // Method 1: Try Wallpaper Engine Web API (localhost:7070)
-            if (TryWallpaperEngineWebAPI(fullPath))
+            if (TryWallpaperEngineWebAPI(fullPath, monitorIndex))
             {
                 return true;
             }
@@ -184,7 +187,9 @@ public class AnimatedWallpaperService
     /// <summary>
     /// Tries to use Wallpaper Engine's web API (localhost:7070).
     /// </summary>
-    private bool TryWallpaperEngineWebAPI(string videoPath)
+    /// <param name="videoPath">Path to the video file</param>
+    /// <param name="monitorIndex">Optional monitor index. Null uses settings default (-1 for all monitors)</param>
+    private bool TryWallpaperEngineWebAPI(string videoPath, int? monitorIndex = null)
     {
         try
         {
@@ -198,11 +203,15 @@ public class AnimatedWallpaperService
                 return false;
             }
 
+            // Determine monitor parameter
+            // If monitorIndex is specified, use it; otherwise use settings default (-1 for all monitors)
+            var monitorParam = monitorIndex ?? -1; // -1 means all monitors, specific index for single monitor
+            
             // Set wallpaper using API
             var requestBody = new
             {
                 file = videoPath,
-                monitor = -1 // -1 means all monitors
+                monitor = monitorParam
             };
 
             var json = JsonSerializer.Serialize(requestBody);

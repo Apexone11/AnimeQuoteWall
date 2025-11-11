@@ -47,9 +47,19 @@ public partial class AnimatedWallpapersPage : Page
     private AnimatedWallpaperItem? _selectedItem;
 
     /// <summary>
+    /// Currently selected border element for visual feedback.
+    /// </summary>
+    private System.Windows.Controls.Border? _selectedBorder;
+
+    /// <summary>
     /// Video thumbnail service for generating MP4 thumbnails.
     /// </summary>
     private readonly VideoThumbnailService _thumbnailService;
+
+    /// <summary>
+    /// Service for detecting monitors.
+    /// </summary>
+    private readonly MonitorService _monitorService = new MonitorService();
 
     /// <summary>
     /// Supported animated file extensions.
@@ -67,7 +77,11 @@ public partial class AnimatedWallpapersPage : Page
         _thumbnailService = new VideoThumbnailService();
         
         // Load wallpapers asynchronously to improve startup performance
-        Loaded += async (s, e) => await LoadAnimatedWallpapersAsync();
+        Loaded += async (s, e) =>
+        {
+            InitializeMonitorSelection();
+            await LoadAnimatedWallpapersAsync();
+        };
     }
 
     /// <summary>
@@ -129,13 +143,22 @@ public partial class AnimatedWallpapersPage : Page
             // Final update and hide loading indicator
             await Dispatcher.InvokeAsync(() =>
             {
-                AnimatedWallpapersItemsControl.ItemsSource = items;
-                UpdateCount(items.Count);
-                if (LoadingIndicator != null)
-                    LoadingIndicator.Visibility = Visibility.Collapsed;
-                if (ContentScrollViewer != null)
-                    ContentScrollViewer.Visibility = Visibility.Visible;
-            });
+                    AnimatedWallpapersItemsControl.ItemsSource = items;
+                    UpdateCount(items.Count);
+                    if (LoadingIndicator != null)
+                        LoadingIndicator.Visibility = Visibility.Collapsed;
+                    if (ContentScrollViewer != null)
+                        ContentScrollViewer.Visibility = Visibility.Visible;
+                    InitializeMonitorSelection();
+                    
+                    // Reset selection
+                    _selectedItem = null;
+                    _selectedBorder = null;
+                    if (ApplyAnimatedButton != null)
+                        ApplyAnimatedButton.IsEnabled = false;
+                    if (DeleteAnimatedButton != null)
+                        DeleteAnimatedButton.IsEnabled = false;
+                });
         }
         catch (Exception ex)
         {
@@ -310,6 +333,10 @@ public partial class AnimatedWallpapersPage : Page
                     if (DeleteAnimatedButton != null)
                         DeleteAnimatedButton.IsEnabled = false;
 
+                    // Reset selection
+                    _selectedItem = null;
+                    _selectedBorder = null;
+
                     System.Windows.MessageBox.Show("Animated wallpaper deleted successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
@@ -325,9 +352,19 @@ public partial class AnimatedWallpapersPage : Page
     /// </summary>
     private void AnimatedItem_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
     {
-        if (sender is Border border)
+        if (sender is System.Windows.Controls.Border border && border != _selectedBorder)
         {
-            border.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(20, 99, 102, 241));
+            // Only change background if not selected
+            var cardBg = System.Windows.Application.Current.Resources["CardBackground"];
+            if (cardBg is System.Windows.Media.SolidColorBrush brush)
+            {
+                var color = brush.Color;
+                border.Background = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromArgb(255, 
+                        (byte)Math.Min(255, color.R + 10), 
+                        (byte)Math.Min(255, color.G + 10), 
+                        (byte)Math.Min(255, color.B + 10)));
+            }
         }
     }
 
@@ -336,9 +373,14 @@ public partial class AnimatedWallpapersPage : Page
     /// </summary>
     private void AnimatedItem_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
     {
-        if (sender is Border border)
+        if (sender is System.Windows.Controls.Border border && border != _selectedBorder)
         {
-            border.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 30, 41, 59)); // CardBackground color
+            // Reset to default background if not selected
+            var cardBg = System.Windows.Application.Current.Resources["CardBackground"];
+            if (cardBg is System.Windows.Media.SolidColorBrush)
+            {
+                border.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, "CardBackground");
+            }
         }
     }
 
@@ -347,10 +389,31 @@ public partial class AnimatedWallpapersPage : Page
     /// </summary>
     private void AnimatedItem_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        // Select the item
-        if (sender is Border border && border.DataContext is AnimatedWallpaperItem item)
+        // Deselect previous item
+        if (_selectedBorder != null)
+        {
+            _selectedBorder.BorderThickness = new Thickness(2);
+            _selectedBorder.BorderBrush = (System.Windows.Media.Brush)System.Windows.Application.Current.Resources["BorderColor"];
+            var cardBg = System.Windows.Application.Current.Resources["CardBackground"];
+            if (cardBg is System.Windows.Media.SolidColorBrush)
+            {
+                _selectedBorder.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, "CardBackground");
+            }
+        }
+
+        // Select the new item
+        if (sender is System.Windows.Controls.Border border && border.DataContext is AnimatedWallpaperItem item)
         {
             _selectedItem = item;
+            _selectedBorder = border;
+            
+            // Visual feedback for selection
+            border.BorderThickness = new Thickness(3);
+            border.BorderBrush = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(129, 140, 248)); // Purple accent
+            border.Background = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromArgb(30, 129, 140, 248)); // Light purple tint
+            
             // Update button states
             if (ApplyAnimatedButton != null)
                 ApplyAnimatedButton.IsEnabled = true;
@@ -393,7 +456,8 @@ public partial class AnimatedWallpapersPage : Page
                 if (result == MessageBoxResult.Yes)
                 {
                     // Extract first frame and set as static
-                    var success = service.SetAnimatedWallpaper(_selectedItem.FilePath);
+                    var monitorIndex = GetSelectedMonitor();
+                    var success = service.SetAnimatedWallpaper(_selectedItem.FilePath, monitorIndex);
                     if (success)
                     {
                         System.Windows.MessageBox.Show(
@@ -411,8 +475,11 @@ public partial class AnimatedWallpapersPage : Page
                 return;
             }
 
-            // Try to apply animated wallpaper
-            var wallpaperSuccess = service.SetAnimatedWallpaper(_selectedItem.FilePath);
+            // Get selected monitor
+            var selectedMonitor = GetSelectedMonitor();
+            
+            // Try to apply animated wallpaper with monitor selection
+            var wallpaperSuccess = service.SetAnimatedWallpaper(_selectedItem.FilePath, selectedMonitor);
 
             if (wallpaperSuccess)
             {
@@ -428,9 +495,15 @@ public partial class AnimatedWallpapersPage : Page
                 }
                 else
                 {
+                    var monitorName = GetSelectedMonitorName();
+                    var message = string.IsNullOrEmpty(monitorName)
+                        ? $"Animated wallpaper '{_selectedItem.FileName}' applied successfully!\n\n" +
+                          "If the wallpaper is not animating, ensure Wallpaper Engine is running."
+                        : $"Animated wallpaper '{_selectedItem.FileName}' applied to {monitorName}!\n\n" +
+                          "If the wallpaper is not animating, ensure Wallpaper Engine is running.";
+                    
                     System.Windows.MessageBox.Show(
-                        $"Animated wallpaper '{_selectedItem.FileName}' applied successfully!\n\n" +
-                        "If the wallpaper is not animating, ensure Wallpaper Engine is running.",
+                        message,
                         "Success",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
@@ -452,6 +525,92 @@ public partial class AnimatedWallpapersPage : Page
         {
             System.Windows.MessageBox.Show($"Failed to apply animated wallpaper: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    /// <summary>
+    /// Initializes the monitor selection combo box.
+    /// </summary>
+    private void InitializeMonitorSelection()
+    {
+        try
+        {
+            if (MonitorSelectionComboBox == null) return;
+
+            MonitorSelectionComboBox.Items.Clear();
+            
+            // Add default option
+            var defaultItem = new ComboBoxItem
+            {
+                Content = "Use Settings Default",
+                Tag = "Default"
+            };
+            MonitorSelectionComboBox.Items.Add(defaultItem);
+
+            // Add monitor options
+            var monitors = _monitorService.GetAllMonitors();
+            foreach (var monitor in monitors)
+            {
+                // Create a more compact display name
+                var displayName = monitor.Name;
+                if (displayName.Length > 20)
+                {
+                    // Shorten long display names
+                    displayName = displayName.Substring(0, 17) + "...";
+                }
+                
+                var item = new ComboBoxItem
+                {
+                    Content = $"{displayName} ({monitor.Width}x{monitor.Height}){(monitor.IsPrimary ? " [Primary]" : "")}",
+                    Tag = monitor.Index,
+                    ToolTip = $"{monitor.Name} - {monitor.Width}x{monitor.Height}{(monitor.IsPrimary ? " (Primary Monitor)" : "")}"
+                };
+                MonitorSelectionComboBox.Items.Add(item);
+            }
+
+            // Select default option
+            MonitorSelectionComboBox.SelectedIndex = 0;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error initializing monitor selection: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Gets the selected monitor index from the combo box, or null if using default.
+    /// </summary>
+    private int? GetSelectedMonitor()
+    {
+        try
+        {
+            if (MonitorSelectionComboBox?.SelectedItem is ComboBoxItem item)
+            {
+                if (item.Tag is int index)
+                    return index;
+                if (item.Tag is string tag && tag == "Default")
+                    return null;
+            }
+        }
+        catch { /* ignore */ }
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the selected monitor name for display purposes.
+    /// </summary>
+    private string GetSelectedMonitorName()
+    {
+        try
+        {
+            var selectedMonitor = GetSelectedMonitor();
+            if (selectedMonitor.HasValue)
+            {
+                var monitor = _monitorService.GetMonitorByIndex(selectedMonitor.Value);
+                return monitor?.Name ?? "";
+            }
+        }
+        catch { /* ignore */ }
+        return "";
     }
 }
 

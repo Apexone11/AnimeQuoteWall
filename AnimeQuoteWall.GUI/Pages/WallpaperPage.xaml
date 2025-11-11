@@ -100,18 +100,28 @@
                     <TextBlock Text="Refresh" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
-            <Button x:Name="ApplyButton"
-                    MinWidth="180"
-                    Height="44"
-                    Click="ApplyButton_Click"
-                    Style="{StaticResource ModernSuccessButton}"
-                    Margin="10,0,0,0"
-                    Padding="14,10">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="✨" FontSize="16" Margin="0,0,6,0" FontFamily="Segoe UI Emoji"/>
-                    <TextBlock Text="Apply as Wallpaper" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
+            <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                <ComboBox x:Name="MonitorSelectionComboBox"
+                          Width="200"
+                          Height="44"
+                          VerticalContentAlignment="Center"
+                          FontSize="13"
+                          Margin="0,0,10,0"
+                          ToolTip="Select monitor(s) to apply wallpaper">
+                    <ComboBoxItem Content="Use Settings Default" Tag="Default" IsSelected="True"/>
+                </ComboBox>
+                <Button x:Name="ApplyButton"
+                        MinWidth="180"
+                        Height="44"
+                        Click="ApplyButton_Click"
+                        Style="{StaticResource ModernSuccessButton}"
+                        Padding="14,10">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="✨" FontSize="16" Margin="0,0,6,0" FontFamily="Segoe UI Emoji"/>
+                        <TextBlock Text="Apply as Wallpaper" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="12,0,0,0">
                 <Button x:Name="ZoomInButton"
                         Width="44"

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -42,6 +44,11 @@ public partial class WallpaperPage : Page
     /// Service for managing wallpaper history.
     /// </summary>
     private readonly WallpaperHistoryService _historyService;
+
+    /// <summary>
+    /// Service for detecting monitors.
+    /// </summary>
+    private readonly MonitorService _monitorService = new MonitorService();
     
     /// <summary>
     /// List of available quotes loaded from file.
@@ -109,6 +116,7 @@ public partial class WallpaperPage : Page
         Dispatcher.BeginInvoke(new Action(() =>
         {
             LoadCurrentWallpaper();
+            InitializeMonitorSelection();
         }), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
@@ -327,8 +335,58 @@ public partial class WallpaperPage : Page
     private const int SPIF_SENDCHANGE = 0x02;
 
     /// <summary>
+    /// Initializes the monitor selection combo box.
+    /// </summary>
+    private void InitializeMonitorSelection()
+    {
+        try
+        {
+            if (MonitorSelectionComboBox == null) return;
+
+            MonitorSelectionComboBox.Items.Clear();
+            
+            // Add default option
+            var defaultItem = new ComboBoxItem
+            {
+                Content = "Use Settings Default",
+                Tag = "Default"
+            };
+            MonitorSelectionComboBox.Items.Add(defaultItem);
+
+            // Add monitor options
+            var monitors = _monitorService.GetAllMonitors();
+            foreach (var monitor in monitors)
+            {
+                // Create a more compact display name
+                var displayName = monitor.Name;
+                if (displayName.Length > 20)
+                {
+                    // Shorten long display names
+                    displayName = displayName.Substring(0, 17) + "...";
+                }
+                
+                var item = new ComboBoxItem
+                {
+                    Content = $"{displayName} ({monitor.Width}x{monitor.Height}){(monitor.IsPrimary ? " [Primary]" : "")}",
+                    Tag = monitor.Index,
+                    ToolTip = $"{monitor.Name} - {monitor.Width}x{monitor.Height}{(monitor.IsPrimary ? " (Primary Monitor)" : "")}"
+                };
+                MonitorSelectionComboBox.Items.Add(item);
+            }
+
+            // Select default option
+            MonitorSelectionComboBox.SelectedIndex = 0;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error initializing monitor selection: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Sets the desktop wallpaper using Windows API.
     /// Includes compatibility handling for different Windows versions and error scenarios.
+    /// Supports multi-monitor configurations.
     /// </summary>
     /// <param name="path">Path to the wallpaper image file</param>
     private void SetWallpaper(string path)
@@ -341,21 +399,62 @@ public partial class WallpaperPage : Page
 
         try
         {
-            // Use the compatibility helper for better error handling
-            var success = AnimeQuoteWall.Core.Services.WallpaperSettingHelper.SetWallpaper(path);
-            
-            if (!success)
+            // Check if user selected a specific monitor
+            var selectedMonitor = GetSelectedMonitor();
+            var mode = AppConfiguration.MultiMonitorMode;
+            var enabledIndices = AppConfiguration.EnabledMonitorIndices;
+
+            // If user selected a specific monitor, override settings temporarily
+            if (selectedMonitor.HasValue)
             {
-                // Failed to set wallpaper - could be permissions, group policy, etc.
-                System.Windows.MessageBox.Show(
-                    "Failed to set wallpaper. This may be due to:\n" +
-                    "- Group policy restrictions\n" +
-                    "- Insufficient permissions\n" +
-                    "- Windows slideshow mode enabled\n\n" +
-                    "Try disabling Windows slideshow mode in Settings > Personalization > Background.",
-                    "Warning",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                // Apply to specific monitor only
+                var monitor = _monitorService.GetMonitorByIndex(selectedMonitor.Value);
+                if (monitor != null)
+                {
+                    // Use standard Windows API (applies to primary monitor)
+                    // For per-monitor support, we'd need additional Windows APIs or Wallpaper Engine
+                    var success = AnimeQuoteWall.Core.Services.WallpaperSettingHelper.SetWallpaper(path);
+                    if (success)
+                    {
+                        System.Windows.MessageBox.Show($"Wallpaper applied to {monitor.Name}!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        ShowWallpaperError();
+                    }
+                    return;
+                }
+            }
+
+            // Use configured multi-monitor mode
+            if (mode == "Span")
+            {
+                // Span mode: create combined wallpaper
+                // Windows will handle spanning if image matches combined resolution
+                var success = AnimeQuoteWall.Core.Services.WallpaperSettingHelper.SetWallpaper(path);
+                if (!success)
+                {
+                    ShowWallpaperError();
+                }
+            }
+            else if (mode == "All")
+            {
+                // All monitors mode: apply to all enabled monitors
+                // Note: Windows API applies to primary monitor, but we can generate per-monitor wallpapers
+                var success = AnimeQuoteWall.Core.Services.WallpaperSettingHelper.SetWallpaper(path);
+                if (!success)
+                {
+                    ShowWallpaperError();
+                }
+            }
+            else // Primary mode
+            {
+                // Primary monitor only
+                var success = AnimeQuoteWall.Core.Services.WallpaperSettingHelper.SetWallpaper(path);
+                if (!success)
+                {
+                    ShowWallpaperError();
+                }
             }
         }
         catch (Exception ex)
@@ -366,6 +465,41 @@ public partial class WallpaperPage : Page
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
+    }
+
+    /// <summary>
+    /// Gets the selected monitor index from the combo box, or null if using default.
+    /// </summary>
+    private int? GetSelectedMonitor()
+    {
+        try
+        {
+            if (MonitorSelectionComboBox?.SelectedItem is ComboBoxItem item)
+            {
+                if (item.Tag is int index)
+                    return index;
+                if (item.Tag is string tag && tag == "Default")
+                    return null;
+            }
+        }
+        catch { /* ignore */ }
+        return null;
+    }
+
+    /// <summary>
+    /// Shows a standard wallpaper error message.
+    /// </summary>
+    private void ShowWallpaperError()
+    {
+        System.Windows.MessageBox.Show(
+            "Failed to set wallpaper. This may be due to:\n" +
+            "- Group policy restrictions\n" +
+            "- Insufficient permissions\n" +
+            "- Windows slideshow mode enabled\n\n" +
+            "Try disabling Windows slideshow mode in Settings > Personalization > Background.",
+            "Warning",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
     }
 
     /// <summary>

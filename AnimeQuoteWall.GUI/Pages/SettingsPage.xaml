@@ -74,6 +74,63 @@
                 </StackPanel>
             </Border>
 
+            <!-- Multi-Monitor Settings Card -->
+            <Border Style="{StaticResource ModernCard}" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimary}"
+                               Margin="0,0,0,18">
+                        <Run Text="🖥️" FontFamily="Segoe UI Emoji"/>
+                        <Run Text=" Multi-Monitor Settings"/>
+                    </TextBlock>
+
+                    <StackPanel Margin="0,0,0,16">
+                        <TextBlock Text="Monitor Mode:"
+                                   FontSize="13"
+                                   FontWeight="Medium"
+                                   Foreground="{StaticResource TextSecondary}"
+                                   Margin="0,0,0,8"/>
+                        <ComboBox x:Name="MonitorModeComboBox"
+                                  Width="280"
+                                  SelectionChanged="MonitorModeComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Primary Monitor Only" Tag="Primary"/>
+                            <ComboBoxItem Content="All Monitors (Same)" Tag="All"/>
+                            <ComboBoxItem Content="Span All Monitors" Tag="Span"/>
+                        </ComboBox>
+                        <TextBlock Text="Select how wallpapers are applied across multiple monitors"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextTertiary}"
+                                   Margin="0,6,0,0"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <Separator Margin="0,8,0,16" Background="{StaticResource BorderColor}"/>
+
+                    <StackPanel x:Name="MonitorSelectionPanel">
+                        <TextBlock Text="Select Monitors:"
+                                   FontSize="13"
+                                   FontWeight="Medium"
+                                   Foreground="{StaticResource TextSecondary}"
+                                   Margin="0,0,0,10"/>
+                        <StackPanel x:Name="MonitorCheckboxesPanel" Margin="0,0,0,8"/>
+                        <Button x:Name="RefreshMonitorsButton"
+                                Content="🔄 Refresh Monitors"
+                                MinWidth="180"
+                                Height="36"
+                                FontSize="12"
+                                Click="RefreshMonitorsButton_Click"
+                                Style="{StaticResource ModernSecondaryButton}"
+                                HorizontalAlignment="Left"/>
+                        <TextBlock Text="Monitors are automatically detected. Click refresh if you connected/disconnected a monitor."
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextTertiary}"
+                                   Margin="0,8,0,0"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- File Paths Settings Card -->
             <Border Style="{StaticResource ModernCard}">
                 <StackPanel>
