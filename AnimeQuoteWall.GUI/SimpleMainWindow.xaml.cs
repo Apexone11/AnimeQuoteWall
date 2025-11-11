@@ -11,7 +11,7 @@ public partial class SimpleMainWindow : Window
     private WallpaperPage? _wallpaperPage;
     private QuotesPage? _quotesPage;
     private BackgroundsPage? _backgroundsPage;
-    private AnimationPage? _animationPage;
+    // private AnimationPage? _animationPage; // Animated Generator removed
     private AnimatedWallpapersPage? _animatedWallpapersPage;
     private HistoryPage? _historyPage;
     private PlaylistsPage? _playlistsPage;
@@ -24,6 +24,44 @@ public partial class SimpleMainWindow : Window
         InitializeComponent();
         // Defer heavy initialization until after window is shown
         Loaded += (s, e) => InitializeAsync();
+        
+        // Handle window size changes for responsive UI
+        SizeChanged += MainWindow_SizeChanged;
+    }
+
+    /// <summary>
+    /// Handles window size changes to adjust sidebar width responsively.
+    /// </summary>
+    private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        try
+        {
+            if (SidebarColumn != null)
+            {
+                // Adjust sidebar width based on window size
+                // Smaller sidebar on smaller windows, larger on bigger windows
+                var windowWidth = ActualWidth;
+                if (windowWidth < 1000)
+                {
+                    // Compact sidebar for small windows
+                    SidebarColumn.Width = new GridLength(180, GridUnitType.Pixel);
+                }
+                else if (windowWidth < 1400)
+                {
+                    // Medium sidebar for medium windows
+                    SidebarColumn.Width = new GridLength(220, GridUnitType.Pixel);
+                }
+                else
+                {
+                    // Full sidebar for large windows
+                    SidebarColumn.Width = new GridLength(240, GridUnitType.Pixel);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"MainWindow_SizeChanged error: {ex.Message}");
+        }
     }
 
     private async void InitializeAsync()
@@ -97,7 +135,6 @@ public partial class SimpleMainWindow : Window
                         "NavWallpaperButton" => "Wallpaper",
                         "NavQuotesButton" => "Quotes",
                         "NavBackgroundsButton" => "Backgrounds",
-                        "NavAnimationButton" => "Animation",
                         "NavAnimatedWallpapersButton" => "AnimatedWallpapers",
                         "NavHistoryButton" => "History",
                         "NavPlaylistsButton" => "Playlists",
@@ -172,7 +209,6 @@ public partial class SimpleMainWindow : Window
                 "Wallpaper" => NavWallpaperButton,
                 "Quotes" => NavQuotesButton,
                 "Backgrounds" => NavBackgroundsButton,
-                "Animation" => NavAnimationButton,
                 "AnimatedWallpapers" => NavAnimatedWallpapersButton,
                 "History" => NavHistoryButton,
                 "Playlists" => NavPlaylistsButton,
@@ -192,7 +228,6 @@ public partial class SimpleMainWindow : Window
             if (NavWallpaperButton.Tag?.ToString() == "Selected") NavWallpaperButton.Tag = "Wallpaper";
             if (NavQuotesButton.Tag?.ToString() == "Selected") NavQuotesButton.Tag = "Quotes";
             if (NavBackgroundsButton.Tag?.ToString() == "Selected") NavBackgroundsButton.Tag = "Backgrounds";
-            if (NavAnimationButton.Tag?.ToString() == "Selected") NavAnimationButton.Tag = "Animation";
             if (NavAnimatedWallpapersButton.Tag?.ToString() == "Selected") NavAnimatedWallpapersButton.Tag = "AnimatedWallpapers";
             if (NavHistoryButton.Tag?.ToString() == "Selected") NavHistoryButton.Tag = "History";
             if (NavPlaylistsButton.Tag?.ToString() == "Selected") NavPlaylistsButton.Tag = "Playlists";
@@ -210,12 +245,11 @@ public partial class SimpleMainWindow : Window
             {
                 // Create a new page instance on UI thread (required for WPF)
                 // Pages handle their own async data loading internally
-                page = pageName switch
+                    page = pageName switch
                 {
                     "Wallpaper" => new WallpaperPage(),
                     "Quotes" => new QuotesPage(),
                     "Backgrounds" => new BackgroundsPage(),
-                    "Animation" => new AnimationPage(),
                     "AnimatedWallpapers" => new AnimatedWallpapersPage(),
                     "History" => new HistoryPage(),
                     "Playlists" => new PlaylistsPage(),
@@ -231,7 +265,6 @@ public partial class SimpleMainWindow : Window
                         case "Wallpaper": _wallpaperPage = (WallpaperPage)page; break;
                         case "Quotes": _quotesPage = (QuotesPage)page; break;
                         case "Backgrounds": _backgroundsPage = (BackgroundsPage)page; break;
-                        case "Animation": _animationPage = (AnimationPage)page; break;
                         case "AnimatedWallpapers": _animatedWallpapersPage = (AnimatedWallpapersPage)page; break;
                         case "History": _historyPage = (HistoryPage)page; break;
                         case "Playlists": _playlistsPage = (PlaylistsPage)page; break;
@@ -258,7 +291,6 @@ public partial class SimpleMainWindow : Window
                         "Wallpaper" => "Static Wallpaper Generator",
                         "Quotes" => "Quotes",
                         "Backgrounds" => "Image Library",
-                        "Animation" => "Animated Wallpaper Generator",
                         "AnimatedWallpapers" => "Animated Wallpapers Library",
                         "History" => "History",
                         "Playlists" => "Playlists",

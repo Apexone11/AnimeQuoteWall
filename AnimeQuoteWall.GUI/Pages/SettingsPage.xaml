@@ -1,7 +1,15 @@
 <Page x:Class="AnimeQuoteWall.GUI.Pages.SettingsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
       Title="Settings">
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/ButtonStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,20">
         <StackPanel>
             <!-- Theme Settings Card -->
@@ -11,7 +19,9 @@
                                FontWeight="Bold"
                                Foreground="{StaticResource TextPrimary}"
                                Margin="0,0,0,18">
-                        <Run Text="🎨" FontFamily="Segoe UI Emoji"/>
+                        <InlineUIContainer>
+                            <iconPacks:PackIconMaterial Kind="PaletteOutline" Width="18" Height="18" VerticalAlignment="Center"/>
+                        </InlineUIContainer>
                         <Run Text=" Appearance"/>
                     </TextBlock>
 
@@ -23,7 +33,9 @@
                                    Margin="0,0,12,0"/>
                         <ComboBox x:Name="ThemeModeComboBox"
                                   Width="200"
-                                  SelectionChanged="ThemeModeComboBox_SelectionChanged">
+                                  Height="40"
+                                  SelectionChanged="ThemeModeComboBox_SelectionChanged"
+                                  Style="{StaticResource ModernComboBox}">
                             <ComboBoxItem Content="System Default"/>
                             <ComboBoxItem Content="Light"/>
                             <ComboBoxItem Content="Dark"/>
@@ -44,33 +56,56 @@
                                FontWeight="Bold"
                                Foreground="{StaticResource TextPrimary}"
                                Margin="0,0,0,18">
-                        <Run Text="⚙" FontFamily="Segoe UI Emoji"/>
+                        <InlineUIContainer>
+                            <iconPacks:PackIconMaterial Kind="CogOutline" Width="18" Height="18" VerticalAlignment="Center"/>
+                        </InlineUIContainer>
                         <Run Text=" Behavior Settings"/>
                     </TextBlock>
 
                     <CheckBox x:Name="AutoRefreshPreviewCheckBox"
                               Content="Auto-refresh preview after generation"
-                              FontSize="14"
-                              Foreground="{StaticResource TextPrimary}"
+                              Style="{StaticResource ModernCheckBox}"
                               Margin="0,0,0,12"
                               Checked="AutoRefreshPreviewCheckBox_Checked"
                               Unchecked="AutoRefreshPreviewCheckBox_Unchecked"/>
 
                     <CheckBox x:Name="ShowNotificationsCheckBox"
                               Content="Show notifications on generation"
-                              FontSize="14"
-                              Foreground="{StaticResource TextPrimary}"
+                              Style="{StaticResource ModernCheckBox}"
                               Margin="0,0,0,12"
                               Checked="ShowNotificationsCheckBox_Checked"
                               Unchecked="ShowNotificationsCheckBox_Unchecked"/>
 
                     <CheckBox x:Name="AutoSaveHistoryCheckBox"
                               Content="Automatically save to history"
-                              FontSize="14"
-                              Foreground="{StaticResource TextPrimary}"
-                              Margin="0,0,0,0"
+                              Style="{StaticResource ModernCheckBox}"
+                              Margin="0,0,0,12"
                               Checked="AutoSaveHistoryCheckBox_Checked"
                               Unchecked="AutoSaveHistoryCheckBox_Unchecked"/>
+
+                    <Separator Margin="0,8,0,12" Background="{StaticResource BorderColor}"/>
+
+                    <TextBlock Text="Experimental Features"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextSecondary}"
+                               Margin="0,0,0,8"/>
+
+                    <CheckBox x:Name="EnableAnimatedApplyCheckBox"
+                              Content="Enable animated wallpaper apply (experimental)"
+                              Style="{StaticResource ModernCheckBox}"
+                              Margin="0,0,0,12"
+                              Checked="EnableAnimatedApplyCheckBox_Checked"
+                              Unchecked="EnableAnimatedApplyCheckBox_Unchecked"
+                              ToolTip="Allow applying animated wallpapers. This feature is experimental and may not work correctly."/>
+
+                    <CheckBox x:Name="EnablePerMonitorApplyCheckBox"
+                              Content="Enable per-monitor wallpaper apply (experimental)"
+                              Style="{StaticResource ModernCheckBox}"
+                              Margin="0,0,0,0"
+                              Checked="EnablePerMonitorApplyCheckBox_Checked"
+                              Unchecked="EnablePerMonitorApplyCheckBox_Unchecked"
+                              ToolTip="Allow applying different wallpapers to different monitors. This feature is experimental and may not work correctly."/>
                 </StackPanel>
             </Border>
 
@@ -81,7 +116,9 @@
                                FontWeight="Bold"
                                Foreground="{StaticResource TextPrimary}"
                                Margin="0,0,0,18">
-                        <Run Text="🖥️" FontFamily="Segoe UI Emoji"/>
+                        <InlineUIContainer>
+                            <iconPacks:PackIconMaterial Kind="Monitor" Width="18" Height="18" VerticalAlignment="Center"/>
+                        </InlineUIContainer>
                         <Run Text=" Multi-Monitor Settings"/>
                     </TextBlock>
 
@@ -93,7 +130,9 @@
                                    Margin="0,0,0,8"/>
                         <ComboBox x:Name="MonitorModeComboBox"
                                   Width="280"
-                                  SelectionChanged="MonitorModeComboBox_SelectionChanged">
+                                  Height="40"
+                                  SelectionChanged="MonitorModeComboBox_SelectionChanged"
+                                  Style="{StaticResource ModernComboBox}">
                             <ComboBoxItem Content="Primary Monitor Only" Tag="Primary"/>
                             <ComboBoxItem Content="All Monitors (Same)" Tag="All"/>
                             <ComboBoxItem Content="Span All Monitors" Tag="Span"/>
@@ -115,13 +154,17 @@
                                    Margin="0,0,0,10"/>
                         <StackPanel x:Name="MonitorCheckboxesPanel" Margin="0,0,0,8"/>
                         <Button x:Name="RefreshMonitorsButton"
-                                Content="🔄 Refresh Monitors"
                                 MinWidth="180"
                                 Height="36"
                                 FontSize="12"
                                 Click="RefreshMonitorsButton_Click"
                                 Style="{StaticResource ModernSecondaryButton}"
-                                HorizontalAlignment="Left"/>
+                                HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Refresh Monitors" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                         <TextBlock Text="Monitors are automatically detected. Click refresh if you connected/disconnected a monitor."
                                    FontSize="11"
                                    Foreground="{StaticResource TextTertiary}"
@@ -138,7 +181,9 @@
                                FontWeight="Bold"
                                Foreground="{StaticResource TextPrimary}"
                                Margin="0,0,0,20">
-                        <Run Text="📁" FontFamily="Segoe UI Emoji"/>
+                        <InlineUIContainer>
+                            <iconPacks:PackIconMaterial Kind="FolderOutline" Width="18" Height="18" VerticalAlignment="Center"/>
+                        </InlineUIContainer>
                         <Run Text=" File Locations"/>
                     </TextBlock>
 
@@ -166,12 +211,16 @@
                                      Foreground="{StaticResource TextPrimary}"/>
                             <Button x:Name="BrowseBackgroundsButton"
                                     Grid.Column="1"
-                                    Content="📂 Browse"
                                     MinWidth="120"
                                     Height="38"
                                     FontSize="12"
                                     Click="BrowseBackgroundsButton_Click"
-                                    Style="{StaticResource ModernSecondaryButton}"/>
+                                    Style="{StaticResource ModernSecondaryButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="FolderOutline" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Browse" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </Grid>
                     </StackPanel>
 
@@ -199,12 +248,16 @@
                                      Foreground="{StaticResource TextPrimary}"/>
                             <Button x:Name="BrowseQuotesButton"
                                     Grid.Column="1"
-                                    Content="📄 Browse"
                                     MinWidth="120"
                                     Height="38"
                                     FontSize="12"
                                     Click="BrowseQuotesButton_Click"
-                                    Style="{StaticResource ModernSecondaryButton}"/>
+                                    Style="{StaticResource ModernSecondaryButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="FileDocumentOutline" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Browse" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </Grid>
                     </StackPanel>
 
@@ -232,23 +285,31 @@
                                      Foreground="{StaticResource TextPrimary}"/>
                             <Button x:Name="BrowseOutputButton"
                                     Grid.Column="1"
-                                    Content="💾 Browse"
                                     MinWidth="120"
                                     Height="38"
                                     FontSize="12"
                                     Click="BrowseOutputButton_Click"
-                                    Style="{StaticResource ModernSecondaryButton}"/>
+                                    Style="{StaticResource ModernSecondaryButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="ContentSaveOutline" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Browse" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </Grid>
                     </StackPanel>
 
                     <Button x:Name="ResetDefaultsButton"
-                            Content="🔄 Reset to Defaults"
                             MinWidth="200"
                             Height="40"
                             FontSize="13"
                             Click="ResetDefaultsButton_Click"
-                            Style="{StaticResource ModernSecondaryButton}"
-                            HorizontalAlignment="Left"/>
+                            Style="{DynamicResource ModernSecondaryButton}"
+                            HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Reset to Defaults" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
 
                     <Border Background="{StaticResource HoverBackground}"
                             BorderBrush="{StaticResource BorderColor}"
@@ -257,10 +318,7 @@
                             Padding="12"
                             Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="⚠️"
-                                       FontSize="16"
-                                       Margin="0,0,8,0"
-                                       VerticalAlignment="Center"/>
+                            <iconPacks:PackIconMaterial Kind="AlertOutline" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock Text="Changing paths will restart the application"
                                        FontSize="12"
                                        Foreground="{StaticResource TextSecondary}"
@@ -281,11 +339,15 @@
                     <DropShadowEffect Color="#1E293B" Opacity="0.08" BlurRadius="10" ShadowDepth="2"/>
                 </Border.Effect>
                 <StackPanel>
-                    <TextBlock Text="ℹ️ Default Locations"
-                               FontSize="16"
+                    <TextBlock FontSize="16"
                                FontWeight="Bold"
                                Foreground="{StaticResource TextPrimary}"
-                               Margin="0,0,0,12"/>
+                               Margin="0,0,0,12">
+                        <InlineUIContainer>
+                            <iconPacks:PackIconMaterial Kind="InformationOutline" Width="18" Height="18" VerticalAlignment="Center"/>
+                        </InlineUIContainer>
+                        <Run Text=" Default Locations"/>
+                    </TextBlock>
                     <TextBlock x:Name="DefaultPathsInfo"
                                FontSize="13"
                                Foreground="{StaticResource TextSecondary}"

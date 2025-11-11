@@ -24,9 +24,9 @@ public class ImagePathConverter : IValueConverter
             var bitmap = new BitmapImage();
             bitmap.BeginInit();
             bitmap.CacheOption = BitmapCacheOption.OnLoad; // Cache for performance
-            bitmap.CreateOptions = BitmapCreateOptions.DelayCreation; // Delay creation for faster loading
-            bitmap.DecodePixelWidth = 320; // Limit decode size for thumbnails (faster loading)
-            bitmap.DecodePixelHeight = 180;
+            bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; // Always load fresh
+            bitmap.DecodePixelWidth = 256; // Limit decode size for thumbnails (faster loading, less memory)
+            bitmap.DecodePixelHeight = 144; // Maintain aspect ratio approximately
             bitmap.UriSource = new Uri(path, UriKind.Absolute);
             bitmap.EndInit();
             bitmap.Freeze();

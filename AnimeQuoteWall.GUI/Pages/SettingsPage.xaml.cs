@@ -29,7 +29,8 @@ public partial class SettingsPage : Page
     public SettingsPage()
     {
         InitializeComponent();
-        Loaded += (s, e) => InitializeSettings();
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
 
     /// <summary>
@@ -42,11 +43,54 @@ public partial class SettingsPage : Page
     /// </summary>
     private void InitializeSettings()
     {
-        UpdatePathsUI();
-        UpdateThemeCombo();
-        UpdateDefaultsInfo();
-        UpdateBehaviorSettings();
-        UpdateMonitorSettings();
+        try
+        {
+            UpdatePathsUI();
+            UpdateThemeCombo();
+            UpdateDefaultsInfo();
+            UpdateBehaviorSettings();
+            UpdateMonitorSettings();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error initializing settings: {ex.Message}");
+            System.Windows.MessageBox.Show(
+                $"Failed to initialize settings page: {ex.Message}",
+                "Settings Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+    }
+
+    private void OnLoaded(object? sender, RoutedEventArgs e)
+    {
+        InitializeSettings();
+        try
+        {
+            SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
+        }
+        catch { /* ignore */ }
+    }
+
+    private void OnUnloaded(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
+        }
+        catch { /* ignore */ }
+    }
+
+    private void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
+    {
+        try
+        {
+            Dispatcher?.Invoke(() =>
+            {
+                RefreshMonitorList();
+            });
+        }
+        catch { /* ignore */ }
     }
 
     /// <summary>
@@ -56,11 +100,25 @@ public partial class SettingsPage : Page
     {
         try
         {
-            AutoRefreshPreviewCheckBox.IsChecked = AppConfiguration.AutoRefreshPreview;
-            ShowNotificationsCheckBox.IsChecked = AppConfiguration.ShowGenerationNotifications;
-            AutoSaveHistoryCheckBox.IsChecked = AppConfiguration.AutoSaveToHistory;
+            if (AutoRefreshPreviewCheckBox != null)
+                AutoRefreshPreviewCheckBox.IsChecked = AppConfiguration.AutoRefreshPreview;
+            
+            if (ShowNotificationsCheckBox != null)
+                ShowNotificationsCheckBox.IsChecked = AppConfiguration.ShowGenerationNotifications;
+            
+            if (AutoSaveHistoryCheckBox != null)
+                AutoSaveHistoryCheckBox.IsChecked = AppConfiguration.AutoSaveToHistory;
+            
+            if (EnableAnimatedApplyCheckBox != null)
+                EnableAnimatedApplyCheckBox.IsChecked = AppConfiguration.EnableAnimatedApply;
+            
+            if (EnablePerMonitorApplyCheckBox != null)
+                EnablePerMonitorApplyCheckBox.IsChecked = AppConfiguration.EnablePerMonitorApply;
         }
-        catch { /* ignore */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error updating behavior settings: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -70,11 +128,19 @@ public partial class SettingsPage : Page
     {
         try
         {
-            BackgroundsPathTextBox.Text = AppConfiguration.BackgroundsDirectory;
-            QuotesPathTextBox.Text = AppConfiguration.QuotesFilePath;
-            OutputPathTextBox.Text = AppConfiguration.CurrentWallpaperPath;
+            if (BackgroundsPathTextBox != null)
+                BackgroundsPathTextBox.Text = AppConfiguration.BackgroundsDirectory;
+            
+            if (QuotesPathTextBox != null)
+                QuotesPathTextBox.Text = AppConfiguration.QuotesFilePath;
+            
+            if (OutputPathTextBox != null)
+                OutputPathTextBox.Text = AppConfiguration.CurrentWallpaperPath;
         }
-        catch { /* ignore */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error updating paths UI: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -85,6 +151,9 @@ public partial class SettingsPage : Page
     {
         try
         {
+            if (DefaultPathsInfo == null)
+                return;
+                
             var baseDir = AppConfiguration.DefaultBaseDirectory;
             DefaultPathsInfo.Text =
                 $"Base: {baseDir}\n" +
@@ -92,7 +161,10 @@ public partial class SettingsPage : Page
                 $"Quotes: {Path.Combine(baseDir, "quotes.json")}\n" +
                 $"Output: {Path.Combine(baseDir, "current.png")}";
         }
-        catch { /* ignore */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error updating defaults info: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -102,13 +174,19 @@ public partial class SettingsPage : Page
     {
         try
         {
+            if (ThemeModeComboBox == null)
+                return;
+                
             var mode = AppConfiguration.ThemeMode;
             // Map theme mode to combo box index: 0=System, 1=Light, 2=Dark
             var index = mode.Equals("Light", StringComparison.OrdinalIgnoreCase) ? 1 :
                         mode.Equals("Dark", StringComparison.OrdinalIgnoreCase) ? 2 : 0;
             ThemeModeComboBox.SelectedIndex = index;
         }
-        catch { /* ignore */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error updating theme combo: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -278,14 +356,17 @@ public partial class SettingsPage : Page
         try
         {
             // Update monitor mode combo box
-            var mode = AppConfiguration.MultiMonitorMode;
-            var modeIndex = mode switch
+            if (MonitorModeComboBox != null)
             {
-                "All" => 1,
-                "Span" => 2,
-                _ => 0 // Primary
-            };
-            MonitorModeComboBox.SelectedIndex = modeIndex;
+                var mode = AppConfiguration.MultiMonitorMode;
+                var modeIndex = mode switch
+                {
+                    "All" => 1,
+                    "Span" => 2,
+                    _ => 0 // Primary
+                };
+                MonitorModeComboBox.SelectedIndex = modeIndex;
+            }
 
             // Refresh monitor list
             RefreshMonitorList();
@@ -303,6 +384,9 @@ public partial class SettingsPage : Page
     {
         try
         {
+            if (MonitorCheckboxesPanel == null)
+                return;
+                
             MonitorCheckboxesPanel.Children.Clear();
 
             var monitors = _monitorService.GetAllMonitors();
@@ -350,13 +434,16 @@ public partial class SettingsPage : Page
     {
         try
         {
-            if (MonitorModeComboBox.SelectedItem is ComboBoxItem item && item.Tag is string mode)
+            if (MonitorModeComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string mode)
             {
                 AppConfiguration.MultiMonitorMode = mode;
                 
                 // Update monitor selection panel visibility
                 // Only show checkboxes for "All" mode (per-monitor selection)
-                MonitorSelectionPanel.Visibility = mode == "All" ? Visibility.Visible : Visibility.Collapsed;
+                if (MonitorSelectionPanel != null)
+                {
+                    MonitorSelectionPanel.Visibility = mode == "All" ? Visibility.Visible : Visibility.Collapsed;
+                }
             }
         }
         catch (Exception ex)
@@ -421,6 +508,78 @@ public partial class SettingsPage : Page
         catch (Exception ex)
         {
             System.Windows.MessageBox.Show($"Failed to refresh monitors: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Handles Enable Animated Apply checkbox checked event.
+    /// </summary>
+    private void EnableAnimatedApplyCheckBox_Checked(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is System.Windows.Controls.CheckBox checkBox && checkBox.IsChecked == true)
+            {
+                AppConfiguration.EnableAnimatedApply = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error setting EnableAnimatedApply: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handles Enable Animated Apply checkbox unchecked event.
+    /// </summary>
+    private void EnableAnimatedApplyCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is System.Windows.Controls.CheckBox checkBox && checkBox.IsChecked == false)
+            {
+                AppConfiguration.EnableAnimatedApply = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error setting EnableAnimatedApply: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handles Enable Per-Monitor Apply checkbox checked event.
+    /// </summary>
+    private void EnablePerMonitorApplyCheckBox_Checked(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is System.Windows.Controls.CheckBox checkBox && checkBox.IsChecked == true)
+            {
+                AppConfiguration.EnablePerMonitorApply = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error setting EnablePerMonitorApply: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handles Enable Per-Monitor Apply checkbox unchecked event.
+    /// </summary>
+    private void EnablePerMonitorApplyCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is System.Windows.Controls.CheckBox checkBox && checkBox.IsChecked == false)
+            {
+                AppConfiguration.EnablePerMonitorApply = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error setting EnablePerMonitorApply: {ex.Message}");
         }
     }
 }

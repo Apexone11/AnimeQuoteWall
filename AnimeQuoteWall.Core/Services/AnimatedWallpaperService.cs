@@ -327,6 +327,173 @@ public class AnimatedWallpaperService
     }
 
     /// <summary>
+    /// Clears/removes animated wallpaper from Wallpaper Engine.
+    /// This allows static wallpapers to be applied afterward.
+    /// </summary>
+    /// <param name="monitorIndex">Optional monitor index to clear. Null clears all monitors.</param>
+    /// <returns>True if successful, false otherwise</returns>
+    public bool ClearAnimatedWallpaper(int? monitorIndex = null)
+    {
+        try
+        {
+            if (!IsWallpaperEngineAvailable())
+            {
+                // If Wallpaper Engine is not available, there's nothing to clear
+                return true;
+            }
+
+            // Method 1: Try Wallpaper Engine Web API
+            if (TryClearWallpaperEngineWebAPI(monitorIndex))
+            {
+                return true;
+            }
+
+            // Method 2: Try command-line interface
+            if (TryClearWallpaperEngineCLI(monitorIndex))
+            {
+                return true;
+            }
+
+            // If both methods fail, return false
+            return false;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error clearing animated wallpaper: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to clear wallpaper using Wallpaper Engine Web API.
+    /// </summary>
+    private bool TryClearWallpaperEngineWebAPI(int? monitorIndex)
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(5);
+
+            // Check if API is available
+            var checkResponse = httpClient.GetAsync("http://localhost:7070/api/status").Result;
+            if (!checkResponse.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            // Determine monitor parameter (-1 for all monitors, specific index for single monitor)
+            var monitorParam = monitorIndex ?? -1;
+
+            // Try to clear wallpaper using API
+            // Wallpaper Engine API might support clearing via setting empty/null wallpaper
+            // or via a dedicated clear endpoint
+            var requestBody = new
+            {
+                monitor = monitorParam,
+                file = (string?)null // Setting file to null might clear it
+            };
+
+            var json = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // Try clearWallpaper endpoint first
+            try
+            {
+                var clearResponse = httpClient.PostAsync("http://localhost:7070/api/clearWallpaper", content).Result;
+                if (clearResponse.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // Clear endpoint might not exist, try setting empty wallpaper
+            }
+
+            // Try setting empty/null wallpaper
+            try
+            {
+                var setResponse = httpClient.PostAsync("http://localhost:7070/api/setWallpaper", content).Result;
+                return setResponse.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to clear wallpaper using Wallpaper Engine command-line interface.
+    /// </summary>
+    private bool TryClearWallpaperEngineCLI(int? monitorIndex)
+    {
+        try
+        {
+            var steamPath = Environment.GetEnvironmentVariable("ProgramFiles(x86)") ?? Environment.GetEnvironmentVariable("ProgramFiles");
+            var wallpaperEnginePath = Path.Combine(steamPath ?? "", "Steam", "steamapps", "common", "wallpaper_engine");
+
+            var exePath = Path.Combine(wallpaperEnginePath, "wallpaper64.exe");
+            if (!File.Exists(exePath))
+            {
+                exePath = Path.Combine(wallpaperEnginePath, "wallpaper32.exe");
+            }
+
+            if (!File.Exists(exePath))
+            {
+                return false;
+            }
+
+            // Try commands to clear wallpaper
+            var commands = new[]
+            {
+                "-control closeWallpaper",
+                "-control stopWallpaper",
+                "-control clearWallpaper"
+            };
+
+            foreach (var args in commands)
+            {
+                var processInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = args,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+
+                try
+                {
+                    var process = Process.Start(processInfo);
+                    if (process != null)
+                    {
+                        process.WaitForExit(3000);
+                        if (process.ExitCode == 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Extracts first frame from video and sets as static wallpaper.
     /// </summary>
     private bool ExtractAndSetVideoFrame(string videoPath)

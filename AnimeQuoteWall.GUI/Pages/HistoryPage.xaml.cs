@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media.Imaging;
 using AnimeQuoteWall.Core.Configuration;
 using AnimeQuoteWall.Core.Models;
@@ -104,6 +105,9 @@ public partial class HistoryPage : Page
 
                     // Set items source to display in grid
                     HistoryItemsControl.ItemsSource = items;
+                    
+                    // Update grid columns based on available width
+                    UpdateHistoryGridColumns();
                 }
             });
         }
@@ -111,6 +115,61 @@ public partial class HistoryPage : Page
         {
             System.Windows.MessageBox.Show($"Failed to load history: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    /// <summary>
+    /// Updates the history grid columns based on available width.
+    /// </summary>
+    private void UpdateHistoryGridColumns()
+    {
+        try
+        {
+            if (HistoryItemsControl == null || HistoryScrollViewer == null)
+                return;
+
+            var itemCount = HistoryItemsControl.Items.Count;
+            if (itemCount == 0)
+                return;
+
+            // Get available width
+            var availableWidth = HistoryScrollViewer.ActualWidth;
+            if (availableWidth <= 0)
+                availableWidth = HistoryScrollViewer.Width;
+            if (availableWidth <= 0)
+                availableWidth = 800; // Fallback
+
+            // Calculate optimal columns based on width
+            // Each history card needs ~300-350px width (including margins)
+            int columns;
+            if (availableWidth >= 1400)
+                columns = 4; // 4 columns for very wide screens
+            else if (availableWidth >= 1000)
+                columns = 3; // 3 columns for wide screens
+            else if (availableWidth >= 700)
+                columns = 2; // 2 columns for medium screens
+            else
+                columns = 1; // 1 column for narrow screens
+
+            // Apply the updated panel
+            var itemsPanelTemplate = new ItemsPanelTemplate();
+            var factory = new FrameworkElementFactory(typeof(UniformGrid));
+            factory.SetValue(UniformGrid.ColumnsProperty, columns);
+            factory.SetValue(UniformGrid.RowsProperty, 0);
+            itemsPanelTemplate.VisualTree = factory;
+            HistoryItemsControl.ItemsPanel = itemsPanelTemplate;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"UpdateHistoryGridColumns error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handles ScrollViewer size changes to update grid columns.
+    /// </summary>
+    private void HistoryScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        UpdateHistoryGridColumns();
     }
 
     /// <summary>

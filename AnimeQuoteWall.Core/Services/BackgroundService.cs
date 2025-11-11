@@ -37,10 +37,11 @@ public class BackgroundService : IBackgroundService
     /// 
     /// Searches for files with supported image extensions (.jpg, .jpeg, .png, .bmp, .gif)
     /// and validates them to ensure they are actual image files.
+    /// Removes duplicates based on file content hash (MD5).
     /// 
     /// </summary>
     /// <param name="backgroundsDirectory">Directory to search for images</param>
-    /// <returns>List of paths to valid image files</returns>
+    /// <returns>List of paths to valid image files (deduplicated)</returns>
     public List<string> GetAllBackgroundImages(string backgroundsDirectory)
     {
         // Return empty list if directory doesn't exist
@@ -60,7 +61,50 @@ public class BackgroundService : IBackgroundService
         }
 
         // Filter to only valid image files
-        return images.Where(IsValidImageFile).ToList();
+        var validImages = images.Where(IsValidImageFile).ToList();
+        
+        // Deduplicate by file content hash (keep first occurrence)
+        return DeduplicateByContentHash(validImages);
+    }
+
+    /// <summary>
+    /// Removes duplicate images based on file content hash (MD5).
+    /// Keeps the first occurrence of each unique file.
+    /// </summary>
+    /// <param name="imagePaths">List of image file paths</param>
+    /// <returns>Deduplicated list of image paths</returns>
+    private List<string> DeduplicateByContentHash(List<string> imagePaths)
+    {
+        if (imagePaths == null || imagePaths.Count == 0)
+            return new List<string>();
+
+        var seenHashes = new HashSet<string>();
+        var deduplicated = new List<string>();
+
+        foreach (var imagePath in imagePaths)
+        {
+            try
+            {
+                // Compute MD5 hash of file content
+                using var md5 = System.Security.Cryptography.MD5.Create();
+                using var stream = File.OpenRead(imagePath);
+                var hashBytes = md5.ComputeHash(stream);
+                var hashString = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+
+                // Only add if we haven't seen this hash before
+                if (seenHashes.Add(hashString))
+                {
+                    deduplicated.Add(imagePath);
+                }
+            }
+            catch
+            {
+                // If we can't read the file, skip it (might be locked or corrupted)
+                continue;
+            }
+        }
+
+        return deduplicated;
     }
 
     /// <summary>

@@ -26,10 +26,10 @@ public class VideoThumbnailService
     /// Gets or generates a thumbnail for a video file.
     /// </summary>
     /// <param name="videoPath">Path to the video file</param>
-    /// <param name="width">Thumbnail width (default: 320)</param>
-    /// <param name="height">Thumbnail height (default: 180)</param>
+    /// <param name="width">Thumbnail width (default: 256)</param>
+    /// <param name="height">Thumbnail height (default: 144)</param>
     /// <returns>Path to the thumbnail image, or null if generation failed</returns>
-    public string? GetOrCreateThumbnail(string videoPath, int width = 320, int height = 180)
+    public string? GetOrCreateThumbnail(string videoPath, int width = 256, int height = 144)
     {
         if (string.IsNullOrWhiteSpace(videoPath) || !File.Exists(videoPath))
             return null;
@@ -49,7 +49,13 @@ public class VideoThumbnailService
             }
 
             // Generate thumbnail using ImageMagick
-            return GenerateThumbnail(videoPath, thumbnailPath, width, height);
+            var result = GenerateThumbnail(videoPath, thumbnailPath, width, height);
+            if (result != null)
+            {
+                // Enforce cache size limit after creating a new thumbnail
+                EnforceCacheSizeLimit(200 * 1024 * 1024); // 200 MB
+            }
+            return result;
         }
         catch (Exception ex)
         {
@@ -77,14 +83,14 @@ public class VideoThumbnailService
             var frame = collection[frameIndex];
 
             // Resize to thumbnail dimensions with high quality
-            frame.Resize(new MagickGeometry(width, height)
+            frame.Resize(new MagickGeometry((uint)width, (uint)height)
             {
                 FillArea = true,
                 IgnoreAspectRatio = false
             });
 
-            // Enhance quality
-            frame.Quality = 90;
+            // Enhance quality (slightly reduced to save disk)
+            frame.Quality = 80;
             frame.FilterType = FilterType.Lanczos;
             frame.Write(thumbnailPath);
 
@@ -96,12 +102,12 @@ public class VideoThumbnailService
             try
             {
                 using var image = new MagickImage(videoPath);
-                image.Resize(new MagickGeometry(width, height) 
+                image.Resize(new MagickGeometry((uint)width, (uint)height) 
                 { 
                     FillArea = true,
                     IgnoreAspectRatio = false
                 });
-                image.Quality = 90;
+                image.Quality = 80;
                 image.FilterType = FilterType.Lanczos;
                 image.Write(thumbnailPath);
                 return thumbnailPath;
@@ -110,6 +116,47 @@ public class VideoThumbnailService
             {
                 return null;
             }
+        }
+    }
+
+    /// <summary>
+    /// Enforces a maximum total size for the thumbnails cache directory by deleting oldest files.
+    /// </summary>
+    /// <param name="maxBytes">Maximum allowed total size in bytes</param>
+    private void EnforceCacheSizeLimit(long maxBytes)
+    {
+        try
+        {
+            if (!Directory.Exists(_thumbnailsDirectory))
+                return;
+
+            var files = new DirectoryInfo(_thumbnailsDirectory).GetFiles("*.jpg");
+            long total = 0;
+            foreach (var f in files)
+                total += f.Length;
+
+            if (total <= maxBytes)
+                return;
+
+            // Delete oldest first until under limit
+            foreach (var file in files.OrderBy(f => f.LastWriteTime))
+            {
+                try
+                {
+                    file.Delete();
+                    total -= file.Length;
+                    if (total <= maxBytes)
+                        break;
+                }
+                catch
+                {
+                    // Ignore deletion failures
+                }
+            }
+        }
+        catch
+        {
+            // Ignore enforcement errors
         }
     }
 

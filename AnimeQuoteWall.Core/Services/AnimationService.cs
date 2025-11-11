@@ -162,7 +162,7 @@ public class AnimationService
                 image = new MagickImage(framePath);
 
                 // Set frame delay for GIF animation timing
-                image.AnimationDelay = delayInHundredths;
+                image.AnimationDelay = (uint)delayInHundredths;
 
                 // Set quality to reduce file size (90 is a good balance)
                 image.Quality = 90;

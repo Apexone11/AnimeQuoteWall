@@ -2,7 +2,7 @@
 
 A powerful desktop application that generates beautiful custom wallpapers featuring anime quotes. Built with .NET 8 and WPF, featuring Wallpaper Engine-inspired functionality including playlists, multi-monitor support, performance optimization, and code protection for Steam release.
 
-![Version](https://img.shields.io/badge/version-1.3.0-blue)
+![Version](https://img.shields.io/badge/version-1.3.1-blue)
 ![.NET](https://img.shields.io/badge/.NET-8.0-purple)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -58,6 +58,21 @@ A powerful desktop application that generates beautiful custom wallpapers featur
 - **Version Detection**: Automatic Windows version detection
 - **Fallback Mechanisms**: Graceful degradation on older systems
 - **Hardware Compatibility**: Works on various hardware configurations
+
+## 🆕 What's New in v1.3.1
+
+### Bug Fixes & Stability
+- **🔧 Settings Page Fixed**: Fixed critical crash when opening Settings page
+- **🛡️ Improved Error Handling**: Better exception handling with user-friendly messages and automatic logging
+- **📚 Library Pages Fixed**: Fixed Image Library and Animated Library pages not loading properly
+- **⚡ Async Loading**: Implemented async loading for better performance and responsiveness
+- **🎨 UI Fixes**: Fixed XAML styling errors that caused application crashes
+
+### Improvements
+- **📊 Loading Indicators**: Added loading indicators and empty state messages for better UX
+- **🔍 Error Logging**: Automatic error logging to help diagnose issues
+- **⚙️ Experimental Features**: Added Settings toggles for experimental features
+- **📦 Dependency Updates**: Updated all NuGet packages to latest compatible versions
 
 ## 🆕 What's New in v1.3.0
 
@@ -384,7 +399,8 @@ See [CONTRIBUTING.md](AnimeQuoteWall.CLI/CONTRIBUTING.md) for guidelines.
 
 ## 🐛 Known Issues
 
-- None currently reported
+- **Experimental Features**: Animated wallpaper apply and per-monitor wallpaper apply are currently disabled by default. Enable them in Settings → Behavior Settings → Experimental Features if you want to test them.
+- **Multi-Monitor Different Images**: The feature to generate different images for each monitor is temporarily disabled due to stability issues. It will be re-enabled in a future update.
 
 ## 📝 License
 
@@ -410,6 +426,6 @@ See [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md) for release preparati
 
 ⭐ **Star this repo if you love anime quotes!** ⭐
 
-**Version**: 1.3.0  
+**Version**: 1.3.1  
 **Last Updated**: 2025-01-27  
 **Status**: Production Ready | Free & Open Source

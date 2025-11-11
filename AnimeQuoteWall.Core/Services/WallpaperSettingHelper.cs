@@ -22,8 +22,9 @@ public static class WallpaperSettingHelper
     /// Sets the desktop wallpaper with comprehensive error handling and compatibility checks.
     /// </summary>
     /// <param name="imagePath">Path to the wallpaper image file</param>
+    /// <param name="monitorIndex">Optional monitor index for per-monitor wallpaper. Null uses default (all monitors or primary)</param>
     /// <returns>True if successful, false otherwise</returns>
-    public static bool SetWallpaper(string imagePath)
+    public static bool SetWallpaper(string imagePath, int? monitorIndex = null)
     {
         if (string.IsNullOrWhiteSpace(imagePath))
             return false;
@@ -47,7 +48,27 @@ public static class WallpaperSettingHelper
                 return false;
             }
 
-            // Set wallpaper using Windows API
+            // Try per-monitor wallpaper first (Windows 8+)
+            if (monitorIndex.HasValue)
+            {
+                try
+                {
+                    using var perMonitorService = new PerMonitorWallpaperService();
+                    if (perMonitorService.IsAvailable)
+                    {
+                        if (perMonitorService.SetWallpaperOnMonitorByIndex(monitorIndex.Value, fullPath))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Fall back to standard API
+                }
+            }
+
+            // Set wallpaper using Windows API (applies to primary monitor or all monitors)
             // This API works on Windows 7, 8, 8.1, 10, and 11
             var result = SystemParametersInfo(
                 SPI_SETDESKWALLPAPER,

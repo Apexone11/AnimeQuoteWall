@@ -38,6 +38,13 @@ public class UserSettings
     // Multi-monitor settings
     public string MultiMonitorMode { get; set; } = "Primary"; // "Primary", "All", "Span"
     public List<int> EnabledMonitorIndices { get; set; } = new(); // List of monitor indices to use (empty = all)
+    
+    // Per-monitor wallpaper paths (monitor index -> wallpaper path)
+    public Dictionary<int, string> PerMonitorWallpaperPaths { get; set; } = new();
+    
+    // Feature flags
+    public bool EnableAnimatedApply { get; set; } = false; // Temporarily disabled for stability
+    public bool EnablePerMonitorApply { get; set; } = false; // Temporarily disabled for stability
 }
 
 /// <summary>
@@ -594,6 +601,152 @@ public class AppConfiguration
     {
         get { LoadSettings(); return _userSettings?.EnabledMonitorIndices ?? new List<int>(); }
         set { LoadSettings(); if (_userSettings != null) { _userSettings.EnabledMonitorIndices = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets whether animated wallpaper apply is enabled.
+    /// Temporarily disabled by default for stability.
+    /// </summary>
+    public static bool EnableAnimatedApply
+    {
+        get { LoadSettings(); return _userSettings?.EnableAnimatedApply ?? false; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.EnableAnimatedApply = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets whether per-monitor wallpaper apply is enabled.
+    /// Temporarily disabled by default for stability.
+    /// </summary>
+    public static bool EnablePerMonitorApply
+    {
+        get { LoadSettings(); return _userSettings?.EnablePerMonitorApply ?? false; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.EnablePerMonitorApply = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets the wallpaper path for a specific monitor.
+    /// </summary>
+    /// <param name="monitorIndex">Monitor index (0-based)</param>
+    /// <returns>Path to the wallpaper file for that monitor, or null if not set</returns>
+    public static string? GetMonitorWallpaperPath(int monitorIndex)
+    {
+        LoadSettings();
+        if (_userSettings?.PerMonitorWallpaperPaths != null && _userSettings.PerMonitorWallpaperPaths.ContainsKey(monitorIndex))
+        {
+            return _userSettings.PerMonitorWallpaperPaths[monitorIndex];
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Sets the wallpaper path for a specific monitor.
+    /// </summary>
+    /// <param name="monitorIndex">Monitor index (0-based)</param>
+    /// <param name="wallpaperPath">Path to the wallpaper file</param>
+    public static void SetMonitorWallpaperPath(int monitorIndex, string wallpaperPath)
+    {
+        LoadSettings();
+        if (_userSettings != null)
+        {
+            if (_userSettings.PerMonitorWallpaperPaths == null)
+            {
+                _userSettings.PerMonitorWallpaperPaths = new Dictionary<int, string>();
+            }
+            
+            // If wallpaperPath is empty or null, remove the key instead of storing empty string
+            if (string.IsNullOrWhiteSpace(wallpaperPath))
+            {
+                _userSettings.PerMonitorWallpaperPaths.Remove(monitorIndex);
+            }
+            else
+            {
+                _userSettings.PerMonitorWallpaperPaths[monitorIndex] = wallpaperPath;
+            }
+            
+            SaveSettings();
+        }
+    }
+    
+    /// <summary>
+    /// Clears the wallpaper path for a specific monitor.
+    /// </summary>
+    /// <param name="monitorIndex">Monitor index (0-based)</param>
+    public static void ClearMonitorWallpaperPath(int monitorIndex)
+    {
+        LoadSettings();
+        if (_userSettings?.PerMonitorWallpaperPaths != null)
+        {
+            _userSettings.PerMonitorWallpaperPaths.Remove(monitorIndex);
+            SaveSettings();
+        }
+    }
+
+    /// <summary>
+    /// Gets all per-monitor wallpaper paths.
+    /// </summary>
+    /// <returns>Dictionary mapping monitor indices to wallpaper paths</returns>
+    public static Dictionary<int, string> GetAllMonitorWallpaperPaths()
+    {
+        LoadSettings();
+        return _userSettings?.PerMonitorWallpaperPaths ?? new Dictionary<int, string>();
+    }
+
+    /// <summary>
+    /// Gets the path for a monitor-specific wallpaper file.
+    /// </summary>
+    /// <param name="monitorIndex">Monitor index (0-based)</param>
+    /// <returns>Path to store the wallpaper file for that monitor</returns>
+    public static string GetMonitorWallpaperFilePath(int monitorIndex)
+    {
+        LoadSettings();
+        var baseDir = DefaultBaseDirectory;
+        var custom = _userSettings?.CustomOutputPath;
+        
+        if (!string.IsNullOrWhiteSpace(custom))
+        {
+            var fullPath = Path.GetFullPath(custom);
+            if (IsPathSafe(fullPath))
+            {
+                var hasExtension = Path.HasExtension(fullPath);
+                if (!hasExtension || Directory.Exists(fullPath))
+                {
+                    return Path.Combine(fullPath, $"monitor_{monitorIndex}.png");
+                }
+                var dir = Path.GetDirectoryName(fullPath);
+                return Path.Combine(dir ?? DefaultBaseDirectory, $"monitor_{monitorIndex}.png");
+            }
+        }
+        
+        return Path.Combine(baseDir, $"monitor_{monitorIndex}.png");
+    }
+
+    /// <summary>
+    /// Gets the path for a monitor-specific previous wallpaper file.
+    /// </summary>
+    /// <param name="monitorIndex">Monitor index (0-based)</param>
+    /// <returns>Path to store the previous wallpaper file for that monitor</returns>
+    public static string GetMonitorPreviousWallpaperFilePath(int monitorIndex)
+    {
+        LoadSettings();
+        var baseDir = DefaultBaseDirectory;
+        var custom = _userSettings?.CustomOutputPath;
+        
+        if (!string.IsNullOrWhiteSpace(custom))
+        {
+            var fullPath = Path.GetFullPath(custom);
+            if (IsPathSafe(fullPath))
+            {
+                var hasExtension = Path.HasExtension(fullPath);
+                if (!hasExtension || Directory.Exists(fullPath))
+                {
+                    return Path.Combine(fullPath, $"monitor_{monitorIndex}_previous.png");
+                }
+                var dir = Path.GetDirectoryName(fullPath);
+                return Path.Combine(dir ?? DefaultBaseDirectory, $"monitor_{monitorIndex}_previous.png");
+            }
+        }
+        
+        return Path.Combine(baseDir, $"monitor_{monitorIndex}_previous.png");
     }
 
     /// <summary>

@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -37,6 +40,11 @@ public partial class BackgroundsPage : Page
     /// Service for managing background images.
     /// </summary>
     private readonly IBackgroundService _backgroundService;
+    
+    /// <summary>
+    /// Cancellation token source for async operations.
+    /// </summary>
+    private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>
     /// Initializes a new instance of the BackgroundsPage.
@@ -45,54 +53,161 @@ public partial class BackgroundsPage : Page
     {
         InitializeComponent();
         _backgroundService = new BackgroundService();
-        Loaded += (s, e) => LoadBackgrounds();
+        Loaded += async (s, e) => await LoadBackgroundsAsync();
+        Unloaded += (s, e) => _cancellationTokenSource?.Cancel();
     }
 
     /// <summary>
-    /// Loads all background images from the backgrounds directory and displays them.
+    /// Loads all background images from the backgrounds directory and displays them asynchronously.
     /// Updates the background count display.
     /// </summary>
-    private void LoadBackgrounds()
+    private async Task LoadBackgroundsAsync()
     {
+        // Cancel any previous loading operation
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _cancellationTokenSource.Token;
+
         try
         {
-            // Get all background images from directory
-            var backgrounds = _backgroundService.GetAllBackgroundImages(AppConfiguration.BackgroundsDirectory);
-            
-            // Create items with image paths and file info
-            var items = backgrounds.Select(path =>
+            // Show loading indicator
+            await Dispatcher.InvokeAsync(() =>
             {
-                var fileInfo = new FileInfo(path);
-                var sizeInMB = fileInfo.Length / (1024.0 * 1024.0);
-                return new BackgroundImageItem
-                {
-                    FileName = Path.GetFileName(path),
-                    ImagePath = path,
-                    FileSize = sizeInMB < 1 
-                        ? $"{(fileInfo.Length / 1024.0):F1} KB" 
-                        : $"{sizeInMB:F2} MB"
-                };
-            }).ToList();
-            
-            // Update list box with background items
-            BackgroundsListBox.ItemsSource = null;
-            BackgroundsListBox.ItemsSource = items;
+                if (LoadingIndicator != null)
+                    LoadingIndicator.Visibility = Visibility.Visible;
+                if (EmptyStateBorder != null)
+                    EmptyStateBorder.Visibility = Visibility.Collapsed;
+                if (BackgroundsListBox != null)
+                    BackgroundsListBox.ItemsSource = null;
+                UpdateCount(0);
+            });
 
-            // Update background count text
-            var backgroundCountRun = (Run)BackgroundCountText.Inlines.FirstOrDefault(i => i is Run r && r.Name == "BackgroundCountRun");
-            if (backgroundCountRun != null)
+            // Load file list on background thread
+            List<string> backgrounds;
+            try
             {
-                backgroundCountRun.Text = $"{backgrounds.Count}";
+                backgrounds = await Task.Run(() =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return _backgroundService.GetAllBackgroundImages(AppConfiguration.BackgroundsDirectory);
+                }, cancellationToken);
             }
-            else
+            catch (OperationCanceledException)
             {
-                BackgroundCountText.Text = $"Total Backgrounds: {backgrounds.Count}";
+                return; // User navigated away or cancelled
             }
+
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            // Create items with image paths and file info (on background thread for large lists)
+            List<BackgroundImageItem> items;
+            try
+            {
+                items = await Task.Run(() =>
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    return backgrounds.Select(path =>
+                    {
+                        try
+                        {
+                            if (!File.Exists(path))
+                                return null;
+
+                            var fileInfo = new FileInfo(path);
+                            var sizeInMB = fileInfo.Length / (1024.0 * 1024.0);
+                            return new BackgroundImageItem
+                            {
+                                FileName = Path.GetFileName(path),
+                                ImagePath = path,
+                                FileSize = sizeInMB < 1 
+                                    ? $"{(fileInfo.Length / 1024.0):F1} KB" 
+                                    : $"{sizeInMB:F2} MB"
+                            };
+                        }
+                        catch
+                        {
+                            // Skip files that can't be accessed
+                            return null;
+                        }
+                    }).Where(item => item != null).Cast<BackgroundImageItem>().ToList();
+                }, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            // Update UI on UI thread
+            await Dispatcher.InvokeAsync(() =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
+                if (LoadingIndicator != null)
+                    LoadingIndicator.Visibility = Visibility.Collapsed;
+
+                if (items.Count == 0)
+                {
+                    if (EmptyStateBorder != null)
+                        EmptyStateBorder.Visibility = Visibility.Visible;
+                    if (BackgroundsListBox != null)
+                        BackgroundsListBox.ItemsSource = null;
+                }
+                else
+                {
+                    if (EmptyStateBorder != null)
+                        EmptyStateBorder.Visibility = Visibility.Collapsed;
+                    if (BackgroundsListBox != null)
+                        BackgroundsListBox.ItemsSource = items;
+                }
+
+                UpdateCount(items.Count);
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            // User navigated away - ignore
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"Failed to load backgrounds: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            await Dispatcher.InvokeAsync(() =>
+            {
+                if (LoadingIndicator != null)
+                    LoadingIndicator.Visibility = Visibility.Collapsed;
+                if (EmptyStateBorder != null)
+                    EmptyStateBorder.Visibility = Visibility.Visible;
+                
+                System.Windows.MessageBox.Show(
+                    $"Failed to load backgrounds: {ex.Message}\n\nPlease check that the backgrounds folder exists and is accessible.",
+                    "Error Loading Backgrounds",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            });
         }
+    }
+
+    /// <summary>
+    /// Updates the background count display.
+    /// </summary>
+    private void UpdateCount(int count)
+    {
+        try
+        {
+            var backgroundCountRun = (Run)BackgroundCountText.Inlines.FirstOrDefault(i => i is Run r && r.Name == "BackgroundCountRun");
+            if (backgroundCountRun != null)
+            {
+                backgroundCountRun.Text = $"{count}";
+            }
+            else
+            {
+                BackgroundCountText.Text = $"Total Backgrounds: {count}";
+            }
+        }
+        catch { /* ignore */ }
     }
 
     /// <summary>
@@ -135,7 +250,7 @@ public partial class BackgroundsPage : Page
             }
 
             // Reload backgrounds to show new additions
-            LoadBackgrounds();
+            _ = LoadBackgroundsAsync();
 
             if (copiedCount > 0)
             {
@@ -168,7 +283,7 @@ public partial class BackgroundsPage : Page
                 {
                     // Delete file and reload list
                     File.Delete(fullPath);
-                    LoadBackgrounds();
+                    _ = LoadBackgroundsAsync();
                     System.Windows.MessageBox.Show("Background deleted.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -183,4 +298,5 @@ public partial class BackgroundsPage : Page
         }
     }
 }
+
 
