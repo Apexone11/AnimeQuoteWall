@@ -1,0 +1,196 @@
+<Page x:Class="AnimeQuoteWall.GUI.Pages.QuotesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Quotes">
+    <Grid Margin="20,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" MinHeight="300"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Quotes Header with Actions -->
+        <DockPanel Grid.Row="0"
+                   Margin="0,0,0,12">
+            <TextBlock Text="Quote Library"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       Foreground="{StaticResource TextPrimary}"
+                       VerticalAlignment="Center"/>
+            <StackPanel DockPanel.Dock="Right"
+                        Orientation="Horizontal">
+                <Button x:Name="AddQuoteButton"
+                        MinWidth="140"
+                        Height="40"
+                        Click="AddQuoteButton_Click"
+                        Style="{StaticResource ModernPrimaryButton}"
+                        Margin="0,0,10,0"
+                        Padding="14,9">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="➕" FontSize="15" Margin="0,0,6,0" FontFamily="Segoe UI Emoji"/>
+                        <TextBlock Text="Add Quote" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="DeleteQuoteButton"
+                        MinWidth="110"
+                        Height="40"
+                        Click="DeleteQuoteButton_Click"
+                        Style="{StaticResource ModernDangerButton}"
+                        Margin="10,0,0,0"
+                        Padding="14,9">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🗑" FontSize="15" Margin="0,0,6,0" FontFamily="Segoe UI Emoji"/>
+                        <TextBlock Text="Delete" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Filter Controls -->
+        <StackPanel Grid.Row="1" 
+                    Orientation="Horizontal" 
+                    Margin="0,0,0,12"
+                    HorizontalAlignment="Left">
+            <ComboBox x:Name="CategoryFilterComboBox"
+                      Width="180"
+                      Height="36"
+                      Margin="0,0,12,0"
+                      SelectionChanged="CategoryFilterComboBox_SelectionChanged"
+                      Style="{StaticResource ModernComboBox}">
+                <ComboBoxItem Content="All Categories" Tag=""/>
+            </ComboBox>
+            <ComboBox x:Name="SortComboBox"
+                      Width="150"
+                      Height="36"
+                      Margin="0,0,12,0"
+                      SelectionChanged="SortComboBox_SelectionChanged"
+                      Style="{StaticResource ModernComboBox}">
+                <ComboBoxItem Content="Default" Tag="Default"/>
+                <ComboBoxItem Content="Rating" Tag="Rating"/>
+                <ComboBoxItem Content="Favorites First" Tag="Favorites"/>
+            </ComboBox>
+            <CheckBox x:Name="FavoritesOnlyCheckBox"
+                      Content="Favorites Only"
+                      VerticalAlignment="Center"
+                      Checked="FavoritesOnlyCheckBox_Checked"
+                      Unchecked="FavoritesOnlyCheckBox_Unchecked"
+                      Margin="0,0,12,0"/>
+        </StackPanel>
+
+        <!-- Quotes List -->
+        <Border Grid.Row="2"
+                Background="{StaticResource HoverBackground}"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Margin="0,0,0,12"
+                Padding="8">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ListBox x:Name="QuotesListBox"
+                         SelectionMode="Single"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         VirtualizingPanel.IsVirtualizing="True"
+                         VirtualizingPanel.VirtualizationMode="Recycling"
+                         ScrollViewer.CanContentScroll="True">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="3,4"
+                                    Padding="14"
+                                    Background="{StaticResource CardBackground}"
+                                    BorderBrush="{StaticResource BorderColor}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Cursor="Hand">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#1E293B" Opacity="0.04" BlurRadius="6" ShadowDepth="1"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <Button Click="FavoriteButton_Click"
+                                                Tag="{Binding}"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                FontSize="18"
+                                                Padding="4"
+                                                Cursor="Hand"
+                                                ToolTip="Toggle Favorite">
+                                            <TextBlock>
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="🤍"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                                <Setter Property="Text" Value="❤️"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Button>
+                                        <StackPanel Orientation="Horizontal" Margin="8,0,0,0">
+                                            <TextBlock Text="★" FontSize="14" Foreground="{StaticResource TextTertiary}" Margin="0,0,2,0"/>
+                                            <TextBlock Text="{Binding Rating}" FontSize="12" Foreground="{StaticResource TextTertiary}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Text}"
+                                               FontSize="15"
+                                               FontWeight="Medium"
+                                               TextWrapping="Wrap"
+                                               Foreground="{StaticResource TextPrimary}"
+                                               LineHeight="24"
+                                               Margin="0,0,0,10"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="— "
+                                                   FontSize="13"
+                                                   Foreground="{StaticResource TextSecondary}"
+                                                   FontStyle="Italic"/>
+                                        <TextBlock Text="{Binding Character}"
+                                                   FontSize="13"
+                                                   Foreground="{StaticResource TextSecondary}"
+                                                   FontWeight="SemiBold"
+                                                   FontStyle="Italic"/>
+                                        <TextBlock Text=" · "
+                                                   FontSize="13"
+                                                   Foreground="{StaticResource TextTertiary}"
+                                                   Margin="4,0,4,0"/>
+                                        <TextBlock Text="{Binding Anime}"
+                                                   FontSize="13"
+                                                   Foreground="{StaticResource TextTertiary}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <ItemsControl ItemsSource="{Binding Categories}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{StaticResource PrimaryColor}"
+                                                            CornerRadius="4"
+                                                            Padding="6,2"
+                                                            Margin="0,0,4,0">
+                                                        <TextBlock Text="{Binding}" FontSize="10" Foreground="White"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Quote Count -->
+        <TextBlock Grid.Row="3"
+                   x:Name="QuoteCountTextBottom"
+                   FontSize="14"
+                   Foreground="{StaticResource TextSecondary}"
+                   FontWeight="Medium"
+                   Margin="0,4,0,0">
+            <Run Text="Total Quotes: "/>
+            <Run x:Name="QuoteCountRun" Text="0" FontWeight="Bold"/>
+        </TextBlock>
+    </Grid>
+</Page>
+

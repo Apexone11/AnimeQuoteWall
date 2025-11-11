@@ -27,4 +27,13 @@
     <Resource Include="Resources\appicon.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Resources\ffmpeg\ffmpeg.exe" Condition="Exists('Resources\ffmpeg\ffmpeg.exe')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\ffmpeg\README.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

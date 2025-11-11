@@ -17,6 +17,27 @@ public class UserSettings
 
     public string? CustomOutputPath { get; set; } // Custom output path for the wallpaper
     public string ThemeMode { get; set; } = "System"; // "System" | "Light" | "Dark"
+
+    // Animation defaults
+    public int AnimationFps { get; set; } = 24;
+    public int AnimationDurationSec { get; set; } = 6;
+    public string? LastExportDirectory { get; set; }
+    public string? FfmpegPath { get; set; }
+
+    // UI and behavior settings
+    public bool AutoRefreshPreview { get; set; } = true; // Auto-refresh preview after generation
+    public bool ShowGenerationNotifications { get; set; } = true; // Show notifications on generation
+    public bool AutoSaveToHistory { get; set; } = true; // Automatically save to history
+
+    // Playlist settings
+    public string? ActivePlaylistId { get; set; } // ID of the currently active playlist
+
+    // Performance settings
+    public bool AutoPauseOnFullscreen { get; set; } = true; // Automatically pause playlists when fullscreen apps are running
+
+    // Multi-monitor settings
+    public string MultiMonitorMode { get; set; } = "Primary"; // "Primary", "All", "Span"
+    public List<int> EnabledMonitorIndices { get; set; } = new(); // List of monitor indices to use (empty = all)
 }
 
 /// <summary>
@@ -69,6 +90,16 @@ public class AppConfiguration
     /// Gets the path to the frames directory.
     /// </summary>
     public static string FramesDirectory => Path.Combine(DefaultBaseDirectory, "frames");
+
+    /// <summary>
+    /// Gets the directory for wallpaper history.
+    /// </summary>
+    public static string HistoryDirectory => Path.Combine(DefaultBaseDirectory, "history");
+
+    /// <summary>
+    /// Gets the directory for playlists.
+    /// </summary>
+    public static string PlaylistsDirectory => Path.Combine(DefaultBaseDirectory, "playlists");
 
     /// <summary>
     /// Gets the path to the quotes JSON file (user-configurable).
@@ -124,6 +155,40 @@ public class AppConfiguration
     }
 
     /// <summary>
+    /// Gets the path to the previous wallpaper file.
+    /// </summary>
+    public static string PreviousWallpaperPath
+    {
+        get
+        {
+            LoadSettings();
+
+            var defaultPath = Path.Combine(DefaultBaseDirectory, "previous.png");
+            var custom = _userSettings?.CustomOutputPath;
+
+            if (!string.IsNullOrWhiteSpace(custom))
+            {
+                var fullPath = Path.GetFullPath(custom);
+
+                if (!IsPathSafe(fullPath))
+                    return defaultPath;
+
+                var hasExtension = Path.HasExtension(fullPath);
+                if (!hasExtension || Directory.Exists(fullPath))
+                {
+                    return Path.Combine(fullPath, "previous.png");
+                }
+
+                var dir = Path.GetDirectoryName(fullPath);
+                var fileName = Path.GetFileNameWithoutExtension(fullPath) + "_previous" + Path.GetExtension(fullPath);
+                return Path.Combine(dir ?? DefaultBaseDirectory, fileName);
+            }
+
+            return defaultPath;
+        }
+    }
+
+    /// <summary>
     /// Gets the supported image file extensions.
     /// </summary>
     public static string[] SupportedImageExtensions => new[]
@@ -150,6 +215,58 @@ public class AppConfiguration
                 SaveSettings();
             }
         }
+    }
+
+    // Animation defaults and export settings
+    public static int AnimationFps
+    {
+        get { LoadSettings(); return _userSettings?.AnimationFps ?? 24; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.AnimationFps = value; SaveSettings(); } }
+    }
+
+    public static int AnimationDurationSec
+    {
+        get { LoadSettings(); return _userSettings?.AnimationDurationSec ?? 6; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.AnimationDurationSec = value; SaveSettings(); } }
+    }
+
+    public static string? LastExportDirectory
+    {
+        get { LoadSettings(); return _userSettings?.LastExportDirectory; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.LastExportDirectory = value; SaveSettings(); } }
+    }
+
+    public static string? FfmpegPath
+    {
+        get { LoadSettings(); return _userSettings?.FfmpegPath; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.FfmpegPath = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets whether to auto-refresh preview after generation.
+    /// </summary>
+    public static bool AutoRefreshPreview
+    {
+        get { LoadSettings(); return _userSettings?.AutoRefreshPreview ?? true; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.AutoRefreshPreview = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets whether to show notifications on generation.
+    /// </summary>
+    public static bool ShowGenerationNotifications
+    {
+        get { LoadSettings(); return _userSettings?.ShowGenerationNotifications ?? true; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.ShowGenerationNotifications = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets whether to automatically save to history.
+    /// </summary>
+    public static bool AutoSaveToHistory
+    {
+        get { LoadSettings(); return _userSettings?.AutoSaveToHistory ?? true; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.AutoSaveToHistory = value; SaveSettings(); } }
     }
 
     /// <summary>
@@ -204,20 +321,34 @@ public class AppConfiguration
 
     /// <summary>
     /// Reads the Windows AppsUseLightTheme setting. Returns true when system theme is dark.
+    /// Includes compatibility checks for older Windows versions.
     /// </summary>
     private static bool GetSystemThemeIsDark()
     {
         try
         {
+            // Check if registry theme detection is supported on this Windows version
+            // Windows 10+ has AppsUseLightTheme, older versions don't
+            var version = Environment.OSVersion.Version;
+            if (version.Major < 10)
+            {
+                // Windows 7/8/8.1: Default to light theme (no dark mode support)
+                return false;
+            }
+
             using var key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
             if (key == null) return false;
+            
             var valueObj = key.GetValue("AppsUseLightTheme");
+            if (valueObj == null) return false;
+            
             if (valueObj is int i) return i == 0; // 0 = dark, 1 = light
             if (valueObj is long l) return l == 0;
             return false;
         }
         catch
         {
+            // If registry access fails (permissions, etc.), default to light theme
             return false;
         }
     }
@@ -429,6 +560,43 @@ public class AppConfiguration
     }
 
     /// <summary>
+    /// Gets or sets the active playlist ID.
+    /// </summary>
+    public static string? ActivePlaylistId
+    {
+        get { LoadSettings(); return _userSettings?.ActivePlaylistId; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.ActivePlaylistId = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets whether to auto-pause playlists when fullscreen applications are running.
+    /// </summary>
+    public static bool AutoPauseOnFullscreen
+    {
+        get { LoadSettings(); return _userSettings?.AutoPauseOnFullscreen ?? true; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.AutoPauseOnFullscreen = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets the multi-monitor mode.
+    /// Valid values: "Primary", "All", "Span"
+    /// </summary>
+    public static string MultiMonitorMode
+    {
+        get { LoadSettings(); return _userSettings?.MultiMonitorMode ?? "Primary"; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.MultiMonitorMode = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets the list of enabled monitor indices.
+    /// </summary>
+    public static List<int> EnabledMonitorIndices
+    {
+        get { LoadSettings(); return _userSettings?.EnabledMonitorIndices ?? new List<int>(); }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.EnabledMonitorIndices = value; SaveSettings(); } }
+    }
+
+    /// <summary>
     /// Ensures all required directories exist.
     /// </summary>
     public static void EnsureDirectories()
@@ -436,6 +604,7 @@ public class AppConfiguration
         Directory.CreateDirectory(DefaultBaseDirectory);
         Directory.CreateDirectory(BackgroundsDirectory);
         Directory.CreateDirectory(FramesDirectory);
+        Directory.CreateDirectory(PlaylistsDirectory);
 
         // Ensure the output directory exists for the current wallpaper path
         var outputDir = Path.GetDirectoryName(CurrentWallpaperPath);

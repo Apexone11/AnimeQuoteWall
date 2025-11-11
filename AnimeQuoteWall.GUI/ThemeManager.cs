@@ -12,26 +12,33 @@ public static class ThemeManager
 
     public static void ApplyTheme()
     {
-        var isDark = AppConfiguration.GetEffectiveIsDark();
-        var dictUri = new Uri(isDark
-            ? "Resources/Themes/Theme.Dark.xaml"
-            : "Resources/Themes/Theme.Light.xaml", UriKind.Relative);
-
-        var themeDict = new ResourceDictionary { Source = dictUri };
-        var app = System.Windows.Application.Current;
-        if (app == null) return;
-
-        var existing = app.Resources.MergedDictionaries
-            .FirstOrDefault(d => d.Source != null && d.Source.OriginalString.Contains("Resources/Themes/Theme."));
-
-        if (existing != null)
+        try
         {
-            var idx = app.Resources.MergedDictionaries.IndexOf(existing);
-            app.Resources.MergedDictionaries[idx] = themeDict;
+            var isDark = AppConfiguration.GetEffectiveIsDark();
+            var dictUri = new Uri(isDark
+                ? "Resources/Themes/Theme.Dark.xaml"
+                : "Resources/Themes/Theme.Light.xaml", UriKind.Relative);
+
+            var themeDict = new ResourceDictionary { Source = dictUri };
+            var app = System.Windows.Application.Current;
+            if (app == null) return;
+
+            var existing = app.Resources.MergedDictionaries
+                .FirstOrDefault(d => d.Source != null && d.Source.OriginalString.Contains("Resources/Themes/Theme."));
+
+            if (existing != null)
+            {
+                var idx = app.Resources.MergedDictionaries.IndexOf(existing);
+                app.Resources.MergedDictionaries[idx] = themeDict;
+            }
+            else
+            {
+                app.Resources.MergedDictionaries.Insert(0, themeDict);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            app.Resources.MergedDictionaries.Insert(0, themeDict);
+            System.Windows.MessageBox.Show($"Failed to load theme: {ex.Message}\n\n{ex.StackTrace}", "Theme Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
     }
 

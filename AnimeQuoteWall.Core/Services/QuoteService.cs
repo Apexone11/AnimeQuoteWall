@@ -35,8 +35,25 @@ public class QuoteService : IQuoteService
 
         try
         {
-            var json = await File.ReadAllTextAsync(filePath);
-            var quotes = JsonSerializer.Deserialize<List<Quote>>(json) ?? new List<Quote>();
+            var json = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
+            
+            // Use options that handle missing properties gracefully (for backward compatibility)
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+                AllowTrailingCommas = true
+            };
+            
+            var quotes = JsonSerializer.Deserialize<List<Quote>>(json, options) ?? new List<Quote>();
+            
+            // Ensure backward compatibility: initialize Categories and Tags if null
+            foreach (var quote in quotes)
+            {
+                quote.Categories ??= new List<string>();
+                quote.Tags ??= new List<string>();
+            }
+            
             return quotes.Where(q => q.IsValid()).ToList();
         }
         catch (Exception ex)
@@ -65,7 +82,7 @@ public class QuoteService : IQuoteService
             var json = JsonSerializer.Serialize(quotes, options);
             
             // Save to file
-            await File.WriteAllTextAsync(filePath, json);
+            await File.WriteAllTextAsync(filePath, json).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -125,6 +142,6 @@ public class QuoteService : IQuoteService
             }
         };
 
-        await SaveQuotesAsync(sampleQuotes, filePath);
+        await SaveQuotesAsync(sampleQuotes, filePath).ConfigureAwait(false);
     }
 }
