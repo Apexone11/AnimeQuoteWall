@@ -20,6 +20,15 @@ public class AnimatedWallpaperService
     /// </summary>
     public bool IsWallpaperEngineAvailable()
     {
+        // Use async version synchronously for backward compatibility
+        return IsWallpaperEngineAvailableAsync().GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Checks if Wallpaper Engine is installed and running (async version).
+    /// </summary>
+    public async Task<bool> IsWallpaperEngineAvailableAsync()
+    {
         try
         {
             // First check if Wallpaper Engine process is running (most reliable)
@@ -36,7 +45,7 @@ public class AnimatedWallpaperService
             {
                 using var httpClient = new HttpClient();
                 httpClient.Timeout = TimeSpan.FromSeconds(2);
-                var response = httpClient.GetAsync("http://localhost:7070/api/status").Result;
+                using var response = await httpClient.GetAsync("http://localhost:7070/api/status").ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                     return true;
             }
@@ -71,6 +80,15 @@ public class AnimatedWallpaperService
     /// </summary>
     public string GetWallpaperEngineStatus()
     {
+        // Use async version synchronously for backward compatibility
+        return GetWallpaperEngineStatusAsync().GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Gets a detailed status message about Wallpaper Engine availability (async version).
+    /// </summary>
+    public async Task<string> GetWallpaperEngineStatusAsync()
+    {
         try
         {
             // Check if process is running
@@ -84,7 +102,7 @@ public class AnimatedWallpaperService
                 {
                     using var httpClient = new HttpClient();
                     httpClient.Timeout = TimeSpan.FromSeconds(2);
-                    var response = httpClient.GetAsync("http://localhost:7070/api/status").Result;
+                    using var response = await httpClient.GetAsync("http://localhost:7070/api/status").ConfigureAwait(false);
                     if (response.IsSuccessStatusCode)
                     {
                         return "Wallpaper Engine is running and API is accessible.";
@@ -191,13 +209,24 @@ public class AnimatedWallpaperService
     /// <param name="monitorIndex">Optional monitor index. Null uses settings default (-1 for all monitors)</param>
     private bool TryWallpaperEngineWebAPI(string videoPath, int? monitorIndex = null)
     {
+        // Use async version synchronously for backward compatibility
+        return TryWallpaperEngineWebAPIAsync(videoPath, monitorIndex).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Tries to use Wallpaper Engine's web API (localhost:7070) - async version.
+    /// </summary>
+    /// <param name="videoPath">Path to the video file</param>
+    /// <param name="monitorIndex">Optional monitor index. Null uses settings default (-1 for all monitors)</param>
+    private async Task<bool> TryWallpaperEngineWebAPIAsync(string videoPath, int? monitorIndex = null)
+    {
         try
         {
             using var httpClient = new HttpClient();
             httpClient.Timeout = TimeSpan.FromSeconds(5);
 
             // Check if API is available
-            var checkResponse = httpClient.GetAsync("http://localhost:7070/api/status").Result;
+            using var checkResponse = await httpClient.GetAsync("http://localhost:7070/api/status").ConfigureAwait(false);
             if (!checkResponse.IsSuccessStatusCode)
             {
                 return false;
@@ -217,7 +246,7 @@ public class AnimatedWallpaperService
             var json = JsonSerializer.Serialize(requestBody);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             
-            var response = httpClient.PostAsync("http://localhost:7070/api/setWallpaper", content).Result;
+            using var response = await httpClient.PostAsync("http://localhost:7070/api/setWallpaper", content).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch
@@ -369,13 +398,22 @@ public class AnimatedWallpaperService
     /// </summary>
     private bool TryClearWallpaperEngineWebAPI(int? monitorIndex)
     {
+        // Use async version synchronously for backward compatibility
+        return TryClearWallpaperEngineWebAPIAsync(monitorIndex).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Tries to clear wallpaper using Wallpaper Engine Web API - async version.
+    /// </summary>
+    private async Task<bool> TryClearWallpaperEngineWebAPIAsync(int? monitorIndex)
+    {
         try
         {
             using var httpClient = new HttpClient();
             httpClient.Timeout = TimeSpan.FromSeconds(5);
 
             // Check if API is available
-            var checkResponse = httpClient.GetAsync("http://localhost:7070/api/status").Result;
+            using var checkResponse = await httpClient.GetAsync("http://localhost:7070/api/status").ConfigureAwait(false);
             if (!checkResponse.IsSuccessStatusCode)
             {
                 return false;
@@ -399,7 +437,7 @@ public class AnimatedWallpaperService
             // Try clearWallpaper endpoint first
             try
             {
-                var clearResponse = httpClient.PostAsync("http://localhost:7070/api/clearWallpaper", content).Result;
+                using var clearResponse = await httpClient.PostAsync("http://localhost:7070/api/clearWallpaper", content).ConfigureAwait(false);
                 if (clearResponse.IsSuccessStatusCode)
                 {
                     return true;
@@ -413,7 +451,7 @@ public class AnimatedWallpaperService
             // Try setting empty/null wallpaper
             try
             {
-                var setResponse = httpClient.PostAsync("http://localhost:7070/api/setWallpaper", content).Result;
+                using var setResponse = await httpClient.PostAsync("http://localhost:7070/api/setWallpaper", content).ConfigureAwait(false);
                 return setResponse.IsSuccessStatusCode;
             }
             catch

@@ -750,6 +750,21 @@ public partial class WallpaperPage : Page
     /// <returns>True if successful, false otherwise</returns>
     private bool SetWallpaper(string path, int? monitorIndex = null)
     {
+        // Use async version synchronously for backward compatibility
+        return SetWallpaperAsync(path, monitorIndex).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Sets the desktop wallpaper using Windows API (async version).
+    /// Includes compatibility handling for different Windows versions and error scenarios.
+    /// Supports multi-monitor configurations.
+    /// Automatically clears animated wallpapers before applying static ones.
+    /// </summary>
+    /// <param name="path">Path to the wallpaper image file</param>
+    /// <param name="monitorIndex">Optional monitor index. If null, uses settings default.</param>
+    /// <returns>True if successful, false otherwise</returns>
+    private async Task<bool> SetWallpaperAsync(string path, int? monitorIndex = null)
+    {
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
             System.Windows.MessageBox.Show("Wallpaper file not found or invalid path.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -760,10 +775,11 @@ public partial class WallpaperPage : Page
         {
             // Clear any animated wallpapers before applying static wallpaper
             var animatedService = new AnimatedWallpaperService();
-            if (animatedService.IsWallpaperEngineAvailable())
+            if (await animatedService.IsWallpaperEngineAvailableAsync().ConfigureAwait(false))
             {
                 animatedService.ClearAnimatedWallpaper(monitorIndex);
-                System.Threading.Thread.Sleep(300);
+                // Small delay to ensure Wallpaper Engine processes the clear command
+                await Task.Delay(300).ConfigureAwait(false);
             }
 
             // If monitor index is specified, apply to that specific monitor ONLY

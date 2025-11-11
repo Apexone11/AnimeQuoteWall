@@ -532,7 +532,7 @@ public partial class AnimatedWallpapersPage : Page
     /// Handles the Remove Animated Wallpaper button click event.
     /// Clears the animated wallpaper and reverts to the previous static wallpaper.
     /// </summary>
-    private void RemoveAnimatedButton_Click(object sender, RoutedEventArgs e)
+    private async void RemoveAnimatedButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -542,7 +542,7 @@ public partial class AnimatedWallpapersPage : Page
             // First, clear the animated wallpaper from Wallpaper Engine
             var cleared = animatedService.ClearAnimatedWallpaper(monitor);
             
-            if (!cleared && animatedService.IsWallpaperEngineAvailable())
+            if (!cleared && await animatedService.IsWallpaperEngineAvailableAsync().ConfigureAwait(true))
             {
                 // If clearing failed but Wallpaper Engine is available, warn the user
                 var result = System.Windows.MessageBox.Show(
@@ -560,7 +560,7 @@ public partial class AnimatedWallpapersPage : Page
             }
             
             // Small delay to ensure Wallpaper Engine processes the clear command
-            System.Threading.Thread.Sleep(500);
+            await Task.Delay(500).ConfigureAwait(true);
             
             // Now try to apply the previous static wallpaper
             var prev = AppConfiguration.PreviousWallpaperPath;

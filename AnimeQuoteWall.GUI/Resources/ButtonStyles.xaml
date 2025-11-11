@@ -264,9 +264,9 @@
 
     <!-- Modern Secondary Button Style -->
     <Style x:Key="ModernSecondaryButton" TargetType="Button">
-        <Setter Property="Background" Value="#1F2430"/>
-        <Setter Property="Foreground" Value="#E2E8F0"/>
-        <Setter Property="BorderBrush" Value="#2D3748"/>
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
@@ -290,7 +290,6 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)" To="#252A36" Duration="0:0:0.15"/>
                                         <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
                                         <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
                                     </Storyboard>
@@ -299,7 +298,6 @@
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)" To="#1F2430" Duration="0:0:0.15"/>
                                         <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.0" Duration="0:0:0.15"/>
                                         <DoubleAnimation Storyboard.TargetName="border" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.0" Duration="0:0:0.15"/>
                                     </Storyboard>
@@ -311,7 +309,8 @@
                                 </Setter.Value>
                             </Setter>
                             <Setter TargetName="border" Property="RenderTransformOrigin" Value="0.5,0.5"/>
-                            <Setter TargetName="border" Property="BorderBrush" Value="#7C83FF"/>
+                            <Setter TargetName="border" Property="Background" Value="{DynamicResource CardBackground}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryColor}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -324,9 +323,9 @@
 
     <!-- Modern ToggleButton Style -->
     <Style x:Key="ModernToggleButton" TargetType="ToggleButton">
-        <Setter Property="Background" Value="#1F2430"/>
-        <Setter Property="Foreground" Value="#E2E8F0"/>
-        <Setter Property="BorderBrush" Value="#2D3748"/>
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
         <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
@@ -366,8 +365,8 @@
 
     <!-- Modern Card Style -->
     <Style x:Key="ModernCard" TargetType="Border">
-        <Setter Property="Background" Value="#171923"/>
-        <Setter Property="BorderBrush" Value="#2D3748"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="16"/>
         <Setter Property="Padding" Value="20"/>
@@ -381,9 +380,9 @@
 
     <!-- Modern ComboBox Style -->
     <Style x:Key="ModernComboBox" TargetType="ComboBox">
-        <Setter Property="Background" Value="#1F2430"/>
-        <Setter Property="BorderBrush" Value="#2D3748"/>
-        <Setter Property="Foreground" Value="#E2E8F0"/>
+        <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="12,10"/>
         <Setter Property="FontSize" Value="14"/>
@@ -392,17 +391,17 @@
         <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
         <Style.Resources>
             <Style TargetType="ComboBoxItem">
-                <Setter Property="Background" Value="#1F2430"/>
-                <Setter Property="Foreground" Value="#E2E8F0"/>
+                <Setter Property="Background" Value="{DynamicResource HoverBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Padding" Value="12,10"/>
                 <Style.Triggers>
                     <Trigger Property="IsHighlighted" Value="True">
-                        <Setter Property="Background" Value="#818CF8"/>
+                        <Setter Property="Background" Value="{DynamicResource PrimaryColor}"/>
                         <Setter Property="Foreground" Value="White"/>
                     </Trigger>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#6366F1"/>
+                        <Setter Property="Background" Value="{DynamicResource PrimaryColor}"/>
                         <Setter Property="Foreground" Value="White"/>
                     </Trigger>
                 </Style.Triggers>
@@ -410,10 +409,10 @@
         </Style.Resources>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="BorderBrush" Value="#7C83FF"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryColor}"/>
             </Trigger>
             <Trigger Property="IsFocused" Value="True">
-                <Setter Property="BorderBrush" Value="#7C83FF"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryColor}"/>
                 <Setter Property="BorderThickness" Value="2"/>
             </Trigger>
         </Style.Triggers>
@@ -421,7 +420,7 @@
 
     <!-- Modern CheckBox Style -->
     <Style x:Key="ModernCheckBox" TargetType="CheckBox">
-        <Setter Property="Foreground" Value="#E2E8F0"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
@@ -439,8 +438,8 @@
                                 Width="20"
                                 Height="20"
                                 Margin="0,0,10,0"
-                                Background="#1F2430"
-                                BorderBrush="#2D3748"
+                                Background="{DynamicResource HoverBackground}"
+                                BorderBrush="{DynamicResource BorderColor}"
                                 BorderThickness="2"
                                 CornerRadius="6"
                                 VerticalAlignment="Center">
@@ -470,19 +469,12 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="checkBoxBorder" Property="Background">
-                                <Setter.Value>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#818CF8" Offset="0"/>
-                                        <GradientStop Color="#6366F1" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter TargetName="checkBoxBorder" Property="BorderBrush" Value="#6366F1"/>
+                            <Setter TargetName="checkBoxBorder" Property="Background" Value="{DynamicResource PrimaryColor}"/>
+                            <Setter TargetName="checkBoxBorder" Property="BorderBrush" Value="{DynamicResource PrimaryColor}"/>
                             <Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="checkBoxBorder" Property="BorderBrush" Value="#7C83FF"/>
+                            <Setter TargetName="checkBoxBorder" Property="BorderBrush" Value="{DynamicResource PrimaryColor}"/>
                             <Setter TargetName="checkBoxBorder" Property="Effect">
                                 <Setter.Value>
                                     <DropShadowEffect Color="#7C83FF" Opacity="0.3" BlurRadius="6" ShadowDepth="0"/>
@@ -490,10 +482,10 @@
                             </Setter>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="checkBoxBorder" Property="Background" Value="#252A36"/>
+                            <Setter TargetName="checkBoxBorder" Property="Background" Value="{DynamicResource CardBackground}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="#64748B"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
                             <Setter TargetName="checkBoxBorder" Property="Opacity" Value="0.5"/>
                         </Trigger>
                     </ControlTemplate.Triggers>

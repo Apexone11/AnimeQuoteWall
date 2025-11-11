@@ -303,7 +303,7 @@
                             Height="40"
                             FontSize="13"
                             Click="ResetDefaultsButton_Click"
-                            Style="{DynamicResource ModernSecondaryButton}"
+                            Style="{StaticResource ModernSecondaryButton}"
                             HorizontalAlignment="Left">
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
