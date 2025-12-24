@@ -45,9 +45,12 @@ public class MediaEditingService
             {
                 var frame = collection[i];
                 using var ms = new MemoryStream();
-                frame.Write(ms);
+                frame.Write(ms, MagickFormat.Bmp);
                 ms.Position = 0;
-                var bitmap = new Bitmap(ms);
+                
+                // Create bitmap from stream and clone it to ensure it's independent of the stream
+                using var tempBitmap = new Bitmap(ms);
+                var bitmap = new Bitmap(tempBitmap);
                 frames.Add(bitmap);
             }
         }
