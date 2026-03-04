@@ -2,7 +2,7 @@
 
 A beautiful desktop application that generates custom wallpapers featuring anime quotes. Built with .NET 8 and WPF.
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![.NET](https://img.shields.io/badge/.NET-8.0-purple)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -17,8 +17,17 @@ A beautiful desktop application that generates custom wallpapers featuring anime
 - **🔄 Live Preview**: See your wallpaper before applying it
 - **🌙 Dark Mode**: Follow system theme or choose Light/Dark mode (applies instantly)
 - **📁 Custom Paths**: Configure backgrounds folder, quotes file, and output location
+- **🎬 Animation Export**: Create animated GIFs or MP4 videos from your wallpapers
 
-## 🆕 What's New in v1.1.0
+## 🆕 What's New in v1.2.0
+
+- **🎬 Animation Export**: Create animated GIFs and MP4 videos from your wallpapers
+- **🎨 Modern Sidebar Navigation**: Clean sidebar navigation with page-based UI
+- **⚙️ Animation Settings**: Configure FPS, duration, motion type, and easing
+- **📤 Multiple Export Formats**: Export as GIF (animated) or MP4 (video)
+- **🔄 Improved Navigation**: Smooth page transitions and navigation between sections
+
+### Previous Updates (v1.1.0)
 
 - **Theme System**: Full dark mode support with system theme detection
 - **Custom Paths**: Browse dialogs for backgrounds, quotes, and output paths
@@ -68,7 +77,22 @@ A beautiful desktop application that generates custom wallpapers featuring anime
    - Add images with "➕ Add Images"
    - Delete backgrounds you don't want
 
-5. **Customize Settings**
+5. **Create Animations** 🎬
+   - Go to the "🎬 Animation" tab
+   - **Configure Settings**:
+     - **FPS**: Set frames per second (default: 24)
+     - **Duration**: Set animation length in seconds (default: 6)
+     - **Motion Type**: Choose "Fade" or "Slide" animation
+     - **Easing Type**: Select "Linear", "Ease In", or "Ease Out"
+     - **Loop Animation**: Check to create looping animations
+   - **Choose Export Format**:
+     - **GIF (Animated)**: Creates an animated GIF file
+     - **MP4 (Video)**: Creates an MP4 video file (requires FFmpeg)
+   - Click "🎬 Generate Animation" to create frames
+   - Once frames are generated, click "💾 Export" to save your animation
+   - **Note**: For MP4 export, place `ffmpeg.exe` in `AnimeQuoteWall.GUI/Resources/ffmpeg/`
+
+6. **Customize Settings**
    - Go to "⚙️ Settings" tab
    - **Theme**: Choose "System Default", "Light", or "Dark" (applies immediately)
    - **Paths**: Use Browse buttons to customize:
@@ -156,6 +180,50 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+## 🎬 Animation Export Guide
+
+### Creating Animated Wallpapers
+
+1. **Prepare Your Content**
+   - Ensure you have quotes added (Quotes tab)
+   - Ensure you have background images added (Backgrounds tab)
+
+2. **Configure Animation Settings**
+   - **Frames Per Second (FPS)**: Controls animation smoothness
+     - Higher FPS = smoother but larger file size
+     - Recommended: 24-30 FPS for GIFs, 30-60 FPS for MP4
+   - **Duration**: How long the animation plays
+     - Shorter = smaller file size
+     - Recommended: 3-10 seconds
+   - **Motion Type**:
+     - **Fade**: Text fades in and out
+     - **Slide**: Text slides across the screen
+   - **Easing Type**:
+     - **Linear**: Constant speed
+     - **Ease In**: Starts slow, speeds up
+     - **Ease Out**: Starts fast, slows down
+   - **Loop Animation**: Enable for continuous playback
+
+3. **Generate Frames**
+   - Click "🎬 Generate Animation"
+   - Wait for frames to be generated (progress bar will show)
+   - The Export button will be enabled when ready
+
+4. **Export Your Animation**
+   - Choose your format:
+     - **GIF**: Works everywhere, smaller file size, good for web
+     - **MP4**: Better quality, smaller file size, requires FFmpeg
+   - Click "💾 Export" and choose save location
+   - Your animation will be saved!
+
+### FFmpeg Setup (for MP4 Export)
+
+1. Download FFmpeg from [ffmpeg.org](https://ffmpeg.org/download.html)
+2. Extract `ffmpeg.exe` from the download
+3. Place it in: `AnimeQuoteWall.GUI/Resources/ffmpeg/ffmpeg.exe`
+4. Restart the application
+5. MP4 export will now work!
+
 ## 📋 Roadmap
 
 - [ ] Custom font selection
@@ -163,6 +231,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [ ] Image filters and effects
 - [ ] Wallpaper history
 - [ ] Auto-wallpaper rotation
+- [ ] More animation motion types
+- [ ] Animation preview before export
 
 ## 🐛 Known Issues
 

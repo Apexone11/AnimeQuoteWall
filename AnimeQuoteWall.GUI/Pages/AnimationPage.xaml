@@ -1,0 +1,210 @@
+<Page x:Class="AnimeQuoteWall.GUI.Pages.AnimationPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Animation">
+    <Grid Margin="24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" MinHeight="400"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Foreground="{StaticResource TextPrimary}"
+                   Margin="0,0,0,20">
+            <Run Text="🎞" FontFamily="Segoe UI Emoji"/>
+            <Run Text=" Animation Export"/>
+        </TextBlock>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Animation Settings Card -->
+                <Border Style="{StaticResource ModernCard}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   Margin="0,0,0,20">
+                            <Run Text="⚙" FontFamily="Segoe UI Emoji"/>
+                            <Run Text=" Animation Settings"/>
+                        </TextBlock>
+
+                        <!-- FPS -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Frames Per Second (FPS):"
+                                       FontSize="13"
+                                       FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondary}"
+                                       Margin="0,0,0,8"/>
+                            <TextBox x:Name="FpsTextBox"
+                                      Text="24"
+                                      Padding="12"
+                                      FontSize="14"
+                                      Background="{StaticResource HoverBackground}"
+                                      BorderBrush="{StaticResource BorderColor}"
+                                      BorderThickness="1"
+                                      Foreground="{StaticResource TextPrimary}"/>
+                        </StackPanel>
+
+                        <!-- Duration -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Duration (seconds):"
+                                       FontSize="13"
+                                       FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondary}"
+                                       Margin="0,0,0,8"/>
+                            <TextBox x:Name="DurationTextBox"
+                                      Text="6"
+                                      Padding="12"
+                                      FontSize="14"
+                                      Background="{StaticResource HoverBackground}"
+                                      BorderBrush="{StaticResource BorderColor}"
+                                      BorderThickness="1"
+                                      Foreground="{StaticResource TextPrimary}"/>
+                        </StackPanel>
+
+                        <!-- Motion Type -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Motion Type:"
+                                       FontSize="13"
+                                       FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondary}"
+                                       Margin="0,0,0,8"/>
+                            <ComboBox x:Name="MotionTypeComboBox"
+                                      SelectedIndex="0"
+                                      Style="{StaticResource ModernComboBox}">
+                                <ComboBoxItem Content="Fade"/>
+                                <ComboBoxItem Content="Slide"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Easing Type -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Easing Type:"
+                                       FontSize="13"
+                                       FontWeight="Medium"
+                                       Foreground="{StaticResource TextSecondary}"
+                                       Margin="0,0,0,8"/>
+                            <ComboBox x:Name="EasingTypeComboBox"
+                                      SelectedIndex="0"
+                                      Style="{StaticResource ModernComboBox}">
+                                <ComboBoxItem Content="Linear"/>
+                                <ComboBoxItem Content="Ease In"/>
+                                <ComboBoxItem Content="Ease Out"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Loop -->
+                        <CheckBox x:Name="LoopCheckBox"
+                                  Content="Loop Animation"
+                                  IsChecked="True"
+                                  FontSize="14"
+                                  Foreground="{StaticResource TextPrimary}"
+                                  Margin="0,0,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Export Format Card -->
+                <Border Style="{StaticResource ModernCard}" Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   Margin="0,0,0,20">
+                            <Run Text="📤" FontFamily="Segoe UI Emoji"/>
+                            <Run Text=" Export Format"/>
+                        </TextBlock>
+
+                        <RadioButton x:Name="GifRadioButton"
+                                     Content="GIF (Animated)"
+                                     IsChecked="True"
+                                     GroupName="ExportFormat"
+                                     FontSize="14"
+                                     Foreground="{StaticResource TextPrimary}"
+                                     Margin="0,0,0,12"/>
+                        <RadioButton x:Name="Mp4RadioButton"
+                                     Content="MP4 (Video)"
+                                     GroupName="ExportFormat"
+                                     FontSize="14"
+                                     Foreground="{StaticResource TextPrimary}"
+                                     Margin="0,0,0,0"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,20,0,0">
+            <Button x:Name="GenerateAnimationButton"
+                    MinWidth="200"
+                    Height="44"
+                    Click="GenerateAnimationButton_Click"
+                    Style="{StaticResource ModernPrimaryButton}"
+                    Margin="0,0,12,0"
+                    Padding="16,10">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🎬" FontSize="16" Margin="0,0,8,0" FontFamily="Segoe UI Emoji"/>
+                    <TextBlock Text="Generate Animation" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <Button x:Name="ExportButton"
+                    MinWidth="150"
+                    Height="44"
+                    Click="ExportButton_Click"
+                    Style="{StaticResource ModernSuccessButton}"
+                    IsEnabled="False"
+                    Padding="14,10">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="💾" FontSize="16" Margin="0,0,6,0" FontFamily="Segoe UI Emoji"/>
+                    <TextBlock Text="Export" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <Button x:Name="CancelButton"
+                    MinWidth="110"
+                    Height="44"
+                    Click="CancelButton_Click"
+                    Style="{StaticResource ModernDangerButton}"
+                    IsEnabled="False"
+                    Margin="12,0,0,0"
+                    Visibility="Collapsed"
+                    Padding="12,10">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="✕" FontSize="16" Margin="0,0,6,0"/>
+                    <TextBlock Text="Cancel" VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <!-- Progress Bar (initially hidden) -->
+        <Border Grid.Row="2"
+                x:Name="ProgressBorder"
+                Background="{StaticResource CardBackground}"
+                BorderBrush="{StaticResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="16"
+                Margin="0,20,0,0"
+                Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock x:Name="ProgressText"
+                           Text="Generating frames..."
+                           FontSize="14"
+                           Foreground="{StaticResource TextPrimary}"
+                           Margin="0,0,0,8"/>
+                <ProgressBar x:Name="ProgressBar"
+                             Height="8"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>
+
