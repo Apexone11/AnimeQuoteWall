@@ -188,17 +188,20 @@ MessageBox.Show($"Failed to apply wallpaper: {ex.Message}", "Error", MessageBoxB
                 
                 WallpaperPreview.Source = bitmap;
                 NoPreviewText.Visibility = Visibility.Collapsed;
+                NoPreviewBorder.Visibility = Visibility.Collapsed;
             }
             catch (Exception ex)
             {
                 NoPreviewText.Text = $"Error loading preview: {ex.Message}";
                 NoPreviewText.Visibility = Visibility.Visible;
+                NoPreviewBorder.Visibility = Visibility.Visible;
             }
         }
         else
         {
             WallpaperPreview.Source = null;
             NoPreviewText.Visibility = Visibility.Visible;
+            NoPreviewBorder.Visibility = Visibility.Visible;
         }
     }
     
@@ -389,12 +392,16 @@ public partial class SimpleQuoteDialog : Window
     
     public SimpleQuoteDialog()
     {
-     Title = "Add New Quote";
-   Width = 500;
-        Height = 400;
-WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        Title = "Add New Quote";
+        Width = 550;
+        Height = 480;
+        WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(245, 247, 250));
+        ResizeMode = ResizeMode.NoResize;
+        WindowStyle = WindowStyle.SingleBorderWindow;
         
- var mainGrid = new Grid { Margin = new Thickness(20) };
+        var mainGrid = new Grid { Margin = new Thickness(30), Background = System.Windows.Media.Brushes.White };
+        mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -404,81 +411,147 @@ WindowStartupLocation = WindowStartupLocation.CenterOwner;
         mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
      
         // Title
-   var title = new TextBlock
-  {
-     Text = "Add New Quote",
-            FontSize = 18,
+        var title = new TextBlock
+        {
+            Text = "Add New Quote",
+            FontSize = 24,
             FontWeight = FontWeights.Bold,
-            Margin = new Thickness(0, 0, 0, 20)
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(26, 32, 44)),
+            Margin = new Thickness(0, 0, 0, 25)
         };
-    Grid.SetRow(title, 0);
+        Grid.SetRow(title, 0);
         mainGrid.Children.Add(title);
       
         // Quote Text Label
-        var quoteLabel = new TextBlock { Text = "Quote Text:", Margin = new Thickness(0, 0, 0, 5) };
-     Grid.SetRow(quoteLabel, 1);
-mainGrid.Children.Add(quoteLabel);
+        var quoteLabel = new TextBlock 
+        { 
+            Text = "Quote Text:", 
+            FontSize = 14,
+            FontWeight = FontWeights.Medium,
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(74, 85, 104)),
+            Margin = new Thickness(0, 0, 0, 8) 
+        };
+        Grid.SetRow(quoteLabel, 1);
+        mainGrid.Children.Add(quoteLabel);
     
         // Quote Text Box
         _quoteTextBox = new TextBox
-   {
-Height = 100,
-  TextWrapping = TextWrapping.Wrap,
-        AcceptsReturn = true,
-    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            Margin = new Thickness(0, 0, 0, 15)
+        {
+            Height = 120,
+            TextWrapping = TextWrapping.Wrap,
+            AcceptsReturn = true,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Margin = new Thickness(0, 0, 0, 20),
+            Padding = new Thickness(12),
+            FontSize = 14,
+            Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(237, 242, 247)),
+            BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(225, 232, 237)),
+            BorderThickness = new Thickness(1)
         };
         Grid.SetRow(_quoteTextBox, 2);
-     mainGrid.Children.Add(_quoteTextBox);
+        mainGrid.Children.Add(_quoteTextBox);
         
-// Character Label
- var characterLabel = new TextBlock { Text = "Character Name:", Margin = new Thickness(0, 0, 0, 5) };
+        // Character Label
+        var characterLabel = new TextBlock 
+        { 
+            Text = "Character Name:", 
+            FontSize = 14,
+            FontWeight = FontWeights.Medium,
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(74, 85, 104)),
+            Margin = new Thickness(0, 0, 0, 8) 
+        };
         Grid.SetRow(characterLabel, 3);
-     mainGrid.Children.Add(characterLabel);
+        mainGrid.Children.Add(characterLabel);
         
         // Character Text Box
-        _characterTextBox = new TextBox { Margin = new Thickness(0, 0, 0, 15) };
-  Grid.SetRow(_characterTextBox, 4);
+        _characterTextBox = new TextBox 
+        { 
+            Margin = new Thickness(0, 0, 0, 20),
+            Padding = new Thickness(12),
+            FontSize = 14,
+            Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(237, 242, 247)),
+            BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(225, 232, 237)),
+            BorderThickness = new Thickness(1)
+        };
+        Grid.SetRow(_characterTextBox, 4);
         mainGrid.Children.Add(_characterTextBox);
         
-      // Anime Label
-        var animeLabel = new TextBlock { Text = "Anime Name (Optional):", Margin = new Thickness(0, 0, 0, 5) };
+        // Anime Label
+        var animeLabel = new TextBlock 
+        { 
+            Text = "Anime Name (Optional):", 
+            FontSize = 14,
+            FontWeight = FontWeights.Medium,
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(74, 85, 104)),
+            Margin = new Thickness(0, 0, 0, 8) 
+        };
         Grid.SetRow(animeLabel, 5);
         mainGrid.Children.Add(animeLabel);
   
         // Anime Text Box
-        _animeTextBox = new TextBox { Margin = new Thickness(0, 0, 0, 20) };
+        _animeTextBox = new TextBox 
+        { 
+            Margin = new Thickness(0, 0, 0, 25),
+            Padding = new Thickness(12),
+            FontSize = 14,
+            Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(237, 242, 247)),
+            BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(225, 232, 237)),
+            BorderThickness = new Thickness(1)
+        };
         Grid.SetRow(_animeTextBox, 6);
         mainGrid.Children.Add(_animeTextBox);
         
         // Buttons
         var buttonPanel = new StackPanel
-      {
-      Orientation = Orientation.Horizontal,
-   HorizontalAlignment = HorizontalAlignment.Right
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right
         };
         
-var cancelButton = new Button
+        var cancelButton = new Button
         {
-   Content = "Cancel",
-            Width = 80,
-            Height = 30,
-    Margin = new Thickness(0, 0, 10, 0)
+            Content = "Cancel",
+            MinWidth = 110,
+            Height = 42,
+            Margin = new Thickness(0, 0, 12, 0),
+            Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(226, 232, 240)),
+            Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(74, 85, 104)),
+            BorderThickness = new Thickness(0),
+            FontSize = 14,
+            FontWeight = FontWeights.SemiBold,
+            Cursor = System.Windows.Input.Cursors.Hand
         };
         cancelButton.Click += (s, e) => { DialogResult = false; Close(); };
         
         var okButton = new Button
- {
-      Content = "Add Quote",
-        Width = 80,
-            Height = 30
+        {
+            Content = "Add Quote",
+            MinWidth = 130,
+            Height = 42,
+            Background = new System.Windows.Media.LinearGradientBrush(
+                System.Windows.Media.Color.FromRgb(102, 126, 234),
+                System.Windows.Media.Color.FromRgb(90, 103, 216),
+                new System.Windows.Point(0, 0),
+                new System.Windows.Point(0, 1)),
+            Foreground = System.Windows.Media.Brushes.White,
+            BorderThickness = new Thickness(0),
+            FontSize = 14,
+            FontWeight = FontWeights.SemiBold,
+            Cursor = System.Windows.Input.Cursors.Hand,
+            Effect = new System.Windows.Media.Effects.DropShadowEffect
+            {
+                Color = System.Windows.Media.Colors.Black,
+                BlurRadius = 10,
+                ShadowDepth = 2,
+                Opacity = 0.2
+            }
         };
-      okButton.Click += OkButton_Click;
+        okButton.Click += OkButton_Click;
         
-   buttonPanel.Children.Add(cancelButton);
-  buttonPanel.Children.Add(okButton);
+        buttonPanel.Children.Add(cancelButton);
+        buttonPanel.Children.Add(okButton);
         Grid.SetRow(buttonPanel, 7);
-     mainGrid.Children.Add(buttonPanel);
+        mainGrid.Children.Add(buttonPanel);
         
         Content = mainGrid;
         

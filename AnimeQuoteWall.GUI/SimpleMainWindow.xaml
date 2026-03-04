@@ -3,67 +3,265 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Anime Quote Wallpaper Manager"
         Icon="Resources/appicon.ico"
-        Height="700"
-        Width="1000"
+        Height="750"
+        Width="1100"
         WindowStartupLocation="CenterScreen"
-        x:Name="MainWindowElement">
+        x:Name="MainWindowElement"
+        Background="#F5F7FA">
 
     <Window.Resources>
-        <!-- Light Theme (Default) -->
-        <SolidColorBrush x:Key="WindowBackground" Color="#f0f0f0"/>
-        <SolidColorBrush x:Key="HeaderBackground" Color="#5E35B1"/>
-        <SolidColorBrush x:Key="HeaderForeground" Color="White"/>
-        <SolidColorBrush x:Key="ContentBackground" Color="White"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#ddd"/>
-        <SolidColorBrush x:Key="TextPrimary" Color="#333"/>
-        <SolidColorBrush x:Key="TextSecondary" Color="#666"/>
-        <SolidColorBrush x:Key="TextTertiary" Color="#999"/>
-        <SolidColorBrush x:Key="ListItemBackground" Color="#fafafa"/>
-        <SolidColorBrush x:Key="InputBackground" Color="#f5f5f5"/>
-        <SolidColorBrush x:Key="ButtonPrimary" Color="#5E35B1"/>
-        <SolidColorBrush x:Key="ButtonSuccess" Color="#43A047"/>
-        <SolidColorBrush x:Key="ButtonDanger" Color="#E53935"/>
-        <SolidColorBrush x:Key="ButtonSecondary" Color="#757575"/>
+        <!-- Modern Color Palette -->
+        <SolidColorBrush x:Key="WindowBackground" Color="#F5F7FA"/>
+        <SolidColorBrush x:Key="ContentBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#E1E8ED"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#1A202C"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#4A5568"/>
+        <SolidColorBrush x:Key="TextTertiary" Color="#718096"/>
+        <SolidColorBrush x:Key="ListItemBackground" Color="#F7FAFC"/>
+        <SolidColorBrush x:Key="InputBackground" Color="#EDF2F7"/>
+        <SolidColorBrush x:Key="ButtonPrimary" Color="#667EEA"/>
+        <SolidColorBrush x:Key="ButtonPrimaryHover" Color="#5A67D8"/>
+        <SolidColorBrush x:Key="ButtonSuccess" Color="#48BB78"/>
+        <SolidColorBrush x:Key="ButtonSuccessHover" Color="#38A169"/>
+        <SolidColorBrush x:Key="ButtonDanger" Color="#F56565"/>
+        <SolidColorBrush x:Key="ButtonDangerHover" Color="#E53E3E"/>
+        <SolidColorBrush x:Key="ButtonSecondary" Color="#718096"/>
+        <SolidColorBrush x:Key="ButtonSecondaryHover" Color="#4A5568"/>
+        <SolidColorBrush x:Key="AccentColor" Color="#667EEA"/>
+        <SolidColorBrush x:Key="AccentGradientStart" Color="#667EEA"/>
+        <SolidColorBrush x:Key="AccentGradientEnd" Color="#764BA2"/>
+
+        <!-- Gradient Brushes -->
+        <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#667EEA" Offset="0"/>
+            <GradientStop Color="#764BA2" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="ButtonPrimaryGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#667EEA" Offset="0"/>
+            <GradientStop Color="#5A67D8" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="ButtonSuccessGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#48BB78" Offset="0"/>
+            <GradientStop Color="#38A169" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Shadow Effects -->
+        <DropShadowEffect x:Key="CardShadow" Color="#1A000000" BlurRadius="20" ShadowDepth="4" Opacity="0.15"/>
+        <DropShadowEffect x:Key="HeaderShadow" Color="#1A000000" BlurRadius="25" ShadowDepth="5" Opacity="0.2"/>
+        <DropShadowEffect x:Key="ButtonShadow" Color="#1A000000" BlurRadius="10" ShadowDepth="2" Opacity="0.2"/>
+
+        <!-- Modern Button Style -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource ButtonPrimaryGradient}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect" Value="{StaticResource ButtonShadow}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#1A000000" BlurRadius="15" ShadowDepth="3" Opacity="0.3"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="1.02" ScaleY="1.02"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Success Button Style -->
+        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="{StaticResource ButtonSuccessGradient}"/>
+        </Style>
+
+        <!-- Danger Button Style -->
+        <Style x:Key="DangerButton" TargetType="Button">
+            <Setter Property="Background" Value="#F56565"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect" Value="{StaticResource ButtonShadow}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E53E3E"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#1A000000" BlurRadius="15" ShadowDepth="3" Opacity="0.3"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="1.02" ScaleY="1.02"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Secondary Button Style -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#E2E8F0"/>
+            <Setter Property="Foreground" Value="#4A5568"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#CBD5E0"/>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="1.02" ScaleY="1.02"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern TabControl Style -->
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style TargetType="TabItem">
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#4A5568"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="0"
+                                CornerRadius="8,8,0,0"
+                                Padding="{TemplateBinding Padding}"
+                                Margin="0,0,5,0">
+                            <ContentPresenter ContentSource="Header"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF"/>
+                                <Setter Property="Foreground" Value="#667EEA"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#EDF2F7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="20">
-        <Grid.Background>
-            <SolidColorBrush Color="{Binding Source={StaticResource WindowBackground}, Path=Color}"/>
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
+        <!-- Modern Header with Gradient -->
         <Border Grid.Row="0"
-                Background="{StaticResource HeaderBackground}"
-                Padding="20"
-                Margin="0,0,0,20"
-                CornerRadius="8">
+                Background="{StaticResource HeaderGradient}"
+                Padding="25,20"
+                Margin="0,0,0,25"
+                CornerRadius="12"
+                Effect="{StaticResource HeaderShadow}">
             <StackPanel Orientation="Horizontal">
                 <Image Source="Resources/appicon.png"
-                       Width="32"
-                       Height="32"
-                       Margin="0,0,15,0"
+                       Width="40"
+                       Height="40"
+                       Margin="0,0,18,0"
                        VerticalAlignment="Center"/>
                 <TextBlock Text="Anime Quote Wallpaper Manager"
-                           FontSize="22"
-                           FontWeight="SemiBold"
-                           Foreground="{StaticResource HeaderForeground}"
+                           FontSize="26"
+                           FontWeight="Bold"
+                           Foreground="White"
                            VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 
         <!-- Main Content Tabs -->
-        <TabControl Grid.Row="1"
-                    Background="{StaticResource ContentBackground}"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1">
+        <TabControl Grid.Row="1">
 
             <!-- Wallpaper Preview & Generation Tab -->
             <TabItem Header="🖼️ Wallpaper">
-                <Grid Margin="20">
+                <Grid Margin="25" Background="{StaticResource ContentBackground}" CornerRadius="12">
+                    <Grid.Effect>
+                        <DropShadowEffect Color="#1A000000" BlurRadius="20" ShadowDepth="4" Opacity="0.1"/>
+                    </Grid.Effect>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -73,30 +271,40 @@
                     <!-- Preview Section Header -->
                     <TextBlock Grid.Row="0"
                                Text="Preview"
-                               FontSize="18"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,10"
-                               Foreground="#333"/>
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Margin="0,0,0,20"
+                               Foreground="{StaticResource TextPrimary}"/>
 
-                    <!-- Wallpaper Preview -->
+                    <!-- Wallpaper Preview with Modern Card -->
                     <Border Grid.Row="1"
-                            Background="#fafafa"
-                            BorderBrush="#ddd"
+                            Background="#FAFAFA"
+                            BorderBrush="{StaticResource BorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="4"
-                            Margin="0,0,0,20">
-                        <Grid>
-                            <Image x:Name="WallpaperPreview"
-                                   Stretch="Uniform"/>
-                            <TextBlock x:Name="NoPreviewText"
-                                       Text="No wallpaper generated yet. Click 'Generate New Wallpaper' to create one!"
-                                       FontSize="14"
-                                       Foreground="#999"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       TextAlignment="Center"
-                                       Margin="40"/>
-                        </Grid>
+                            CornerRadius="12"
+                            Margin="0,0,0,25"
+                            Padding="2">
+                        <Border Background="White" CornerRadius="10">
+                            <Grid>
+                                <Image x:Name="WallpaperPreview"
+                                       Stretch="Uniform"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <Border x:Name="NoPreviewBorder"
+                                        Background="#F7FAFC"
+                                        CornerRadius="10"
+                                        Visibility="Visible">
+                                    <TextBlock x:Name="NoPreviewText"
+                                               Text="No wallpaper generated yet. Click 'Generate New Wallpaper' to create one!"
+                                               FontSize="15"
+                                               Foreground="{StaticResource TextTertiary}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               TextAlignment="Center"
+                                               Margin="50"
+                                               TextWrapping="Wrap"/>
+                                </Border>
+                            </Grid>
+                        </Border>
                     </Border>
 
                     <!-- Action Buttons -->
@@ -105,43 +313,34 @@
                                 HorizontalAlignment="Center">
                         <Button x:Name="GenerateButton"
                                 Content="⚡ Generate New Wallpaper"
-                                Width="200"
-                                Height="45"
-                                FontSize="14"
+                                MinWidth="220"
+                                Height="50"
                                 Click="GenerateButton_Click"
-                                Background="#5E35B1"
-                                Foreground="White"
-                                BorderThickness="0"
-                                Margin="0,0,10,0"
-                                Cursor="Hand"/>
+                                Style="{StaticResource ModernButton}"
+                                Margin="0,0,15,0"/>
                         <Button x:Name="RefreshButton"
                                 Content="🔄 Refresh"
-                                Width="120"
-                                Height="45"
-                                FontSize="14"
+                                MinWidth="140"
+                                Height="50"
                                 Click="RefreshButton_Click"
-                                Background="#757575"
-                                Foreground="White"
-                                BorderThickness="0"
-                                Margin="0,0,10,0"
-                                Cursor="Hand"/>
+                                Style="{StaticResource SecondaryButton}"
+                                Margin="0,0,15,0"/>
                         <Button x:Name="ApplyButton"
                                 Content="✨ Apply as Wallpaper"
-                                Width="180"
-                                Height="45"
-                                FontSize="14"
+                                MinWidth="200"
+                                Height="50"
                                 Click="ApplyButton_Click"
-                                Background="#43A047"
-                                Foreground="White"
-                                BorderThickness="0"
-                                Cursor="Hand"/>
+                                Style="{StaticResource SuccessButton}"/>
                     </StackPanel>
                 </Grid>
             </TabItem>
 
             <!-- Quotes Management Tab -->
             <TabItem Header="💬 Quotes">
-                <Grid Margin="20">
+                <Grid Margin="25" Background="{StaticResource ContentBackground}" CornerRadius="12">
+                    <Grid.Effect>
+                        <DropShadowEffect Color="#1A000000" BlurRadius="20" ShadowDepth="4" Opacity="0.1"/>
+                    </Grid.Effect>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -150,96 +349,102 @@
 
                     <!-- Quotes Header with Actions -->
                     <DockPanel Grid.Row="0"
-                               Margin="0,0,0,15">
+                               Margin="0,0,0,20">
                         <TextBlock Text="Quote Library"
-                                   FontSize="18"
-                                   FontWeight="SemiBold"
-                                   Foreground="#333"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimary}"
                                    VerticalAlignment="Center"/>
                         <StackPanel DockPanel.Dock="Right"
                                     Orientation="Horizontal">
                             <Button x:Name="AddQuoteButton"
                                     Content="➕ Add Quote"
-                                    Width="120"
-                                    Height="38"
-                                    FontSize="13"
+                                    MinWidth="140"
+                                    Height="42"
                                     Click="AddQuoteButton_Click"
-                                    Background="#5E35B1"
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Margin="0,0,10,0"
-                                    Cursor="Hand"/>
+                                    Style="{StaticResource ModernButton}"
+                                    Margin="0,0,12,0"/>
                             <Button x:Name="DeleteQuoteButton"
                                     Content="🗑️ Delete"
-                                    Width="100"
-                                    Height="38"
-                                    FontSize="13"
+                                    MinWidth="120"
+                                    Height="42"
                                     Click="DeleteQuoteButton_Click"
-                                    Background="#E53935"
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Cursor="Hand"/>
+                                    Style="{StaticResource DangerButton}"/>
                         </StackPanel>
                     </DockPanel>
 
-                    <!-- Quotes List -->
-                    <ListBox x:Name="QuotesListBox"
-                             Grid.Row="1"
-                             SelectionMode="Single"
-                             Margin="0,0,0,15"
-                             Background="White"
-                             BorderBrush="#ddd"
-                             BorderThickness="1">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="5"
-                                        Padding="15"
-                                        Background="#fafafa"
-                                        BorderBrush="#e0e0e0"
-                                        BorderThickness="1"
-                                        CornerRadius="4">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Text}"
-                                                   FontSize="15"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="#333"
-                                                   Margin="0,0,0,8"/>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="— "
-                                                       FontSize="12"
-                                                       Foreground="#666"/>
-                                            <TextBlock Text="{Binding Character}"
-                                                       FontSize="12"
-                                                       Foreground="#666"
-                                                       FontWeight="Medium"/>
-                                            <TextBlock Text=" ("
-                                                       FontSize="12"
-                                                       Foreground="#666"
-                                                       Margin="5,0,0,0"/>
-                                            <TextBlock Text="{Binding Anime}"
-                                                       FontSize="12"
-                                                       Foreground="#666"/>
-                                            <TextBlock Text=")"
-                                                       FontSize="12"
-                                                       Foreground="#666"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                    <!-- Quotes List with Modern ScrollViewer -->
+                    <Border Grid.Row="1"
+                            Background="White"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Margin="0,0,0,20"
+                            Padding="2">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                            <ListBox x:Name="QuotesListBox"
+                                     SelectionMode="Single"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,0,12"
+                                                Padding="20"
+                                                Background="{StaticResource ListItemBackground}"
+                                                BorderBrush="{StaticResource BorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Effect="{StaticResource CardShadow}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Text}"
+                                                           FontSize="15"
+                                                           TextWrapping="Wrap"
+                                                           Foreground="{StaticResource TextPrimary}"
+                                                           LineHeight="24"
+                                                           Margin="0,0,0,12"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="— "
+                                                               FontSize="13"
+                                                               Foreground="{StaticResource TextSecondary}"/>
+                                                    <TextBlock Text="{Binding Character}"
+                                                               FontSize="13"
+                                                               Foreground="{StaticResource TextSecondary}"
+                                                               FontWeight="SemiBold"/>
+                                                    <TextBlock Text=" ("
+                                                               FontSize="13"
+                                                               Foreground="{StaticResource TextTertiary}"
+                                                               Margin="6,0,0,0"/>
+                                                    <TextBlock Text="{Binding Anime}"
+                                                               FontSize="13"
+                                                               Foreground="{StaticResource TextTertiary}"/>
+                                                    <TextBlock Text=")"
+                                                               FontSize="13"
+                                                               Foreground="{StaticResource TextTertiary}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
+                    </Border>
 
                     <!-- Quote Count -->
                     <TextBlock Grid.Row="2"
                                x:Name="QuoteCountTextBottom"
-                               FontSize="13"
-                               Foreground="#666"/>
+                               FontSize="14"
+                               FontWeight="Medium"
+                               Foreground="{StaticResource TextSecondary}"/>
                 </Grid>
             </TabItem>
 
             <!-- Background Images Tab -->
             <TabItem Header="🌄 Backgrounds">
-                <Grid Margin="20">
+                <Grid Margin="25" Background="{StaticResource ContentBackground}" CornerRadius="12">
+                    <Grid.Effect>
+                        <DropShadowEffect Color="#1A000000" BlurRadius="20" ShadowDepth="4" Opacity="0.1"/>
+                    </Grid.Effect>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -248,84 +453,88 @@
 
                     <!-- Backgrounds Header -->
                     <DockPanel Grid.Row="0"
-                               Margin="0,0,0,15">
+                               Margin="0,0,0,20">
                         <TextBlock Text="Background Images"
-                                   FontSize="18"
-                                   FontWeight="SemiBold"
-                                   Foreground="#333"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimary}"
                                    VerticalAlignment="Center"/>
                         <StackPanel DockPanel.Dock="Right"
                                     Orientation="Horizontal">
                             <Button x:Name="AddBackgroundButton"
                                     Content="➕ Add Images"
-                                    Width="130"
-                                    Height="38"
-                                    FontSize="13"
+                                    MinWidth="150"
+                                    Height="42"
                                     Click="AddBackgroundButton_Click"
-                                    Background="#5E35B1"
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Margin="0,0,10,0"
-                                    Cursor="Hand"/>
+                                    Style="{StaticResource ModernButton}"
+                                    Margin="0,0,12,0"/>
                             <Button x:Name="DeleteBackgroundButton"
                                     Content="🗑️ Delete"
-                                    Width="100"
-                                    Height="38"
-                                    FontSize="13"
+                                    MinWidth="120"
+                                    Height="42"
                                     Click="DeleteBackgroundButton_Click"
-                                    Background="#E53935"
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Cursor="Hand"/>
+                                    Style="{StaticResource DangerButton}"/>
                         </StackPanel>
                     </DockPanel>
 
                     <!-- Backgrounds List -->
-                    <ListBox x:Name="BackgroundsListBox"
-                             Grid.Row="1"
-                             SelectionMode="Single"
-                             Margin="0,0,0,15"
-                             Background="White"
-                             BorderBrush="#ddd"
-                             BorderThickness="1">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="5"
-                                        Padding="12"
-                                        Background="#fafafa"
-                                        BorderBrush="#e0e0e0"
-                                        BorderThickness="1"
-                                        CornerRadius="4">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="🖼️"
-                                                   FontSize="16"
-                                                   VerticalAlignment="Center"
-                                                   Margin="0,0,10,0"/>
-                                        <TextBlock Text="{Binding}"
-                                                   FontSize="13"
-                                                   Foreground="#333"
-                                                   VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                    <Border Grid.Row="1"
+                            Background="White"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Margin="0,0,0,20"
+                            Padding="2">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                            <ListBox x:Name="BackgroundsListBox"
+                                     SelectionMode="Single"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,0,10"
+                                                Padding="16"
+                                                Background="{StaticResource ListItemBackground}"
+                                                BorderBrush="{StaticResource BorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Effect="{StaticResource CardShadow}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="🖼️"
+                                                           FontSize="18"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,14,0"/>
+                                                <TextBlock Text="{Binding}"
+                                                           FontSize="14"
+                                                           Foreground="{StaticResource TextPrimary}"
+                                                           VerticalAlignment="Center"
+                                                           FontWeight="Medium"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
+                    </Border>
 
                     <!-- Background Count -->
                     <TextBlock Grid.Row="2"
                                x:Name="BackgroundCountText"
-                               FontSize="13"
-                               Foreground="#666"/>
+                               FontSize="14"
+                               FontWeight="Medium"
+                               Foreground="{StaticResource TextSecondary}"/>
                 </Grid>
             </TabItem>
 
             <!-- Settings Tab -->
             <TabItem Header="⚙️ Settings">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <Grid Margin="20">
+                    <Grid Margin="25" Background="{StaticResource ContentBackground}" CornerRadius="12">
+                        <Grid.Effect>
+                            <DropShadowEffect Color="#1A000000" BlurRadius="20" ShadowDepth="4" Opacity="0.1"/>
+                        </Grid.Effect>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -334,52 +543,56 @@
                         <!-- Theme Settings -->
                         <Border Grid.Row="0"
                                 Background="White"
-                                BorderBrush="#ddd"
+                                BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="1"
-                                Padding="20"
+                                Padding="25"
                                 Margin="0,0,0,20"
-                                CornerRadius="8">
+                                CornerRadius="12"
+                                Effect="{StaticResource CardShadow}">
                             <StackPanel>
                                 <TextBlock Text="🎨 Appearance"
                                            FontSize="18"
-                                           FontWeight="SemiBold"
-                                           Foreground="#333"
-                                           Margin="0,0,0,15"/>
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimary}"
+                                           Margin="0,0,0,20"/>
 
                                 <CheckBox x:Name="DarkModeToggle"
                                           Content="Enable Dark Mode (Coming Soon)"
                                           FontSize="14"
-                                          Margin="0,0,0,10"
+                                          Foreground="{StaticResource TextSecondary}"
+                                          Margin="0,0,0,12"
                                           IsEnabled="False"/>
 
                                 <TextBlock Text="Changes will apply immediately"
-                                           FontSize="11"
-                                           Foreground="#999"
-                                           Margin="0,5,0,0"/>
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextTertiary}"
+                                           Margin="0,8,0,0"/>
                             </StackPanel>
                         </Border>
 
                         <!-- File Paths Settings -->
                         <Border Grid.Row="1"
                                 Background="White"
-                                BorderBrush="#ddd"
+                                BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="1"
-                                Padding="20"
+                                Padding="25"
                                 Margin="0,0,0,20"
-                                CornerRadius="8">
+                                CornerRadius="12"
+                                Effect="{StaticResource CardShadow}">
                             <StackPanel>
                                 <TextBlock Text="📁 File Locations"
                                            FontSize="18"
-                                           FontWeight="SemiBold"
-                                           Foreground="#333"
-                                           Margin="0,0,0,15"/>
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimary}"
+                                           Margin="0,0,0,20"/>
 
                                 <!-- Backgrounds Path -->
                                 <TextBlock Text="Backgrounds Folder:"
-                                           FontSize="13"
-                                           Foreground="#666"
-                                           Margin="0,0,0,5"/>
-                                <Grid Margin="0,0,0,15">
+                                           FontSize="14"
+                                           FontWeight="Medium"
+                                           Foreground="{StaticResource TextSecondary}"
+                                           Margin="0,0,0,8"/>
+                                <Grid Margin="0,0,0,20">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -387,28 +600,30 @@
                                     <TextBox x:Name="BackgroundsPathTextBox"
                                              Grid.Column="0"
                                              IsReadOnly="True"
-                                             Padding="10"
-                                             Margin="0,0,10,0"
-                                             Background="#f5f5f5"
-                                             BorderBrush="#ddd"
-                                             BorderThickness="1"/>
+                                             Padding="12"
+                                             Margin="0,0,12,0"
+                                             Background="{StaticResource InputBackground}"
+                                             BorderBrush="{StaticResource BorderBrush}"
+                                             BorderThickness="1"
+                                             CornerRadius="8"
+                                             FontSize="13"
+                                             Foreground="{StaticResource TextPrimary}"/>
                                     <Button Grid.Column="1"
                                             Content="📂 Browse... (Coming Soon)"
-                                            Width="160"
-                                            Height="32"
-                                            FontSize="12"
+                                            MinWidth="170"
+                                            Height="40"
+                                            FontSize="13"
                                             IsEnabled="False"
-                                            Background="#5E35B1"
-                                            Foreground="White"
-                                            BorderThickness="0"/>
+                                            Style="{StaticResource SecondaryButton}"/>
                                 </Grid>
 
                                 <!-- Quotes Path -->
                                 <TextBlock Text="Quotes File:"
-                                           FontSize="13"
-                                           Foreground="#666"
-                                           Margin="0,0,0,5"/>
-                                <Grid Margin="0,0,0,15">
+                                           FontSize="14"
+                                           FontWeight="Medium"
+                                           Foreground="{StaticResource TextSecondary}"
+                                           Margin="0,0,0,8"/>
+                                <Grid Margin="0,0,0,20">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -416,56 +631,69 @@
                                     <TextBox x:Name="QuotesPathTextBox"
                                              Grid.Column="0"
                                              IsReadOnly="True"
-                                             Padding="10"
-                                             Margin="0,0,10,0"
-                                             Background="#f5f5f5"
-                                             BorderBrush="#ddd"
-                                             BorderThickness="1"/>
+                                             Padding="12"
+                                             Margin="0,0,12,0"
+                                             Background="{StaticResource InputBackground}"
+                                             BorderBrush="{StaticResource BorderBrush}"
+                                             BorderThickness="1"
+                                             CornerRadius="8"
+                                             FontSize="13"
+                                             Foreground="{StaticResource TextPrimary}"/>
                                     <Button Grid.Column="1"
                                             Content="📄 Browse... (Coming Soon)"
-                                            Width="160"
-                                            Height="32"
-                                            FontSize="12"
+                                            MinWidth="170"
+                                            Height="40"
+                                            FontSize="13"
                                             IsEnabled="False"
-                                            Background="#5E35B1"
-                                            Foreground="White"
-                                            BorderThickness="0"/>
+                                            Style="{StaticResource SecondaryButton}"/>
                                 </Grid>
 
                                 <Button Content="🔄 Reset to Defaults (Coming Soon)"
-                                        Width="230"
-                                        Height="35"
-                                        FontSize="12"
+                                        MinWidth="250"
+                                        Height="42"
+                                        FontSize="13"
                                         IsEnabled="False"
-                                        Background="#757575"
-                                        Foreground="White"
-                                        BorderThickness="0"
+                                        Style="{StaticResource SecondaryButton}"
                                         HorizontalAlignment="Left"/>
 
-                                <TextBlock Text="⚠️ Changing paths will restart the application"
-                                           FontSize="11"
-                                           Foreground="#ff9800"
-                                           Margin="0,10,0,0"/>
+                                <Border Background="#FFF5E6"
+                                        BorderBrush="#FFB84D"
+                                        BorderThickness="1"
+                                        Padding="12"
+                                        CornerRadius="8"
+                                        Margin="0,15,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="⚠️"
+                                                   FontSize="16"
+                                                   Margin="0,0,8,0"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Text="Changing paths will restart the application"
+                                                   FontSize="12"
+                                                   Foreground="#E65100"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </Border>
 
                         <!-- Information -->
                         <Border Grid.Row="2"
-                                Background="#e3f2fd"
-                                BorderBrush="#2196f3"
+                                Background="#EBF8FF"
+                                BorderBrush="#4299E1"
                                 BorderThickness="1"
-                                Padding="15"
-                                CornerRadius="8">
+                                Padding="20"
+                                CornerRadius="12">
                             <StackPanel>
                                 <TextBlock Text="ℹ️ Default Locations"
-                                           FontSize="14"
-                                           FontWeight="SemiBold"
-                                           Foreground="#1976d2"
-                                           Margin="0,0,0,10"/>
+                                           FontSize="15"
+                                           FontWeight="Bold"
+                                           Foreground="#2C5282"
+                                           Margin="0,0,0,12"/>
                                 <TextBlock x:Name="DefaultPathsInfo"
-                                           FontSize="12"
-                                           Foreground="#555"
-                                           TextWrapping="Wrap"/>
+                                           FontSize="13"
+                                           Foreground="#2C5282"
+                                           TextWrapping="Wrap"
+                                           LineHeight="20"/>
                             </StackPanel>
                         </Border>
                     </Grid>
