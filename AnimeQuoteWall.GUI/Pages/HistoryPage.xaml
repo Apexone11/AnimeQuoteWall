@@ -17,88 +17,146 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <TextBlock Grid.Row="0"
-                   FontSize="22"
-                   FontWeight="Bold"
-                   Foreground="{StaticResource TextPrimary}"
-                   Margin="0,0,0,20">
-            <InlineUIContainer>
-                <iconPacks:PackIconMaterial Kind="History" Width="20" Height="20" VerticalAlignment="Center"/>
-            </InlineUIContainer>
-            <Run Text=" Wallpaper History"/>
-        </TextBlock>
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       FontSize="22" FontWeight="Bold"
+                       Foreground="{DynamicResource TextPrimary}"
+                       VerticalAlignment="Center"
+                       TextOptions.TextRenderingMode="ClearType">
+                <InlineUIContainer>
+                    <iconPacks:PackIconMaterial Kind="History" Width="20" Height="20" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextPrimary}"/>
+                </InlineUIContainer>
+                <Run Text=" Wallpaper History"/>
+            </TextBlock>
+            <Button Grid.Column="1"
+                    x:Name="ClearHistoryButton"
+                    MinWidth="130"
+                    Height="38"
+                    Click="ClearHistoryButton_Click"
+                    Style="{StaticResource ModernDangerButton}"
+                    Padding="12,8"
+                    ToolTip="Clear all history entries">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="DeleteSweepOutline" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Clear All" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </Grid>
 
         <!-- History Grid -->
         <Border Grid.Row="1"
-                Background="{StaticResource HoverBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource HoverBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="16"
                 Padding="12">
-            <ScrollViewer x:Name="HistoryScrollViewer"
-                          VerticalScrollBarVisibility="Auto"
-                          SizeChanged="HistoryScrollViewer_SizeChanged">
-                <ItemsControl x:Name="HistoryItemsControl">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid x:Name="HistoryGrid" Columns="3" HorizontalAlignment="Stretch"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Margin="8"
-                                    Padding="12"
-                                    Background="{StaticResource CardBackground}"
-                                    BorderBrush="{StaticResource BorderColor}"
-                                    BorderThickness="1"
-                                    CornerRadius="12"
-                                    Cursor="Hand"
-                                    MouseLeftButtonDown="HistoryItem_MouseLeftButtonDown">
-                                <Border.Effect>
-                                    <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="8" ShadowDepth="1"/>
-                                </Border.Effect>
-                                <StackPanel>
-                                    <Image Source="{Binding ThumbnailPath}"
-                                           Stretch="Uniform"
-                                           Height="120"
-                                           Margin="0,0,0,8"/>
-                                    <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:g}'}"
-                                               FontSize="12"
-                                               Foreground="{StaticResource TextSecondary}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,0,0,4"/>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                                        <Button Click="RestoreButton_Click"
-                                                Tag="{Binding Entry}"
-                                                Style="{StaticResource ModernPrimaryButton}"
-                                                Padding="10,6"
-                                                Margin="0,0,6,0"
-                                                HorizontalAlignment="Stretch"
-                                                HorizontalContentAlignment="Center">
-                                            <StackPanel Orientation="Horizontal">
-                                                <iconPacks:PackIconMaterial Kind="BackupRestore" Width="14" Height="14" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Restore" VerticalAlignment="Center" FontSize="12"/>
-                                            </StackPanel>
-                                        </Button>
-                                        <Button Click="DeleteButton_Click"
-                                                Tag="{Binding Entry}"
-                                                Style="{StaticResource ModernDangerButton}"
-                                                Padding="10,6"
-                                                HorizontalAlignment="Stretch"
-                                                HorizontalContentAlignment="Center">
-                                            <StackPanel Orientation="Horizontal">
-                                                <iconPacks:PackIconMaterial Kind="DeleteOutline" Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Delete" VerticalAlignment="Center" FontSize="12"/>
-                                            </StackPanel>
-                                        </Button>
+            <Grid>
+                <!-- Empty State -->
+                <Border x:Name="EmptyStateBorder"
+                        Visibility="Collapsed"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center">
+                        <iconPacks:PackIconMaterial Kind="History"
+                                                    Width="56" Height="56"
+                                                    HorizontalAlignment="Center"
+                                                    Margin="0,0,0,16"
+                                                    Opacity="0.2"
+                                                    Foreground="{DynamicResource TextSecondary}"/>
+                        <TextBlock Text="No wallpaper history yet"
+                                   FontSize="16" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   HorizontalAlignment="Center"
+                                   TextOptions.TextRenderingMode="ClearType"/>
+                        <TextBlock Text="Generate your first wallpaper to see it here"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   HorizontalAlignment="Center"
+                                   Opacity="0.6"
+                                   Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <ScrollViewer x:Name="HistoryScrollViewer"
+                              VerticalScrollBarVisibility="Auto"
+                              SizeChanged="HistoryScrollViewer_SizeChanged">
+                    <ItemsControl x:Name="HistoryItemsControl">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid x:Name="HistoryGrid" Columns="3" HorizontalAlignment="Stretch"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="8"
+                                        Padding="12"
+                                        Background="{DynamicResource CardBackground}"
+                                        BorderBrush="{DynamicResource BorderColor}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Cursor="Hand"
+                                        MouseLeftButtonDown="HistoryItem_MouseLeftButtonDown">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="8" ShadowDepth="1"/>
+                                    </Border.Effect>
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="BorderBrush" Value="#818CF8"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <Border CornerRadius="8" ClipToBounds="True" Margin="0,0,0,8">
+                                            <Image Source="{Binding ThumbnailPath}"
+                                                   Stretch="UniformToFill"
+                                                   Height="150"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:g}'}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextSecondary}"
+                                                   Margin="0,0,0,8"
+                                                   TextOptions.TextRenderingMode="ClearType"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                            <Button Click="RestoreButton_Click"
+                                                    Tag="{Binding Entry}"
+                                                    Style="{StaticResource ModernPrimaryButton}"
+                                                    Padding="10,6"
+                                                    Margin="0,0,6,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Center">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <iconPacks:PackIconMaterial Kind="BackupRestore" Width="13" Height="13" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Restore" VerticalAlignment="Center" FontSize="12"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Click="DeleteButton_Click"
+                                                    Tag="{Binding Entry}"
+                                                    Style="{StaticResource ModernDangerButton}"
+                                                    Padding="10,6"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Center">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <iconPacks:PackIconMaterial Kind="DeleteOutline" Width="13" Height="13" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Delete" VerticalAlignment="Center" FontSize="12"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
                                     </StackPanel>
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </Page>
-

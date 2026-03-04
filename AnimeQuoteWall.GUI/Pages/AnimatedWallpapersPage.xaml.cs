@@ -88,8 +88,8 @@ public partial class AnimatedWallpapersPage : Page
         Loaded += async (s, e) =>
         {
             InitializeMonitorSelection();
-            UpdateAnimatedApplyButtonState();
             await LoadAnimatedWallpapersAsync();
+            await UpdateWallpaperEngineStatusAsync();
         };
         
         Unloaded += (s, e) => _cancellationTokenSource?.Cancel();
@@ -328,19 +328,10 @@ public partial class AnimatedWallpapersPage : Page
 
     /// <summary>
     /// Handles the Add Animated button click event.
-    /// Temporarily disabled - library is read-only.
+    /// Opens a file dialog so users can import animated wallpapers.
     /// </summary>
     private async void AddAnimatedButton_Click(object sender, RoutedEventArgs e)
     {
-        System.Windows.MessageBox.Show(
-            "Adding animated wallpapers is temporarily disabled.\n\n" +
-            "This feature is read-only for stability and will return in a future update.",
-            "Feature Temporarily Disabled",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
-        return;
-        
-        /* Temporarily disabled
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
             Title = "Select Animated Wallpapers",
@@ -351,6 +342,7 @@ public partial class AnimatedWallpapersPage : Page
         if (dialog.ShowDialog() == true)
         {
             int copiedCount = 0;
+            var errors = new List<string>();
 
             foreach (var file in dialog.FileNames)
             {
@@ -367,7 +359,7 @@ public partial class AnimatedWallpapersPage : Page
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show($"Failed to copy {Path.GetFileName(file)}: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    errors.Add($"{Path.GetFileName(file)}: {ex.Message}");
                 }
             }
 
@@ -375,27 +367,22 @@ public partial class AnimatedWallpapersPage : Page
 
             if (copiedCount > 0)
             {
-                System.Windows.MessageBox.Show($"{copiedCount} animated wallpaper(s) added!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                var msg = $"{copiedCount} animated wallpaper(s) added!";
+                if (errors.Count > 0) msg += "\n\nErrors:\n" + string.Join("\n", errors);
+                System.Windows.MessageBox.Show(msg, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else if (errors.Count > 0)
+            {
+                System.Windows.MessageBox.Show("Failed to add wallpapers:\n" + string.Join("\n", errors), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        */
     }
 
     /// <summary>
     /// Handles the Delete Animated button click event.
-    /// Temporarily disabled - library is read-only.
     /// </summary>
     private async void DeleteAnimatedButton_Click(object sender, RoutedEventArgs e)
     {
-        System.Windows.MessageBox.Show(
-            "Deleting animated wallpapers is temporarily disabled.\n\n" +
-            "This feature is read-only for stability and will return in a future update.",
-            "Feature Temporarily Disabled",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
-        return;
-        
-        /* Temporarily disabled
         if (_selectedItem == null || string.IsNullOrWhiteSpace(_selectedItem.FilePath))
         {
             System.Windows.MessageBox.Show("Please select an animated wallpaper to delete.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -415,39 +402,27 @@ public partial class AnimatedWallpapersPage : Page
                 if (File.Exists(_selectedItem.FilePath))
                 {
                     File.Delete(_selectedItem.FilePath);
-                    
-                    // Also delete thumbnail if it exists
+
+                    // Also delete cached thumbnail if it exists
                     try
                     {
                         var thumbnailPath = _thumbnailService.GetOrCreateThumbnail(_selectedItem.FilePath);
                         if (!string.IsNullOrEmpty(thumbnailPath) && File.Exists(thumbnailPath))
-                        {
                             File.Delete(thumbnailPath);
-                        }
                     }
-                    catch { }
-                    
-                    _selectedItem = null;
-                    await LoadAnimatedWallpapersAsync();
-                    
-                    if (ApplyAnimatedButton != null)
-                        ApplyAnimatedButton.IsEnabled = false;
-                    if (DeleteAnimatedButton != null)
-                        DeleteAnimatedButton.IsEnabled = false;
-
-                    // Reset selection
-                    _selectedItem = null;
-                    _selectedBorder = null;
-
-                    System.Windows.MessageBox.Show("Animated wallpaper deleted successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    catch { /* ignore thumbnail cleanup errors */ }
                 }
+
+                _selectedItem = null;
+                _selectedBorder = null;
+                await LoadAnimatedWallpapersAsync();
+                System.Windows.MessageBox.Show("Animated wallpaper deleted successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show($"Failed to delete animated wallpaper: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        */
     }
 
     /// <summary>
@@ -517,12 +492,9 @@ public partial class AnimatedWallpapersPage : Page
             border.Background = new System.Windows.Media.SolidColorBrush(
                 System.Windows.Media.Color.FromArgb(30, 129, 140, 248)); // Light purple tint
             
-            // Update button states
+            // Update button states — enabled when an item is selected
             if (ApplyAnimatedButton != null)
-            {
-                // Only enable if feature flag is enabled
-                ApplyAnimatedButton.IsEnabled = AppConfiguration.EnableAnimatedApply && _selectedItem != null;
-            }
+                ApplyAnimatedButton.IsEnabled = _selectedItem != null;
             if (DeleteAnimatedButton != null)
                 DeleteAnimatedButton.IsEnabled = true;
         }
@@ -617,24 +589,35 @@ public partial class AnimatedWallpapersPage : Page
     }
 
     /// <summary>
-    /// Updates the animated apply button state based on feature flag.
+    /// Checks Wallpaper Engine availability and updates the status bar accordingly.
     /// </summary>
-    private void UpdateAnimatedApplyButtonState()
+    private async Task UpdateWallpaperEngineStatusAsync()
     {
         try
         {
-            if (ApplyAnimatedButton == null) return;
-            
-            var isEnabled = AppConfiguration.EnableAnimatedApply;
-            ApplyAnimatedButton.IsEnabled = isEnabled;
-            
-            if (!isEnabled)
+            var service = new AnimatedWallpaperService();
+            var available = await service.IsWallpaperEngineAvailableAsync().ConfigureAwait(true);
+
+            if (WallpaperEngineStatusBar == null || WallpaperEngineStatusText == null) return;
+
+            if (available)
             {
-                ApplyAnimatedButton.ToolTip = "Animated wallpaper apply is temporarily disabled for stability.\nThis feature will return in a future update.";
+                WallpaperEngineStatusText.Text = "Wallpaper Engine detected — animated wallpapers fully supported.";
+                WallpaperEngineStatusBar.Visibility = Visibility.Visible;
             }
             else
             {
-                ApplyAnimatedButton.ToolTip = "Apply the selected animated wallpaper to your desktop";
+                // Show as informational warning (amber) instead of green
+                WallpaperEngineStatusBar.Background = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x78, 0x35, 0x0F));
+                WallpaperEngineStatusBar.BorderBrush = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0xD9, 0x77, 0x06));
+
+                var statusIcon = WallpaperEngineStatusBar.FindName("WallpaperEngineStatusBar") as System.Windows.Controls.Border;
+                WallpaperEngineStatusText.Foreground = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0xFD, 0xE6, 0x8A));
+                WallpaperEngineStatusText.Text = "Wallpaper Engine not found — GIFs will use first-frame fallback; MP4/WebM/MOV require Wallpaper Engine from Steam.";
+                WallpaperEngineStatusBar.Visibility = Visibility.Visible;
             }
         }
         catch { /* ignore */ }
@@ -645,19 +628,6 @@ public partial class AnimatedWallpapersPage : Page
     /// </summary>
     private void ApplyAnimatedButton_Click(object sender, RoutedEventArgs e)
     {
-        // Check feature flag first
-        if (!AppConfiguration.EnableAnimatedApply)
-        {
-            System.Windows.MessageBox.Show(
-                "Animated wallpaper apply is temporarily disabled for stability.\n\n" +
-                "This feature will return in a future update.\n\n" +
-                "You can still manage your animated wallpaper library and view thumbnails.",
-                "Feature Temporarily Disabled",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-            return;
-        }
-
         if (_selectedItem == null || string.IsNullOrWhiteSpace(_selectedItem.FilePath))
         {
             System.Windows.MessageBox.Show("Please select an animated wallpaper first.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Warning);

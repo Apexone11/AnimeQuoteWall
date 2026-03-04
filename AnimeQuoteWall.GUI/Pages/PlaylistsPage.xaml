@@ -27,7 +27,7 @@
             <TextBlock Text="Playlists"
                        FontSize="22"
                        FontWeight="Bold"
-                       Foreground="{StaticResource TextPrimary}"
+                       Foreground="{DynamicResource TextPrimary}"
                        VerticalAlignment="Center"
                        Grid.Column="0"/>
             <StackPanel Grid.Column="1"
@@ -75,8 +75,8 @@
 
         <!-- Playlists List -->
         <Border Grid.Row="1"
-                Background="{StaticResource HoverBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource HoverBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="12"
                 Margin="0,0,0,12"
@@ -91,8 +91,8 @@
                         <DataTemplate>
                             <Border Margin="3,4"
                                     Padding="14"
-                                    Background="{StaticResource CardBackground}"
-                                    BorderBrush="{StaticResource BorderColor}"
+                                    Background="{DynamicResource CardBackground}"
+                                    BorderBrush="{DynamicResource BorderColor}"
                                     BorderThickness="1"
                                     CornerRadius="10"
                                     Cursor="Hand">
@@ -109,22 +109,22 @@
                                             <TextBlock Text="{Binding Name}"
                                                        FontSize="16"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{StaticResource TextPrimary}"/>
+                                                       Foreground="{DynamicResource TextPrimary}"/>
                                             <TextBlock Text=" ● "
                                                        FontSize="12"
-                                                       Foreground="{StaticResource TextTertiary}"
+                                                       Foreground="{DynamicResource TextTertiary}"
                                                        Margin="8,0,0,0"/>
                                             <TextBlock Text="{Binding ScheduleType}"
                                                        FontSize="13"
-                                                       Foreground="{StaticResource TextSecondary}"/>
+                                                       Foreground="{DynamicResource TextSecondary}"/>
                                         </StackPanel>
                                         <TextBlock Text="{Binding WallpaperEntries.Count, StringFormat='{}{0} wallpapers'}"
                                                    FontSize="13"
-                                                   Foreground="{StaticResource TextSecondary}"
+                                                   Foreground="{DynamicResource TextSecondary}"
                                                    Margin="0,0,0,6"/>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock FontSize="12"
-                                                       Foreground="{StaticResource TextTertiary}">
+                                                       Foreground="{DynamicResource TextTertiary}">
                                                 <TextBlock.Text>
                                                     <MultiBinding StringFormat="{}{0} - {1}">
                                                         <Binding Path="ScheduleType"/>
@@ -134,13 +134,13 @@
                                             </TextBlock>
                                             <TextBlock Text=" ● "
                                                        FontSize="12"
-                                                       Foreground="{StaticResource TextTertiary}"
+                                                       Foreground="{DynamicResource TextTertiary}"
                                                        Margin="8,0,8,0"/>
                                             <TextBlock>
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="Text" Value="Disabled"/>
-                                                        <Setter Property="Foreground" Value="{StaticResource TextTertiary}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding Enabled}" Value="True">
                                                                 <Setter Property="Text" Value="Enabled"/>
@@ -173,7 +173,7 @@
         <TextBlock Grid.Row="2"
                    x:Name="PlaylistCountText"
                    FontSize="14"
-                   Foreground="{StaticResource TextSecondary}"
+                   Foreground="{DynamicResource TextSecondary}"
                    FontWeight="Medium"
                    Margin="0,4,0,0">
             <Run Text="Total Playlists: "/>
@@ -181,4 +181,5 @@
         </TextBlock>
     </Grid>
 </Page>
+
 

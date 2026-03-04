@@ -105,7 +105,11 @@ public partial class HistoryPage : Page
 
                     // Set items source to display in grid
                     HistoryItemsControl.ItemsSource = items;
-                    
+
+                    // Show/hide empty state
+                    if (EmptyStateBorder != null)
+                        EmptyStateBorder.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
                     // Update grid columns based on available width
                     UpdateHistoryGridColumns();
                 }
@@ -236,6 +240,30 @@ public partial class HistoryPage : Page
     private void HistoryItem_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         // Could open full preview dialog here in the future
+    }
+
+    private async void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var result = System.Windows.MessageBox.Show(
+                "Are you sure you want to clear all wallpaper history?",
+                "Clear History",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            var entries = await _historyService.LoadHistoryEntriesAsync();
+            foreach (var entry in entries)
+                await _historyService.DeleteFromHistoryAsync(entry);
+
+            LoadHistoryAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Failed to clear history: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 }
 

@@ -207,6 +207,88 @@ public partial class SettingsPage : Page
     }
 
     /// <summary>
+    /// Shows the restart-required warning banner.
+    /// </summary>
+    private void ShowRestartWarning()
+    {
+        if (RestartWarningBanner != null)
+            RestartWarningBanner.Visibility = Visibility.Visible;
+    }
+
+    /// <summary>
+    /// Shows or hides the path validation error banner.
+    /// </summary>
+    private void ShowPathError(string? message)
+    {
+        if (PathValidationErrorBanner == null) return;
+        if (string.IsNullOrEmpty(message))
+        {
+            PathValidationErrorBanner.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            if (PathValidationErrorText != null)
+                PathValidationErrorText.Text = message;
+            PathValidationErrorBanner.Visibility = Visibility.Visible;
+        }
+    }
+
+    /// <summary>
+    /// Validates that a directory path exists (or can be created) and is writable.
+    /// Returns an error message on failure, or null on success.
+    /// </summary>
+    private static string? ValidateDirectoryPath(string path)
+    {
+        try
+        {
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            // Test write access
+            var testFile = Path.Combine(path, $"__write_test_{Guid.NewGuid():N}.tmp");
+            File.WriteAllText(testFile, "test");
+            File.Delete(testFile);
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return $"Access denied: you do not have write permission to '{path}'.";
+        }
+        catch (Exception ex)
+        {
+            return $"Path error: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Validates that a file path's parent directory exists (or can be created) and is writable.
+    /// Returns an error message on failure, or null on success.
+    /// </summary>
+    private static string? ValidateFilePath(string path)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+                var testFile = Path.Combine(dir, $"__write_test_{Guid.NewGuid():N}.tmp");
+                File.WriteAllText(testFile, "test");
+                File.Delete(testFile);
+            }
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return $"Access denied: you do not have write permission to the directory containing '{path}'.";
+        }
+        catch (Exception ex)
+        {
+            return $"Path error: {ex.Message}";
+        }
+    }
+
+    /// <summary>
     /// Handles the Browse Backgrounds button click event.
     /// Opens a folder browser dialog to select a custom backgrounds directory.
     /// </summary>
@@ -218,14 +300,22 @@ public partial class SettingsPage : Page
         };
         if (dialog.ShowDialog() == Forms.DialogResult.OK)
         {
+            var validationError = ValidateDirectoryPath(dialog.SelectedPath);
+            if (validationError != null)
+            {
+                ShowPathError(validationError);
+                return;
+            }
             try
             {
+                ShowPathError(null);
                 AppConfiguration.SetCustomBackgroundsPath(dialog.SelectedPath);
                 UpdatePathsUI();
+                ShowRestartWarning();
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Invalid backgrounds path: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowPathError($"Invalid backgrounds path: {ex.Message}");
             }
         }
     }
@@ -244,14 +334,22 @@ public partial class SettingsPage : Page
         };
         if (dialog.ShowDialog() == true)
         {
+            var validationError = ValidateFilePath(dialog.FileName);
+            if (validationError != null)
+            {
+                ShowPathError(validationError);
+                return;
+            }
             try
             {
+                ShowPathError(null);
                 AppConfiguration.SetCustomQuotesPath(dialog.FileName);
                 UpdatePathsUI();
+                ShowRestartWarning();
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Invalid quotes file path: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowPathError($"Invalid quotes file path: {ex.Message}");
             }
         }
     }
@@ -270,14 +368,22 @@ public partial class SettingsPage : Page
         };
         if (dialog.ShowDialog() == true)
         {
+            var validationError = ValidateFilePath(dialog.FileName);
+            if (validationError != null)
+            {
+                ShowPathError(validationError);
+                return;
+            }
             try
             {
+                ShowPathError(null);
                 AppConfiguration.SetCustomOutputPath(dialog.FileName);
                 UpdatePathsUI();
+                ShowRestartWarning();
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Invalid output path: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowPathError($"Invalid output path: {ex.Message}");
             }
         }
     }
@@ -293,10 +399,15 @@ public partial class SettingsPage : Page
             AppConfiguration.ResetToDefaults();
             AppConfiguration.SetCustomOutputPath(null);
             UpdatePathsUI();
+            ShowPathError(null);
+            // Hide restart banner only if it was previously triggered by a path change
+            // (after reset, paths are back to default — no restart needed for the next session)
+            if (RestartWarningBanner != null)
+                RestartWarningBanner.Visibility = Visibility.Collapsed;
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"Failed to reset paths: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowPathError($"Failed to reset paths: {ex.Message}");
         }
     }
 

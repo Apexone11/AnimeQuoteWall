@@ -43,8 +43,8 @@ public class UserSettings
     public Dictionary<int, string> PerMonitorWallpaperPaths { get; set; } = new();
     
     // Feature flags
-    public bool EnableAnimatedApply { get; set; } = false; // Temporarily disabled for stability
-    public bool EnablePerMonitorApply { get; set; } = false; // Temporarily disabled for stability
+    public bool EnableAnimatedApply { get; set; } = true;
+    public bool EnablePerMonitorApply { get; set; } = true;
 }
 
 /// <summary>
@@ -605,21 +605,19 @@ public class AppConfiguration
 
     /// <summary>
     /// Gets or sets whether animated wallpaper apply is enabled.
-    /// Temporarily disabled by default for stability.
     /// </summary>
     public static bool EnableAnimatedApply
     {
-        get { LoadSettings(); return _userSettings?.EnableAnimatedApply ?? false; }
+        get { LoadSettings(); return _userSettings?.EnableAnimatedApply ?? true; }
         set { LoadSettings(); if (_userSettings != null) { _userSettings.EnableAnimatedApply = value; SaveSettings(); } }
     }
 
     /// <summary>
     /// Gets or sets whether per-monitor wallpaper apply is enabled.
-    /// Temporarily disabled by default for stability.
     /// </summary>
     public static bool EnablePerMonitorApply
     {
-        get { LoadSettings(); return _userSettings?.EnablePerMonitorApply ?? false; }
+        get { LoadSettings(); return _userSettings?.EnablePerMonitorApply ?? true; }
         set { LoadSettings(); if (_userSettings != null) { _userSettings.EnablePerMonitorApply = value; SaveSettings(); } }
     }
 

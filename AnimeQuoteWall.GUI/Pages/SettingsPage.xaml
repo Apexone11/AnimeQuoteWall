@@ -17,7 +17,7 @@
                 <StackPanel>
                     <TextBlock FontSize="18"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimary}"
+                               Foreground="{DynamicResource TextPrimary}"
                                Margin="0,0,0,18">
                         <InlineUIContainer>
                             <iconPacks:PackIconMaterial Kind="PaletteOutline" Width="18" Height="18" VerticalAlignment="Center"/>
@@ -28,7 +28,7 @@
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock Text="Theme:"
                                    FontSize="14"
-                                   Foreground="{StaticResource TextSecondary}"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,12,0"/>
                         <ComboBox x:Name="ThemeModeComboBox"
@@ -44,7 +44,7 @@
 
                     <TextBlock Text="Theme changes will apply after application restart"
                                FontSize="12"
-                               Foreground="{StaticResource TextTertiary}"
+                               Foreground="{DynamicResource TextTertiary}"
                                Margin="8,8,0,0"/>
                 </StackPanel>
             </Border>
@@ -54,7 +54,7 @@
                 <StackPanel>
                     <TextBlock FontSize="18"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimary}"
+                               Foreground="{DynamicResource TextPrimary}"
                                Margin="0,0,0,18">
                         <InlineUIContainer>
                             <iconPacks:PackIconMaterial Kind="CogOutline" Width="18" Height="18" VerticalAlignment="Center"/>
@@ -83,29 +83,29 @@
                               Checked="AutoSaveHistoryCheckBox_Checked"
                               Unchecked="AutoSaveHistoryCheckBox_Unchecked"/>
 
-                    <Separator Margin="0,8,0,12" Background="{StaticResource BorderColor}"/>
+                    <Separator Margin="0,8,0,12" Background="{DynamicResource BorderColor}"/>
 
-                    <TextBlock Text="Experimental Features"
+                    <TextBlock Text="Advanced Features"
                                FontSize="13"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource TextSecondary}"
+                               Foreground="{DynamicResource TextSecondary}"
                                Margin="0,0,0,8"/>
 
                     <CheckBox x:Name="EnableAnimatedApplyCheckBox"
-                              Content="Enable animated wallpaper apply (experimental)"
+                              Content="Enable animated wallpaper apply"
                               Style="{StaticResource ModernCheckBox}"
                               Margin="0,0,0,12"
                               Checked="EnableAnimatedApplyCheckBox_Checked"
                               Unchecked="EnableAnimatedApplyCheckBox_Unchecked"
-                              ToolTip="Allow applying animated wallpapers. This feature is experimental and may not work correctly."/>
+                              ToolTip="Allow applying animated wallpapers via Wallpaper Engine integration."/>
 
                     <CheckBox x:Name="EnablePerMonitorApplyCheckBox"
-                              Content="Enable per-monitor wallpaper apply (experimental)"
+                              Content="Enable per-monitor wallpaper apply"
                               Style="{StaticResource ModernCheckBox}"
                               Margin="0,0,0,0"
                               Checked="EnablePerMonitorApplyCheckBox_Checked"
                               Unchecked="EnablePerMonitorApplyCheckBox_Unchecked"
-                              ToolTip="Allow applying different wallpapers to different monitors. This feature is experimental and may not work correctly."/>
+                              ToolTip="Allow applying different wallpapers to different monitors."/>
                 </StackPanel>
             </Border>
 
@@ -114,7 +114,7 @@
                 <StackPanel>
                     <TextBlock FontSize="18"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimary}"
+                               Foreground="{DynamicResource TextPrimary}"
                                Margin="0,0,0,18">
                         <InlineUIContainer>
                             <iconPacks:PackIconMaterial Kind="Monitor" Width="18" Height="18" VerticalAlignment="Center"/>
@@ -126,7 +126,7 @@
                         <TextBlock Text="Monitor Mode:"
                                    FontSize="13"
                                    FontWeight="Medium"
-                                   Foreground="{StaticResource TextSecondary}"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    Margin="0,0,0,8"/>
                         <ComboBox x:Name="MonitorModeComboBox"
                                   Width="280"
@@ -139,18 +139,18 @@
                         </ComboBox>
                         <TextBlock Text="Select how wallpapers are applied across multiple monitors"
                                    FontSize="11"
-                                   Foreground="{StaticResource TextTertiary}"
+                                   Foreground="{DynamicResource TextTertiary}"
                                    Margin="0,6,0,0"
                                    TextWrapping="Wrap"/>
                     </StackPanel>
 
-                    <Separator Margin="0,8,0,16" Background="{StaticResource BorderColor}"/>
+                    <Separator Margin="0,8,0,16" Background="{DynamicResource BorderColor}"/>
 
                     <StackPanel x:Name="MonitorSelectionPanel">
                         <TextBlock Text="Select Monitors:"
                                    FontSize="13"
                                    FontWeight="Medium"
-                                   Foreground="{StaticResource TextSecondary}"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    Margin="0,0,0,10"/>
                         <StackPanel x:Name="MonitorCheckboxesPanel" Margin="0,0,0,8"/>
                         <Button x:Name="RefreshMonitorsButton"
@@ -167,7 +167,7 @@
                         </Button>
                         <TextBlock Text="Monitors are automatically detected. Click refresh if you connected/disconnected a monitor."
                                    FontSize="11"
-                                   Foreground="{StaticResource TextTertiary}"
+                                   Foreground="{DynamicResource TextTertiary}"
                                    Margin="0,8,0,0"
                                    TextWrapping="Wrap"/>
                     </StackPanel>
@@ -179,7 +179,7 @@
                 <StackPanel>
                     <TextBlock FontSize="18"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimary}"
+                               Foreground="{DynamicResource TextPrimary}"
                                Margin="0,0,0,20">
                         <InlineUIContainer>
                             <iconPacks:PackIconMaterial Kind="FolderOutline" Width="18" Height="18" VerticalAlignment="Center"/>
@@ -192,7 +192,7 @@
                         <TextBlock Text="Backgrounds Folder:"
                                    FontSize="13"
                                    FontWeight="Medium"
-                                   Foreground="{StaticResource TextSecondary}"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    Margin="0,0,0,8"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -204,11 +204,11 @@
                                      IsReadOnly="True"
                                      Padding="12"
                                      Margin="0,0,10,0"
-                                     Background="{StaticResource HoverBackground}"
-                                     BorderBrush="{StaticResource BorderColor}"
+                                     Background="{DynamicResource HoverBackground}"
+                                     BorderBrush="{DynamicResource BorderColor}"
                                      BorderThickness="1"
                                      FontSize="13"
-                                     Foreground="{StaticResource TextPrimary}"/>
+                                     Foreground="{DynamicResource TextPrimary}"/>
                             <Button x:Name="BrowseBackgroundsButton"
                                     Grid.Column="1"
                                     MinWidth="120"
@@ -229,7 +229,7 @@
                         <TextBlock Text="Quotes File:"
                                    FontSize="13"
                                    FontWeight="Medium"
-                                   Foreground="{StaticResource TextSecondary}"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    Margin="0,0,0,8"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -241,11 +241,11 @@
                                      IsReadOnly="True"
                                      Padding="12"
                                      Margin="0,0,10,0"
-                                     Background="{StaticResource HoverBackground}"
-                                     BorderBrush="{StaticResource BorderColor}"
+                                     Background="{DynamicResource HoverBackground}"
+                                     BorderBrush="{DynamicResource BorderColor}"
                                      BorderThickness="1"
                                      FontSize="13"
-                                     Foreground="{StaticResource TextPrimary}"/>
+                                     Foreground="{DynamicResource TextPrimary}"/>
                             <Button x:Name="BrowseQuotesButton"
                                     Grid.Column="1"
                                     MinWidth="120"
@@ -266,7 +266,7 @@
                         <TextBlock Text="Output Wallpaper Path:"
                                    FontSize="13"
                                    FontWeight="Medium"
-                                   Foreground="{StaticResource TextSecondary}"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    Margin="0,0,0,8"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -278,11 +278,11 @@
                                      IsReadOnly="True"
                                      Padding="12"
                                      Margin="0,0,10,0"
-                                     Background="{StaticResource HoverBackground}"
-                                     BorderBrush="{StaticResource BorderColor}"
+                                     Background="{DynamicResource HoverBackground}"
+                                     BorderBrush="{DynamicResource BorderColor}"
                                      BorderThickness="1"
                                      FontSize="13"
-                                     Foreground="{StaticResource TextPrimary}"/>
+                                     Foreground="{DynamicResource TextPrimary}"/>
                             <Button x:Name="BrowseOutputButton"
                                     Grid.Column="1"
                                     MinWidth="120"
@@ -311,17 +311,45 @@
                         </StackPanel>
                     </Button>
 
-                    <Border Background="{StaticResource HoverBackground}"
-                            BorderBrush="{StaticResource BorderColor}"
+                    <!-- Restart Warning Banner — shown only when paths have changed -->
+                    <Border x:Name="RestartWarningBanner"
+                            Background="#78350F"
+                            BorderBrush="#D97706"
                             BorderThickness="1"
                             CornerRadius="8"
-                            Padding="12"
-                            Margin="0,16,0,0">
+                            Padding="14,10"
+                            Margin="0,16,0,0"
+                            Visibility="Collapsed">
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="AlertOutline" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Changing paths will restart the application"
+                            <iconPacks:PackIconMaterial Kind="AlertCircleOutline" Width="18" Height="18" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#FCD34D"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Path Changed — Restart Required"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="#FEF3C7"
+                                           Margin="0,0,0,2"/>
+                                <TextBlock Text="The new path will take effect the next time you restart the application."
+                                           FontSize="12"
+                                           Foreground="#FDE68A"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <!-- Path validation error banner — shown when a path has a problem -->
+                    <Border x:Name="PathValidationErrorBanner"
+                            Background="#7F1D1D"
+                            BorderBrush="#EF4444"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="14,10"
+                            Margin="0,8,0,0"
+                            Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="CloseCircleOutline" Width="18" Height="18" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#FCA5A5"/>
+                            <TextBlock x:Name="PathValidationErrorText"
                                        FontSize="12"
-                                       Foreground="{StaticResource TextSecondary}"
+                                       Foreground="#FECACA"
+                                       TextWrapping="Wrap"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
@@ -329,8 +357,8 @@
             </Border>
 
             <!-- Information Card -->
-            <Border Background="{StaticResource CardBackground}"
-                    BorderBrush="{StaticResource BorderColor}"
+            <Border Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="20"
@@ -341,7 +369,7 @@
                 <StackPanel>
                     <TextBlock FontSize="16"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimary}"
+                               Foreground="{DynamicResource TextPrimary}"
                                Margin="0,0,0,12">
                         <InlineUIContainer>
                             <iconPacks:PackIconMaterial Kind="InformationOutline" Width="18" Height="18" VerticalAlignment="Center"/>
@@ -350,7 +378,7 @@
                     </TextBlock>
                     <TextBlock x:Name="DefaultPathsInfo"
                                FontSize="13"
-                               Foreground="{StaticResource TextSecondary}"
+                               Foreground="{DynamicResource TextSecondary}"
                                TextWrapping="Wrap"
                                LineHeight="20"/>
                 </StackPanel>
@@ -358,4 +386,5 @@
         </StackPanel>
     </ScrollViewer>
 </Page>
+
 

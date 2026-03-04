@@ -15,29 +15,136 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*" MinHeight="300"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Preview Section Header -->
-        <TextBlock Grid.Row="0"
-                   Text="Wallpaper Preview"
-                   FontSize="22"
-                   FontWeight="Bold"
-                   Foreground="{StaticResource TextPrimary}"
-                   Margin="0,0,0,28"
-                   RenderOptions.BitmapScalingMode="HighQuality"
-                   TextOptions.TextRenderingMode="ClearType"/>
+        <!-- ── Toolbar Row ── -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource CardBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="16,10"
+                Margin="0,0,0,16">
+            <DockPanel>
+                <!-- Left: Generate actions -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <Button x:Name="GenerateButton"
+                            MinWidth="160"
+                            Height="40"
+                            Click="GenerateButton_Click"
+                            Style="{StaticResource ModernPrimaryButton}"
+                            Padding="14,8"
+                            ToolTip="Generate wallpaper for selected monitor">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="FlashOutline" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Generate" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="GenerateAllMonitorsButton"
+                            MinWidth="180"
+                            Height="40"
+                            Click="GenerateAllMonitorsButton_Click"
+                            Style="{StaticResource ModernSuccessButton}"
+                            Margin="8,0,0,0"
+                            Padding="14,8"
+                            ToolTip="Generate and apply a new wallpaper for every connected monitor">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Monitor" Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="All Monitors" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="RefreshButton"
+                            MinWidth="120"
+                            Height="40"
+                            Click="RefreshButton_Click"
+                            Style="{StaticResource ModernSecondaryButton}"
+                            Margin="8,0,0,0"
+                            Padding="12,8">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Refresh" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="RemoveGeneratedButton"
+                            MinWidth="160"
+                            Height="40"
+                            Click="RemoveGeneratedButton_Click"
+                            Style="{StaticResource ModernDangerButton}"
+                            Margin="8,0,0,0"
+                            Padding="12,8"
+                            ToolTip="Remove the generated wallpaper and restore previous">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="DeleteOutline" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Remove" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
 
-        <!-- Multi-Monitor Preview Card -->
+                <!-- Right: Apply + Monitor selector + Zoom -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                    <!-- Zoom controls -->
+                    <Button x:Name="ZoomOutButton" Width="36" Height="36" Click="ZoomOutButton_Click"
+                            Style="{StaticResource ModernSecondaryButton}" ToolTip="Zoom Out" Padding="0">
+                        <iconPacks:PackIconMaterial Kind="MagnifyMinusOutline" Width="16" Height="16"/>
+                    </Button>
+                    <TextBlock x:Name="ZoomLevelText" Text="100%" FontSize="12" FontWeight="Medium"
+                               Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"
+                               Margin="6,0" MinWidth="38" TextAlignment="Center"/>
+                    <Button x:Name="ZoomInButton" Width="36" Height="36" Click="ZoomInButton_Click"
+                            Style="{StaticResource ModernSecondaryButton}" ToolTip="Zoom In" Padding="0">
+                        <iconPacks:PackIconMaterial Kind="MagnifyPlusOutline" Width="16" Height="16"/>
+                    </Button>
+                    <Button x:Name="ZoomResetButton" Width="36" Height="36" Click="ZoomResetButton_Click"
+                            Style="{StaticResource ModernSecondaryButton}" Margin="4,0,0,0" ToolTip="Reset Zoom" Padding="0">
+                        <iconPacks:PackIconMaterial Kind="Restore" Width="16" Height="16"/>
+                    </Button>
+                    <Button x:Name="CompareButton" MinWidth="100" Height="36" Click="CompareButton_Click"
+                            Style="{StaticResource ModernSecondaryButton}" Margin="8,0,0,0"
+                            ToolTip="Compare with previous wallpaper" Padding="10,8">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Compare" Width="14" Height="14" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Compare" VerticalAlignment="Center" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
+                    <Separator Width="1" Height="28" Background="{DynamicResource BorderColor}" Margin="12,0"/>
+                    <ComboBox x:Name="MonitorSelectionComboBox"
+                              Width="190"
+                              Height="36"
+                              VerticalContentAlignment="Center"
+                              FontSize="13"
+                              Margin="0,0,8,0"
+                              ToolTip="Select monitor(s) to apply wallpaper">
+                        <ComboBoxItem Content="Use Settings Default" Tag="Default" IsSelected="True"/>
+                    </ComboBox>
+                    <Button x:Name="ApplyButton"
+                            MinWidth="160"
+                            Height="36"
+                            Click="ApplyButton_Click"
+                            Style="{StaticResource ModernSuccessButton}"
+                            Padding="12,8">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="CheckCircleOutline" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Apply Wallpaper" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Spacer -->
+                <Border/>
+            </DockPanel>
+        </Border>
+
+        <!-- ── Multi-Monitor Preview Card ── -->
         <Border Grid.Row="1"
-                Background="{StaticResource HoverBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource HoverBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="16"
-                Margin="0,0,0,20"
                 Padding="16"
                 MinHeight="400">
             <Border.Effect>
-                <DropShadowEffect Color="#000000" Opacity="0.1" BlurRadius="12" ShadowDepth="2"/>
+                <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="12" ShadowDepth="2"/>
             </Border.Effect>
             <Grid>
                 <ScrollViewer x:Name="PreviewScrollViewer"
@@ -55,8 +162,8 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Margin="8"
-                                        Background="{StaticResource CardBackground}"
-                                        BorderBrush="{StaticResource BorderColor}"
+                                        Background="{DynamicResource CardBackground}"
+                                        BorderBrush="{DynamicResource BorderColor}"
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         Padding="12"
@@ -64,13 +171,13 @@
                                         MouseLeftButtonUp="MonitorPreview_MouseLeftButtonUp">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
                                             <Style.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="BorderBrush" Value="#7C83FF"/>
+                                                    <Setter Property="BorderBrush" Value="#818CF8"/>
                                                     <Setter Property="Effect">
                                                         <Setter.Value>
-                                                            <DropShadowEffect Color="#7C83FF" Opacity="0.2" BlurRadius="8" ShadowDepth="0"/>
+                                                            <DropShadowEffect Color="#6366F1" Opacity="0.25" BlurRadius="10" ShadowDepth="0"/>
                                                         </Setter.Value>
                                                     </Setter>
                                                 </Trigger>
@@ -79,16 +186,17 @@
                                     </Border.Style>
                                     <StackPanel>
                                         <TextBlock Text="{Binding MonitorName}"
-                                                   FontSize="14"
+                                                   FontSize="13"
                                                    FontWeight="SemiBold"
-                                                   Foreground="{StaticResource TextPrimary}"
+                                                   Foreground="{DynamicResource TextPrimary}"
                                                    Margin="0,0,0,8"
-                                                   HorizontalAlignment="Center"/>
-                                        <Border Background="{StaticResource HoverBackground}"
-                                                BorderBrush="{StaticResource BorderColor}"
+                                                   HorizontalAlignment="Center"
+                                                   TextOptions.TextRenderingMode="ClearType"/>
+                                        <Border Background="{DynamicResource HoverBackground}"
+                                                BorderBrush="{DynamicResource BorderColor}"
                                                 BorderThickness="1"
                                                 CornerRadius="8"
-                                                Height="200"
+                                                Height="220"
                                                 ClipToBounds="True">
                                             <Image Source="{Binding PreviewImage}"
                                                    Stretch="Uniform"
@@ -98,10 +206,10 @@
                                         </Border>
                                         <TextBlock Text="{Binding QuoteText}"
                                                    FontSize="11"
-                                                   Foreground="{StaticResource TextSecondary}"
+                                                   Foreground="{DynamicResource TextSecondary}"
                                                    TextWrapping="Wrap"
                                                    TextTrimming="CharacterEllipsis"
-                                                   MaxHeight="40"
+                                                   MaxHeight="36"
                                                    Margin="0,6,0,0"
                                                    HorizontalAlignment="Center"
                                                    TextAlignment="Center"/>
@@ -111,164 +219,63 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
+
+                <!-- Empty state -->
                 <Border x:Name="NoPreviewBorder"
                         Background="Transparent"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
-                    <StackPanel>
+                    <StackPanel HorizontalAlignment="Center">
                         <iconPacks:PackIconMaterial Kind="PaletteOutline"
-                                                    Width="48"
-                                                    Height="48"
+                                                    Width="56" Height="56"
                                                     HorizontalAlignment="Center"
-                                                    Margin="0,0,0,12"
-                                                    Opacity="0.3"/>
+                                                    Margin="0,0,0,16"
+                                                    Opacity="0.25"
+                                                    Foreground="{DynamicResource TextSecondary}"/>
                         <TextBlock x:Name="NoPreviewText"
-                                   Text="No wallpaper generated yet.&#x0a;Click 'Generate New Wallpaper' to create one!"
-                                   FontSize="15"
-                                   Foreground="{StaticResource TextTertiary}"
+                                   Text="No wallpaper generated yet."
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    HorizontalAlignment="Center"
                                    TextAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   MaxWidth="400"
-                                   LineHeight="24"/>
+                                   TextOptions.TextRenderingMode="ClearType"/>
+                        <TextBlock Text="Click 'Generate' to create your first wallpaper"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center"
+                                   Opacity="0.6"
+                                   Margin="0,6,0,0"/>
                     </StackPanel>
                 </Border>
             </Grid>
         </Border>
 
-        <!-- Action Buttons -->
-        <StackPanel Grid.Row="2"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Margin="0,12,0,0"
-                    x:Name="ActionButtonsPanel">
-            <Button x:Name="GenerateButton"
-                    MinWidth="180"
-                    Height="44"
-                    Click="GenerateButton_Click"
-                    Style="{StaticResource ModernPrimaryButton}"
-                    Padding="16,10"
-                    ToolTip="Generate wallpaper for selected monitor">
-                <StackPanel Orientation="Horizontal">
-                    <iconPacks:PackIconMaterial Kind="FlashOutline" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                    <TextBlock Text="Generate" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
-            <Button x:Name="GenerateAllMonitorsButton"
-                    MinWidth="200"
-                    Height="44"
-                    Click="GenerateAllMonitorsButton_Click"
-                    Style="{StaticResource ModernPrimaryButton}"
-                    Margin="12,0,0,0"
-                    Padding="16,10"
-                    IsEnabled="False"
-                    ToolTip="Multi-monitor feature temporarily disabled for stability">
-                <StackPanel Orientation="Horizontal">
-                    <iconPacks:PackIconMaterial Kind="Monitor" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                    <TextBlock Text="Generate All Monitors" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
-            <Button x:Name="RefreshButton"
-                    MinWidth="140"
-                    Height="44"
-                    Click="RefreshButton_Click"
-                    Style="{StaticResource ModernSecondaryButton}"
-                    Margin="12,0,0,0"
-                    Padding="14,10">
-                <StackPanel Orientation="Horizontal">
-                    <iconPacks:PackIconMaterial Kind="Refresh" Width="18" Height="18" Margin="0,0,6,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                    <TextBlock Text="Refresh" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
-            <Button x:Name="RemoveGeneratedButton"
-                    MinWidth="160"
-                    Height="44"
-                    Click="RemoveGeneratedButton_Click"
-                    Style="{StaticResource ModernDangerButton}"
-                    Margin="12,0,0,0"
-                    Padding="14,10"
-                    ToolTip="Remove the generated wallpaper and restore previous">
-                <StackPanel Orientation="Horizontal">
-                    <iconPacks:PackIconMaterial Kind="DeleteOutline" Width="18" Height="18" Margin="0,0,6,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                    <TextBlock Text="Remove Generated" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
-            <StackPanel Orientation="Horizontal" Margin="12,0,0,0">
-                <ComboBox x:Name="MonitorSelectionComboBox"
-                          Width="200"
-                          Height="44"
-                          VerticalContentAlignment="Center"
-                          FontSize="13"
-                          Margin="0,0,10,0"
-                          ToolTip="Select monitor(s) to apply wallpaper">
-                    <ComboBoxItem Content="Use Settings Default" Tag="Default" IsSelected="True"/>
-                </ComboBox>
-                <Button x:Name="ApplyButton"
-                        MinWidth="180"
-                        Height="44"
-                        Click="ApplyButton_Click"
-                        Style="{StaticResource ModernSuccessButton}"
-                        Padding="14,10">
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="CheckCircleOutline" Width="18" Height="18" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Apply as Wallpaper" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="12,0,0,0">
-                <Button x:Name="ZoomInButton"
-                        Width="44"
-                        Height="44"
-                        Click="ZoomInButton_Click"
-                        Style="{StaticResource ModernSecondaryButton}"
-                        ToolTip="Zoom In"
-                        Padding="0">
-                    <iconPacks:PackIconMaterial Kind="MagnifyPlusOutline" Width="18" Height="18" VerticalAlignment="Center"/>
-                </Button>
-                <Button x:Name="ZoomOutButton"
-                        Width="44"
-                        Height="44"
-                        Click="ZoomOutButton_Click"
-                        Style="{StaticResource ModernSecondaryButton}"
-                        Margin="6,0,0,0"
-                        ToolTip="Zoom Out"
-                        Padding="0">
-                    <iconPacks:PackIconMaterial Kind="MagnifyMinusOutline" Width="18" Height="18" VerticalAlignment="Center"/>
-                </Button>
-                <Button x:Name="ZoomResetButton"
-                        Width="44"
-                        Height="44"
-                        Click="ZoomResetButton_Click"
-                        Style="{StaticResource ModernSecondaryButton}"
-                        Margin="6,0,0,0"
-                        ToolTip="Reset Zoom"
-                        Padding="0">
-                    <iconPacks:PackIconMaterial Kind="Restore" Width="18" Height="18" VerticalAlignment="Center"/>
-                </Button>
-                <Button x:Name="CompareButton"
-                        MinWidth="110"
-                        Height="44"
-                        Click="CompareButton_Click"
-                        Style="{StaticResource ModernSecondaryButton}"
-                        Margin="6,0,0,0"
-                        ToolTip="Compare with previous wallpaper"
-                        Padding="12,10">
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Compare" Width="16" Height="16" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Compare" VerticalAlignment="Center" FontSize="13"/>
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-            <TextBlock x:Name="ZoomLevelText"
-                       Text="100%"
-                       FontSize="13"
-                       FontWeight="Medium"
-                       Foreground="{StaticResource TextSecondary}"
-                       VerticalAlignment="Center"
-                       Margin="14,0,0,0"
-                       MinWidth="45"
-                       TextAlignment="Center"/>
-        </StackPanel>
+        <!-- ── Status Bar ── -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource CardBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="14,8"
+                Margin="0,10,0,0">
+            <DockPanel>
+                <TextBlock x:Name="LastGeneratedText"
+                           Text="Ready"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextSecondary}"
+                           VerticalAlignment="Center"
+                           DockPanel.Dock="Left"
+                           TextOptions.TextRenderingMode="ClearType"/>
+                <TextBlock x:Name="StatusText"
+                           Text=""
+                           FontSize="12"
+                           Foreground="{DynamicResource TextSecondary}"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           TextOptions.TextRenderingMode="ClearType"/>
+            </DockPanel>
+        </Border>
     </Grid>
 </Page>
-

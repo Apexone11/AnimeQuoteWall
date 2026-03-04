@@ -29,7 +29,7 @@
             <TextBlock Text="Background Images"
                        FontSize="22"
                        FontWeight="Bold"
-                       Foreground="{StaticResource TextPrimary}"
+                       Foreground="{DynamicResource TextPrimary}"
                        VerticalAlignment="Center"
                        Grid.Column="0"/>
             <StackPanel Grid.Column="1"
@@ -63,8 +63,8 @@
 
         <!-- Backgrounds List -->
         <Border Grid.Row="1"
-                Background="{StaticResource HoverBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource HoverBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="16"
                 Margin="0,0,0,12"
@@ -72,14 +72,14 @@
             <Grid>
                 <!-- Loading Indicator -->
                 <Border x:Name="LoadingIndicator"
-                        Background="{StaticResource HoverBackground}"
+                        Background="{DynamicResource HoverBackground}"
                         Visibility="Collapsed"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Loading backgrounds..."
                                    FontSize="14"
-                                   Foreground="{StaticResource TextSecondary}"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,12,0"/>
                         <ProgressBar Width="200"
@@ -101,17 +101,17 @@
                                                     Height="64"
                                                     HorizontalAlignment="Center"
                                                     Margin="0,0,0,16"
-                                                    Foreground="{StaticResource TextTertiary}"
+                                                    Foreground="{DynamicResource TextTertiary}"
                                                     Opacity="0.3"/>
                         <TextBlock Text="No background images found"
                                    FontSize="16"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextSecondary}"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,8"/>
                         <TextBlock Text="Click 'Add Images' to add background images to your library"
                                    FontSize="13"
-                                   Foreground="{StaticResource TextTertiary}"
+                                   Foreground="{DynamicResource TextTertiary}"
                                    HorizontalAlignment="Center"
                                    TextAlignment="Center"
                                    TextWrapping="Wrap"
@@ -139,8 +139,8 @@
                             <DataTemplate>
                                 <Border Margin="4,6"
                                         Padding="12"
-                                        Background="{StaticResource CardBackground}"
-                                        BorderBrush="{StaticResource BorderColor}"
+                                        Background="{DynamicResource CardBackground}"
+                                        BorderBrush="{DynamicResource BorderColor}"
                                         BorderThickness="1"
                                         CornerRadius="12"
                                         Cursor="Hand"
@@ -149,7 +149,7 @@
                                         <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="8" ShadowDepth="1"/>
                                     </Border.Effect>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border Background="{StaticResource HoverBackground}"
+                                        <Border Background="{DynamicResource HoverBackground}"
                                                 Width="120"
                                                 Height="80"
                                                 CornerRadius="10"
@@ -172,13 +172,13 @@
                                         <StackPanel VerticalAlignment="Center">
                                             <TextBlock Text="{Binding FileName}"
                                                        FontSize="14"
-                                                       Foreground="{StaticResource TextPrimary}"
+                                                       Foreground="{DynamicResource TextPrimary}"
                                                        FontWeight="Medium"
                                                        TextWrapping="Wrap"
                                                        Margin="0,0,0,4"/>
                                             <TextBlock Text="{Binding FileSize}"
                                                        FontSize="11"
-                                                       Foreground="{StaticResource TextTertiary}"/>
+                                                       Foreground="{DynamicResource TextTertiary}"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>
@@ -193,7 +193,7 @@
         <TextBlock Grid.Row="2"
                    x:Name="BackgroundCountText"
                    FontSize="14"
-                   Foreground="{StaticResource TextSecondary}"
+                   Foreground="{DynamicResource TextSecondary}"
                    FontWeight="Medium"
                    Margin="0,4,0,0">
             <Run Text="Total Backgrounds: "/>

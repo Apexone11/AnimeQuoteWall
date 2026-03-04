@@ -28,7 +28,7 @@
             <TextBlock Text="Quote Library"
                        FontSize="22"
                        FontWeight="Bold"
-                       Foreground="{StaticResource TextPrimary}"
+                       Foreground="{DynamicResource TextPrimary}"
                        VerticalAlignment="Center"
                        Grid.Column="0"/>
             <StackPanel Grid.Column="1"
@@ -93,8 +93,8 @@
 
         <!-- Quotes List -->
         <Border Grid.Row="2"
-                Background="{StaticResource HoverBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource HoverBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="16"
                 Margin="0,0,0,12"
@@ -111,8 +111,8 @@
                         <DataTemplate>
                             <Border Margin="4,6"
                                     Padding="16"
-                                    Background="{StaticResource CardBackground}"
-                                    BorderBrush="{StaticResource BorderColor}"
+                                    Background="{DynamicResource CardBackground}"
+                                    BorderBrush="{DynamicResource BorderColor}"
                                     BorderThickness="1"
                                     CornerRadius="12"
                                     Cursor="Hand">
@@ -133,7 +133,7 @@
                                                 <iconPacks:PackIconMaterial.Style>
                                                     <Style TargetType="iconPacks:PackIconMaterial">
                                                         <Setter Property="Kind" Value="HeartOutline"/>
-                                                        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsFavorite}" Value="True">
                                                                 <Setter Property="Kind" Value="Heart"/>
@@ -145,40 +145,40 @@
                                             </iconPacks:PackIconMaterial>
                                         </Button>
                                         <StackPanel Orientation="Horizontal" Margin="8,0,0,0">
-                                            <TextBlock Text="★" FontSize="14" Foreground="{StaticResource TextTertiary}" Margin="0,0,2,0"/>
-                                            <TextBlock Text="{Binding Rating}" FontSize="12" Foreground="{StaticResource TextTertiary}"/>
+                                            <TextBlock Text="★" FontSize="14" Foreground="{DynamicResource TextTertiary}" Margin="0,0,2,0"/>
+                                            <TextBlock Text="{Binding Rating}" FontSize="12" Foreground="{DynamicResource TextTertiary}"/>
                                         </StackPanel>
                                     </StackPanel>
                                     <TextBlock Text="{Binding Text}"
                                                FontSize="15"
                                                FontWeight="Medium"
                                                TextWrapping="Wrap"
-                                               Foreground="{StaticResource TextPrimary}"
+                                               Foreground="{DynamicResource TextPrimary}"
                                                LineHeight="24"
                                                Margin="0,0,0,10"/>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="— "
                                                    FontSize="13"
-                                                   Foreground="{StaticResource TextSecondary}"
+                                                   Foreground="{DynamicResource TextSecondary}"
                                                    FontStyle="Italic"/>
                                         <TextBlock Text="{Binding Character}"
                                                    FontSize="13"
-                                                   Foreground="{StaticResource TextSecondary}"
+                                                   Foreground="{DynamicResource TextSecondary}"
                                                    FontWeight="SemiBold"
                                                    FontStyle="Italic"/>
                                         <TextBlock Text=" · "
                                                    FontSize="13"
-                                                   Foreground="{StaticResource TextTertiary}"
+                                                   Foreground="{DynamicResource TextTertiary}"
                                                    Margin="4,0,4,0"/>
                                         <TextBlock Text="{Binding Anime}"
                                                    FontSize="13"
-                                                   Foreground="{StaticResource TextTertiary}"/>
+                                                   Foreground="{DynamicResource TextTertiary}"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                         <ItemsControl ItemsSource="{Binding Categories}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Background="{StaticResource PrimaryColor}"
+                                                    <Border Background="{DynamicResource PrimaryColor}"
                                                             CornerRadius="6"
                                                             Padding="8,4"
                                                             Margin="0,0,6,0">
@@ -200,7 +200,7 @@
         <TextBlock Grid.Row="3"
                    x:Name="QuoteCountTextBottom"
                    FontSize="14"
-                   Foreground="{StaticResource TextSecondary}"
+                   Foreground="{DynamicResource TextSecondary}"
                    FontWeight="Medium"
                    Margin="0,4,0,0">
             <Run Text="Total Quotes: "/>

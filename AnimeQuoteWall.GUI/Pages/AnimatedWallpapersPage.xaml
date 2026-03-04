@@ -21,33 +21,22 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
-        <!-- Read-Only Banner -->
+        <!-- Wallpaper Engine status bar -->
         <Border Grid.Row="0"
-                Background="#1E3A5F"
-                BorderBrush="#3B82F6"
+                x:Name="WallpaperEngineStatusBar"
+                Background="#14532D"
+                BorderBrush="#22C55E"
                 BorderThickness="1"
                 CornerRadius="8"
-                Padding="16,12"
-                Margin="0,0,0,16">
+                Padding="14,10"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
             <StackPanel Orientation="Horizontal">
-                <iconPacks:PackIconMaterial Kind="InformationOutline" 
-                                            Width="20" 
-                                            Height="20" 
-                                            Foreground="#60A5FA"
-                                            VerticalAlignment="Center"
-                                            Margin="0,0,12,0"/>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Animated Library is Read-Only" 
-                               FontSize="14" 
-                               FontWeight="SemiBold"
-                               Foreground="#E0F2FE"
-                               Margin="0,0,0,4"/>
-                    <TextBlock Text="This feature is temporarily read-only for stability. You can view and manage your animated wallpapers, but applying them is disabled until the next update." 
-                               FontSize="12" 
-                               Foreground="#BFDBFE"
-                               TextWrapping="Wrap"
-                               MaxWidth="800"/>
-                </StackPanel>
+                <iconPacks:PackIconMaterial Kind="CheckCircleOutline" Width="18" Height="18" Foreground="#86EFAC" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock x:Name="WallpaperEngineStatusText"
+                           FontSize="13"
+                           Foreground="#DCFCE7"
+                           VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 
@@ -57,7 +46,7 @@
             <TextBlock Text="Animated Wallpapers Library"
                        FontSize="24"
                        FontWeight="Bold"
-                       Foreground="{StaticResource TextPrimary}"
+                       Foreground="{DynamicResource TextPrimary}"
                        VerticalAlignment="Center"
                        RenderOptions.BitmapScalingMode="HighQuality"
                        TextOptions.TextRenderingMode="ClearType"/>
@@ -71,15 +60,14 @@
                         Style="{StaticResource ModernPrimaryButton}"
                         Margin="0,0,12,0"
                         Padding="16,10"
-                        IsEnabled="False"
-                        ToolTip="Add new animated wallpapers (MP4, WebM, MOV, GIF) - Temporarily disabled">
+                        ToolTip="Add new animated wallpapers (MP4, WebM, MOV, GIF)">
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="Plus" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                         <TextBlock Text="Add Animated" VerticalAlignment="Center" FontSize="14"/>
                     </StackPanel>
                 </Button>
-                <Border Background="{StaticResource HoverBackground}"
-                        BorderBrush="{StaticResource BorderColor}"
+                <Border Background="{DynamicResource HoverBackground}"
+                        BorderBrush="{DynamicResource BorderColor}"
                         BorderThickness="1"
                         CornerRadius="12"
                         Padding="0"
@@ -102,8 +90,7 @@
                         Style="{StaticResource ModernSuccessButton}"
                         Margin="0,0,12,0"
                         Padding="16,10"
-                        IsEnabled="False"
-                        ToolTip="Apply the selected animated wallpaper to your desktop">
+                        ToolTip="Apply the selected animated wallpaper to your desktop (requires Wallpaper Engine)">
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="PlayCircleOutline" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                         <TextBlock Text="Apply" VerticalAlignment="Center" FontSize="14"/>
@@ -129,8 +116,7 @@
                         Style="{StaticResource ModernDangerButton}"
                         Margin="0,0,0,0"
                         Padding="16,10"
-                        IsEnabled="False"
-                        ToolTip="Delete the selected animated wallpaper from your library - Temporarily disabled">
+                        ToolTip="Delete the selected animated wallpaper from your library">
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="DeleteOutline" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                         <TextBlock Text="Delete" VerticalAlignment="Center" FontSize="14"/>
@@ -141,8 +127,8 @@
 
         <!-- Animated Wallpapers Grid -->
         <Border Grid.Row="2"
-                Background="{StaticResource HoverBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="{DynamicResource HoverBackground}"
+                BorderBrush="{DynamicResource BorderColor}"
                 BorderThickness="1"
                 CornerRadius="16"
                 Margin="0,0,0,12"
@@ -150,7 +136,7 @@
             <Grid>
                 <!-- Loading Indicator -->
                 <Border x:Name="LoadingIndicator"
-                        Background="{StaticResource HoverBackground}"
+                        Background="{DynamicResource HoverBackground}"
                         Visibility="Collapsed"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Center">
@@ -158,7 +144,7 @@
                         <iconPacks:PackIconMaterial Kind="ProgressClock" Width="48" Height="48" HorizontalAlignment="Center" Margin="0,0,0,12" Opacity="0.5"/>
                         <TextBlock Text="Loading animated wallpapers..."
                                    FontSize="14"
-                                   Foreground="{StaticResource TextSecondary}"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>
@@ -178,8 +164,8 @@
                             <Border x:Name="ItemBorder"
                                     Margin="8"
                                     Padding="0"
-                                    Background="{StaticResource CardBackground}"
-                                    BorderBrush="{StaticResource BorderColor}"
+                                    Background="{DynamicResource CardBackground}"
+                                    BorderBrush="{DynamicResource BorderColor}"
                                     BorderThickness="2"
                                     CornerRadius="12"
                                     Cursor="Hand"
@@ -191,7 +177,7 @@
                                 </Border.Effect>
                                 <Border.Style>
                                     <Style TargetType="Border">
-                                        <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
                                         <Style.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
                                                 <Setter Property="BorderBrush" Value="#818CF8"/>
@@ -205,7 +191,7 @@
                                     </Style>
                                 </Border.Style>
                                 <StackPanel>
-                                    <Border Background="{StaticResource HoverBackground}"
+                                    <Border Background="{DynamicResource HoverBackground}"
                                             Height="200"
                                             CornerRadius="10,10,0,0"
                                             Margin="0"
@@ -284,11 +270,11 @@
                                         </Grid>
                                     </Border>
                                     <Border Padding="12,10"
-                                            Background="{StaticResource CardBackground}">
+                                            Background="{DynamicResource CardBackground}">
                                         <StackPanel>
                                             <TextBlock Text="{Binding FileName}"
                                                        FontSize="14"
-                                                       Foreground="{StaticResource TextPrimary}"
+                                                       Foreground="{DynamicResource TextPrimary}"
                                                        FontWeight="SemiBold"
                                                        TextWrapping="Wrap"
                                                        Margin="0,0,0,8"
@@ -299,12 +285,12 @@
                                                 <iconPacks:PackIconMaterial Kind="PackageVariant" Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center"/>
                                                 <TextBlock Text="{Binding FileSize}"
                                                            FontSize="12"
-                                                           Foreground="{StaticResource TextSecondary}"
+                                                           Foreground="{DynamicResource TextSecondary}"
                                                            Margin="0,0,12,0"/>
                                                 <iconPacks:PackIconMaterial Kind="TimerOutline" Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center"/>
                                                 <TextBlock Text="{Binding Duration}"
                                                            FontSize="12"
-                                                           Foreground="{StaticResource TextSecondary}"/>
+                                                           Foreground="{DynamicResource TextSecondary}"/>
                                             </StackPanel>
                                         </StackPanel>
                                     </Border>
@@ -321,7 +307,7 @@
         <TextBlock Grid.Row="3"
                    x:Name="AnimatedCountText"
                    FontSize="14"
-                   Foreground="{StaticResource TextSecondary}"
+                   Foreground="{DynamicResource TextSecondary}"
                    FontWeight="Medium"
                    Margin="0,4,0,0">
             <Run Text="Total Animated Wallpapers: "/>

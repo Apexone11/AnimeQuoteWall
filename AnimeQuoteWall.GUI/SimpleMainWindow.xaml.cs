@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using AnimeQuoteWall.Core.Configuration;
 using AnimeQuoteWall.GUI.Pages;
+using MahApps.Metro.IconPacks;
 
 namespace AnimeQuoteWall.GUI;
 
@@ -11,13 +12,13 @@ public partial class SimpleMainWindow : Window
     private WallpaperPage? _wallpaperPage;
     private QuotesPage? _quotesPage;
     private BackgroundsPage? _backgroundsPage;
-    // private AnimationPage? _animationPage; // Animated Generator removed
     private AnimatedWallpapersPage? _animatedWallpapersPage;
     private HistoryPage? _historyPage;
     private PlaylistsPage? _playlistsPage;
     private SettingsPage? _settingsPage;
     private System.Windows.Controls.Button? _currentNavButton;
     private string? _currentPageName;
+    private bool _isSidebarCollapsed;
 
     public SimpleMainWindow()
     {
@@ -30,32 +31,19 @@ public partial class SimpleMainWindow : Window
     }
 
     /// <summary>
-    /// Handles window size changes to adjust sidebar width responsively.
+    /// Handles window size changes to adjust sidebar width responsively (only when expanded).
     /// </summary>
     private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
     {
+        // Don't override width when user has manually collapsed the sidebar
+        if (_isSidebarCollapsed) return;
+
         try
         {
             if (SidebarColumn != null)
             {
-                // Adjust sidebar width based on window size
-                // Smaller sidebar on smaller windows, larger on bigger windows
                 var windowWidth = ActualWidth;
-                if (windowWidth < 1000)
-                {
-                    // Compact sidebar for small windows
-                    SidebarColumn.Width = new GridLength(180, GridUnitType.Pixel);
-                }
-                else if (windowWidth < 1400)
-                {
-                    // Medium sidebar for medium windows
-                    SidebarColumn.Width = new GridLength(220, GridUnitType.Pixel);
-                }
-                else
-                {
-                    // Full sidebar for large windows
-                    SidebarColumn.Width = new GridLength(240, GridUnitType.Pixel);
-                }
+                SidebarColumn.Width = new GridLength(windowWidth < 1000 ? 200 : 240, GridUnitType.Pixel);
             }
         }
         catch (Exception ex)
@@ -64,12 +52,59 @@ public partial class SimpleMainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Toggles the sidebar between expanded (240px with labels) and collapsed (64px icon-only) modes.
+    /// </summary>
+    private void SidebarCollapseButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _isSidebarCollapsed = !_isSidebarCollapsed;
+
+            if (SidebarColumn != null)
+                SidebarColumn.Width = new GridLength(_isSidebarCollapsed ? 64 : 240, GridUnitType.Pixel);
+
+            var labelVisibility = _isSidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
+
+            // Nav item labels
+            if (NavWallpaperLabel    != null) NavWallpaperLabel.Visibility    = labelVisibility;
+            if (NavAnimatedLabel     != null) NavAnimatedLabel.Visibility     = labelVisibility;
+            if (NavQuotesLabel       != null) NavQuotesLabel.Visibility       = labelVisibility;
+            if (NavBackgroundsLabel  != null) NavBackgroundsLabel.Visibility  = labelVisibility;
+            if (NavHistoryLabel      != null) NavHistoryLabel.Visibility      = labelVisibility;
+            if (NavPlaylistsLabel    != null) NavPlaylistsLabel.Visibility    = labelVisibility;
+            if (NavSettingsLabel     != null) NavSettingsLabel.Visibility     = labelVisibility;
+
+            // Group section headers
+            if (NavGroupLabel1 != null) NavGroupLabel1.Visibility = labelVisibility;
+            if (NavGroupLabel2 != null) NavGroupLabel2.Visibility = labelVisibility;
+            if (NavGroupLabel3 != null) NavGroupLabel3.Visibility = labelVisibility;
+
+            // Branding text and footer
+            if (SidebarBrandText != null) SidebarBrandText.Visibility = labelVisibility;
+            if (SidebarFooter    != null) SidebarFooter.Visibility    = labelVisibility;
+
+            // Collapse button icon and label
+            if (CollapseIcon  != null) CollapseIcon.Kind = _isSidebarCollapsed ? PackIconMaterialKind.ChevronRight : PackIconMaterialKind.ChevronLeft;
+            if (CollapseLabel != null) CollapseLabel.Visibility = labelVisibility;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"SidebarCollapseButton_Click error: {ex.Message}");
+        }
+    }
+
     private async void InitializeAsync()
     {
         try
         {
             // Ensure directories exist in background (non-blocking)
-            _ = System.Threading.Tasks.Task.Run(() => AppConfiguration.EnsureDirectories());
+            _ = System.Threading.Tasks.Task.Run(() => AppConfiguration.EnsureDirectories())
+                .ContinueWith(t =>
+                {
+                    if (t.IsFaulted && t.Exception != null)
+                        System.Diagnostics.Debug.WriteLine($"EnsureDirectories failed: {t.Exception.GetBaseException().Message}");
+                }, System.Threading.Tasks.TaskScheduler.Default);
             
             // Wait for Frame to be fully loaded before navigating
             if (ContentFrame != null)
@@ -95,7 +130,7 @@ public partial class SimpleMainWindow : Window
             {
                 // Fallback: defer navigation
                 await System.Threading.Tasks.Task.Delay(100);
-                Dispatcher.BeginInvoke(new Action(() =>
+                _ = Dispatcher.BeginInvoke(new Action(() =>
                 {
                     try
                     {

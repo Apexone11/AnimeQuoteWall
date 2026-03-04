@@ -5,50 +5,58 @@
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         Title="Anime Quote Wallpaper Manager"
         Icon="Resources/appicon.ico"
-        Height="800"
-        Width="1200"
-        MinHeight="600"
-        MinWidth="900"
+        Height="820"
+        Width="1240"
+        MinHeight="640"
+        MinWidth="920"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource WindowBackground}"
+        Background="{DynamicResource WindowBackground}"
         x:Name="MainWindowElement">
 
     <Window.Resources>
-        <!-- Sidebar Navigation Button Style (Window-specific) -->
+        <!-- ── Sidebar Navigation Button ── -->
         <Style x:Key="SidebarNavButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="Padding" Value="20,14"/>
+            <Setter Property="Background"                Value="Transparent"/>
+            <Setter Property="Foreground"                Value="#94A3B8"/>
+            <Setter Property="BorderThickness"           Value="0"/>
+            <Setter Property="FontSize"                  Value="14"/>
+            <Setter Property="FontWeight"                Value="Medium"/>
+            <Setter Property="Height"                    Value="48"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Cursor"                    Value="Hand"/>
+            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+            <Setter Property="TextOptions.TextRenderingMode"   Value="ClearType"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="12"
-                                Margin="4,3"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
-                        </Border>
+                        <Grid>
+                            <!-- Active left-border accent (visible only when selected) -->
+                            <Border x:Name="accentBar"
+                                    Width="4"
+                                    HorizontalAlignment="Left"
+                                    CornerRadius="0,4,4,0"
+                                    Background="#818CF8"
+                                    Visibility="Collapsed"/>
+                            <!-- Main button background -->
+                            <Border x:Name="bg"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="10"
+                                    Margin="6,2,6,2"
+                                    Padding="14,0,14,0">
+                                <ContentPresenter VerticalAlignment="Center"
+                                                  RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Border>
+                        </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource HoverBackground}"/>
-                                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                <Setter TargetName="bg"        Property="Background" Value="#1E2333"/>
+                                <Setter Property="Foreground" Value="#C7D2FE"/>
                             </Trigger>
                             <Trigger Property="Tag" Value="Selected">
-                                <Setter TargetName="border" Property="Background">
-                                    <Setter.Value>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                            <GradientStop Color="#818CF8" Offset="0"/>
-                                            <GradientStop Color="#6366F1" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="bg"         Property="Background" Value="#1E2333"/>
+                                <Setter TargetName="accentBar"  Property="Visibility" Value="Visible"/>
+                                <Setter Property="Foreground"  Value="White"/>
+                                <Setter Property="FontWeight"  Value="SemiBold"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -56,52 +64,19 @@
             </Setter>
         </Style>
 
-        <!-- Modern TabControl Style (unused but kept for compatibility) -->
-        <Style TargetType="TabControl">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
+        <!-- ── Sidebar Section Separator ── -->
+        <Style x:Key="SidebarSeparator" TargetType="Separator">
+            <Setter Property="Background"    Value="#1F2937"/>
+            <Setter Property="Margin"        Value="16,8"/>
+            <Setter Property="Height"        Value="1"/>
         </Style>
 
-        <Style TargetType="TabItem">
-            <Setter Property="Padding" Value="16,12"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                Margin="0,0,4,0"
-                                CornerRadius="8,8,0,0">
-                            <ContentPresenter x:Name="contentPresenter"
-                                            ContentSource="Header"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Margin="12,8"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource CardBackground}"/>
-                                <Setter TargetName="contentPresenter" Property="TextElement.Foreground" Value="{StaticResource PrimaryColor}"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource HoverBackground}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Modern ListBox Style -->
+        <!-- ── Modern ListBox (transparent, used inside pages) ── -->
         <Style TargetType="ListBox">
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Background"      Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Padding"         Value="0"/>
         </Style>
-
         <Style TargetType="ListBoxItem">
             <Setter Property="Template">
                 <Setter.Value>
@@ -115,170 +90,271 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="SidebarColumn" Width="240" MinWidth="180" MaxWidth="280"/>
+            <ColumnDefinition x:Name="SidebarColumn" Width="240" MinWidth="64" MaxWidth="280"/>
             <ColumnDefinition Width="*" MinWidth="600"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Modern Sidebar -->
+        <!-- ════════════════════════════════════════════════
+             SIDEBAR
+        ════════════════════════════════════════════════ -->
         <Border Grid.Column="0"
-                Background="{StaticResource CardBackground}"
-                BorderBrush="{StaticResource BorderColor}"
+                Background="#0D1117"
+                BorderBrush="#161B22"
                 BorderThickness="0,0,1,0">
             <Border.Effect>
-                <DropShadowEffect Color="#000000" Opacity="0.1" BlurRadius="10" ShadowDepth="2" Direction="270"/>
+                <DropShadowEffect Color="#000000" Opacity="0.4" BlurRadius="16" ShadowDepth="2" Direction="0"/>
             </Border.Effect>
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Logo/Header -->
-                <Border Grid.Row="0"
-                        Padding="20,24"
-                        Background="Transparent">
-                    <StackPanel>
-                        <Border Background="{StaticResource PrimaryColor}"
-                                CornerRadius="14"
-                                Width="48"
-                                Height="48"
-                                Margin="0,0,0,12"
-                                HorizontalAlignment="Left">
+                <!-- ── App Logo / Branding ── -->
+                <Border Grid.Row="0" Padding="16,20,16,16">
+                    <DockPanel>
+                        <Border Background="#6366F1"
+                                CornerRadius="12"
+                                Width="40" Height="40"
+                                Margin="0,0,12,0"
+                                VerticalAlignment="Center"
+                                DockPanel.Dock="Left">
                             <Border.Effect>
-                                <DropShadowEffect Color="#7C83FF" Opacity="0.3" BlurRadius="8" ShadowDepth="0"/>
+                                <DropShadowEffect Color="#6366F1" Opacity="0.5" BlurRadius="10" ShadowDepth="0"/>
                             </Border.Effect>
                             <Image Source="Resources/appicon.png"
                                    Stretch="Uniform"
-                                   Margin="8"
+                                   Margin="6"
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Border>
-                        <TextBlock Text="Anime Quote"
-                                   FontSize="18"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource TextPrimary}"
-                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                   TextOptions.TextRenderingMode="ClearType"/>
-                        <TextBlock Text="Wallpaper Manager"
-                                   FontSize="12"
-                                   Foreground="{StaticResource TextSecondary}"
-                                   Margin="0,2,0,0"
-                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                   TextOptions.TextRenderingMode="ClearType"/>
-                    </StackPanel>
+                        <StackPanel x:Name="SidebarBrandText" VerticalAlignment="Center">
+                            <TextBlock Text="Anime Quote"
+                                       FontSize="15"
+                                       FontWeight="Bold"
+                                       Foreground="#F9FAFB"
+                                       TextOptions.TextRenderingMode="ClearType"/>
+                            <TextBlock Text="Wallpaper Manager"
+                                       FontSize="11"
+                                       Foreground="#6B7280"
+                                       Margin="0,1,0,0"
+                                       TextOptions.TextRenderingMode="ClearType"/>
+                        </StackPanel>
+                    </DockPanel>
                 </Border>
 
-                <!-- Navigation Buttons -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="8,8,8,8">
+                <!-- ── Collapse Toggle ── -->
+                <Button Grid.Row="1"
+                        x:Name="SidebarCollapseButton"
+                        Click="SidebarCollapseButton_Click"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Height="32"
+                        Cursor="Hand"
+                        Margin="10,0,10,8"
+                        ToolTip="Collapse / Expand sidebar">
+                    <Border Background="#161B22" CornerRadius="8" Padding="0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <iconPacks:PackIconMaterial x:Name="CollapseIcon"
+                                                        Kind="ChevronLeft"
+                                                        Width="16" Height="16"
+                                                        Foreground="#6B7280"
+                                                        VerticalAlignment="Center"/>
+                            <TextBlock x:Name="CollapseLabel"
+                                       Text="Collapse"
+                                       FontSize="12"
+                                       Foreground="#6B7280"
+                                       Margin="6,0,0,0"
+                                       VerticalAlignment="Center"
+                                       TextOptions.TextRenderingMode="ClearType"/>
+                        </StackPanel>
+                    </Border>
+                </Button>
+
+                <!-- ── Navigation ── -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,4">
+
+                        <!-- Group 1: Wallpaper tools -->
+                        <TextBlock x:Name="NavGroupLabel1"
+                                   Text="GENERATE"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="#374151"
+                                   Margin="22,8,0,4"
+                                   TextOptions.TextRenderingMode="ClearType"/>
+
                         <Button x:Name="NavWallpaperButton"
                                 Style="{StaticResource SidebarNavButton}"
                                 Click="NavButton_Click"
-                                Tag="Wallpaper">
+                                Tag="Wallpaper"
+                                ToolTip="Static Wallpaper Generator">
                             <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="Image" Width="20" Height="20" Margin="0,0,14,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                <TextBlock Text="Static Generator" VerticalAlignment="Center"/>
+                                <iconPacks:PackIconMaterial Kind="Image" Width="18" Height="18"
+                                                            Margin="0,0,12,0" VerticalAlignment="Center"
+                                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                <TextBlock x:Name="NavWallpaperLabel" Text="Static Generator" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="NavQuotesButton"
-                                Style="{StaticResource SidebarNavButton}"
-                                Click="NavButton_Click"
-                                Tag="Quotes">
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="FormatQuoteClose" Width="20" Height="20" Margin="0,0,14,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                <TextBlock Text="Quotes" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                        <Button x:Name="NavBackgroundsButton"
-                                Style="{StaticResource SidebarNavButton}"
-                                Click="NavButton_Click"
-                                Tag="Backgrounds">
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="ImageMultiple" Width="20" Height="20" Margin="0,0,14,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                <TextBlock Text="Image Library" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
+
                         <Button x:Name="NavAnimatedWallpapersButton"
                                 Style="{StaticResource SidebarNavButton}"
                                 Click="NavButton_Click"
-                                Tag="AnimatedWallpapers">
+                                Tag="AnimatedWallpapers"
+                                ToolTip="Animated Wallpapers Library">
                             <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="Filmstrip" Width="20" Height="20" Margin="0,0,14,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                <TextBlock Text="Animated Library" VerticalAlignment="Center"/>
+                                <iconPacks:PackIconMaterial Kind="Filmstrip" Width="18" Height="18"
+                                                            Margin="0,0,12,0" VerticalAlignment="Center"
+                                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                <TextBlock x:Name="NavAnimatedLabel" Text="Animated Library" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
+
+                        <!-- Separator -->
+                        <Separator Style="{StaticResource SidebarSeparator}"/>
+
+                        <!-- Group 2: Library -->
+                        <TextBlock x:Name="NavGroupLabel2"
+                                   Text="LIBRARY"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="#374151"
+                                   Margin="22,0,0,4"
+                                   TextOptions.TextRenderingMode="ClearType"/>
+
+                        <Button x:Name="NavQuotesButton"
+                                Style="{StaticResource SidebarNavButton}"
+                                Click="NavButton_Click"
+                                Tag="Quotes"
+                                ToolTip="Manage Quotes">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="FormatQuoteClose" Width="18" Height="18"
+                                                            Margin="0,0,12,0" VerticalAlignment="Center"
+                                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                <TextBlock x:Name="NavQuotesLabel" Text="Quotes" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="NavBackgroundsButton"
+                                Style="{StaticResource SidebarNavButton}"
+                                Click="NavButton_Click"
+                                Tag="Backgrounds"
+                                ToolTip="Image Library">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="ImageMultiple" Width="18" Height="18"
+                                                            Margin="0,0,12,0" VerticalAlignment="Center"
+                                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                <TextBlock x:Name="NavBackgroundsLabel" Text="Image Library" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Separator -->
+                        <Separator Style="{StaticResource SidebarSeparator}"/>
+
+                        <!-- Group 3: History & Playlists -->
+                        <TextBlock x:Name="NavGroupLabel3"
+                                   Text="MANAGE"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="#374151"
+                                   Margin="22,0,0,4"
+                                   TextOptions.TextRenderingMode="ClearType"/>
+
                         <Button x:Name="NavHistoryButton"
                                 Style="{StaticResource SidebarNavButton}"
                                 Click="NavButton_Click"
-                                Tag="History">
+                                Tag="History"
+                                ToolTip="Wallpaper History">
                             <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="History" Width="20" Height="20" Margin="0,0,14,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                <TextBlock Text="History" VerticalAlignment="Center"/>
+                                <iconPacks:PackIconMaterial Kind="History" Width="18" Height="18"
+                                                            Margin="0,0,12,0" VerticalAlignment="Center"
+                                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                <TextBlock x:Name="NavHistoryLabel" Text="History" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
+
                         <Button x:Name="NavPlaylistsButton"
                                 Style="{StaticResource SidebarNavButton}"
                                 Click="NavButton_Click"
-                                Tag="Playlists">
+                                Tag="Playlists"
+                                ToolTip="Playlists">
                             <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="PlaylistPlay" Width="20" Height="20" Margin="0,0,14,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                <TextBlock Text="Playlists" VerticalAlignment="Center"/>
+                                <iconPacks:PackIconMaterial Kind="PlaylistPlay" Width="18" Height="18"
+                                                            Margin="0,0,12,0" VerticalAlignment="Center"
+                                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                <TextBlock x:Name="NavPlaylistsLabel" Text="Playlists" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
+
+                        <!-- Separator -->
+                        <Separator Style="{StaticResource SidebarSeparator}"/>
+
                         <Button x:Name="NavSettingsButton"
                                 Style="{StaticResource SidebarNavButton}"
                                 Click="NavButton_Click"
-                                Tag="Settings">
+                                Tag="Settings"
+                                ToolTip="Settings">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="⚙" FontSize="20" Margin="0,0,14,0" VerticalAlignment="Center" FontFamily="Segoe UI Emoji"/>
-                                <TextBlock Text="Settings" VerticalAlignment="Center"/>
+                                <iconPacks:PackIconMaterial Kind="CogOutline" Width="18" Height="18"
+                                                            Margin="0,0,12,0" VerticalAlignment="Center"
+                                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                <TextBlock x:Name="NavSettingsLabel" Text="Settings" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
                 </ScrollViewer>
 
-                <!-- Footer -->
-                <Border Grid.Row="2"
-                        Padding="20,16"
-                        BorderBrush="{StaticResource BorderColor}"
+                <!-- ── Footer ── -->
+                <Border Grid.Row="3"
+                        Padding="16,12"
+                        BorderBrush="#161B22"
                         BorderThickness="0,1,0,0">
-                    <TextBlock Text="v1.3.0"
-                               FontSize="11"
-                               Foreground="{StaticResource TextTertiary}"
-                               HorizontalAlignment="Center"/>
+                    <StackPanel x:Name="SidebarFooter">
+                        <TextBlock Text="Anime Quote Wall  v1.4.0"
+                                   FontSize="11"
+                                   Foreground="#374151"
+                                   HorizontalAlignment="Center"
+                                   TextOptions.TextRenderingMode="ClearType"/>
+                    </StackPanel>
                 </Border>
             </Grid>
         </Border>
 
-        <!-- Main Content Area -->
+        <!-- ════════════════════════════════════════════════
+             MAIN CONTENT AREA
+        ════════════════════════════════════════════════ -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-                <!-- Top Bar -->
-                <Border Grid.Row="0"
-                        Background="{StaticResource CardBackground}"
-                        BorderBrush="{StaticResource BorderColor}"
-                        BorderThickness="0,0,0,1"
-                        Padding="24,16">
+            <!-- Top Bar -->
+            <Border Grid.Row="0"
+                    Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="0,0,0,1"
+                    Padding="24,14">
+                <DockPanel>
                     <TextBlock x:Name="PageTitleText"
                                Text="Wallpaper"
-                               FontSize="24"
+                               FontSize="22"
                                FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimary}"
+                               Foreground="{DynamicResource TextPrimary}"
+                               VerticalAlignment="Center"
                                RenderOptions.BitmapScalingMode="HighQuality"
                                TextOptions.TextRenderingMode="ClearType"/>
-                </Border>
+                </DockPanel>
+            </Border>
 
-                <!-- Content Frame -->
-                <Frame x:Name="ContentFrame"
-                       Grid.Row="1"
-                       NavigationUIVisibility="Hidden"
-                       JournalOwnership="OwnsJournal"
-                       Background="{StaticResource WindowBackground}"
-                       LoadCompleted="ContentFrame_LoadCompleted"/>
+            <!-- Content Frame -->
+            <Frame x:Name="ContentFrame"
+                   Grid.Row="1"
+                   NavigationUIVisibility="Hidden"
+                   JournalOwnership="OwnsJournal"
+                   Background="{DynamicResource WindowBackground}"
+                   LoadCompleted="ContentFrame_LoadCompleted"/>
         </Grid>
     </Grid>
 </Window>

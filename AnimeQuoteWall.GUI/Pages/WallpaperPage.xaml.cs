@@ -282,17 +282,122 @@ public partial class WallpaperPage : Page
 
     /// <summary>
     /// Handles the Generate All Monitors button click event.
-    /// Temporarily disabled - multi-monitor feature is not working properly.
+    /// Generates a unique wallpaper for each connected monitor and applies them.
     /// </summary>
     private async void GenerateAllMonitorsButton_Click(object sender, RoutedEventArgs e)
     {
-        System.Windows.MessageBox.Show(
-            "Multi-monitor wallpaper generation is temporarily disabled.\n\n" +
-            "This feature will return in a future update once stability issues are resolved.\n\n" +
-            "You can still generate and apply wallpapers to individual monitors.",
-            "Feature Temporarily Disabled",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        try
+        {
+            if (GenerateAllMonitorsButton == null) return;
+            GenerateAllMonitorsButton.IsEnabled = false;
+
+            var backgrounds = _backgroundService.GetAllBackgroundImages(AppConfiguration.BackgroundsDirectory);
+
+            if (_quotes.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No quotes available. Please add quotes first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (backgrounds.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No background images available. Please add backgrounds first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var monitors = _monitorService.GetAllMonitors();
+            if (monitors.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No monitors detected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var generatedCount = 0;
+            var errors = new List<string>();
+
+            await Task.Run(async () =>
+            {
+                foreach (var monitor in monitors)
+                {
+                    try
+                    {
+                        var randomQuote = _quoteService.GetRandomQuote(_quotes);
+                        var randomBackground = _backgroundService.GetRandomBackgroundImage(AppConfiguration.BackgroundsDirectory);
+                        var monitorPath = AppConfiguration.GetMonitorWallpaperFilePath(monitor.Index);
+
+                        // Save current as previous
+                        if (File.Exists(monitorPath))
+                        {
+                            try { File.Copy(monitorPath, AppConfiguration.GetMonitorPreviousWallpaperFilePath(monitor.Index), overwrite: true); }
+                            catch { /* ignore */ }
+                        }
+
+                        var settings = new WallpaperSettings
+                        {
+                            Width = monitor.Width,
+                            Height = monitor.Height,
+                            BackgroundColor = "#141414",
+                            FontFamily = "Segoe UI",
+                            TextColor = "#FFFFFF",
+                            OutlineColor = "#000000",
+                            PanelColor = "#1A1A1A",
+                            PanelOpacity = 0.85f,
+                            MaxPanelWidthPercent = 0.7f,
+                            FontSizeFactor = 25f,
+                            MinFontSize = 32
+                        };
+
+                        using var bitmap = _wallpaperService.CreateWallpaperImage(randomBackground, randomQuote, settings);
+                        await _wallpaperService.SaveImageAsync(bitmap, monitorPath).ConfigureAwait(false);
+
+                        AppConfiguration.SetMonitorWallpaperPath(monitor.Index, monitorPath);
+
+                        // Keep global current path in sync for the primary monitor
+                        if (monitor.IsPrimary)
+                        {
+                            try { File.Copy(monitorPath, AppConfiguration.CurrentWallpaperPath, overwrite: true); }
+                            catch { /* ignore */ }
+                        }
+
+                        try { await _historyService.SaveToHistoryAsync(monitorPath, randomQuote, randomBackground, settings).ConfigureAwait(false); }
+                        catch { /* ignore history errors */ }
+
+                        generatedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"{monitor.Name}: {ex.Message}");
+                    }
+                }
+            }).ConfigureAwait(false);
+
+            // Apply all wallpapers on UI thread
+            Dispatcher.Invoke(async () =>
+            {
+                foreach (var monitor in monitors)
+                {
+                    var path = AppConfiguration.GetMonitorWallpaperPath(monitor.Index);
+                    if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                        await SetWallpaperAsync(path, monitor.Index).ConfigureAwait(false);
+                }
+
+                LoadCurrentWallpaper();
+                GenerateAllMonitorsButton.IsEnabled = true;
+
+                var msg = $"Generated wallpapers for {generatedCount} monitor(s).";
+                if (errors.Count > 0)
+                    msg += "\n\nErrors:\n" + string.Join("\n", errors);
+                System.Windows.MessageBox.Show(msg, "Done", MessageBoxButton.OK, generatedCount > 0 ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            });
+        }
+        catch (Exception ex)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (GenerateAllMonitorsButton != null) GenerateAllMonitorsButton.IsEnabled = true;
+                System.Windows.MessageBox.Show($"Failed to generate wallpapers: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            });
+        }
     }
 
     private void RefreshButton_Click(object sender, RoutedEventArgs e)

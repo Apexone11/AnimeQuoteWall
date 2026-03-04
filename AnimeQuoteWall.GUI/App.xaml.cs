@@ -35,22 +35,28 @@ public partial class App : System.Windows.Application
             }
 
             // Ensure directories exist early (async to not block UI)
-            _ = System.Threading.Tasks.Task.Run(() => AppConfiguration.EnsureDirectories());
+            System.Threading.Tasks.Task.Run(() => AppConfiguration.EnsureDirectories())
+                .ContinueWith(t => { if (t.IsFaulted && t.Exception != null) LogException(t.Exception.GetBaseException()); },
+                    System.Threading.Tasks.TaskScheduler.Default);
 
             var window = new SimpleMainWindow();
             MainWindow = window; // Set as main window
             window.Show();
 
             // Cleanup old thumbnails in background after window is shown
-            _ = System.Threading.Tasks.Task.Run(() =>
+            System.Threading.Tasks.Task.Run(() =>
             {
                 try
                 {
                     var thumbnailService = new Core.Services.VideoThumbnailService();
                     thumbnailService.CleanupOldThumbnails(30);
                 }
-                catch { /* Ignore cleanup errors */ }
-            });
+                catch (Exception cleanupEx)
+                {
+                    LogException(cleanupEx);
+                }
+            }).ContinueWith(t => { if (t.IsFaulted && t.Exception != null) LogException(t.Exception.GetBaseException()); },
+                System.Threading.Tasks.TaskScheduler.Default);
         }
         catch (Exception ex)
         {
@@ -76,9 +82,10 @@ public partial class App : System.Windows.Application
             
             e.Handled = result == System.Windows.MessageBoxResult.Yes;
         }
-        catch
+        catch (Exception fallbackEx)
         {
-            // Fallback if error handling itself fails
+            // Fallback if error handling itself fails — still try to log
+            LogException(fallbackEx);
             e.Handled = true;
         }
     }
@@ -98,9 +105,10 @@ public partial class App : System.Windows.Application
                     System.Windows.MessageBoxImage.Error);
             }
         }
-        catch
+        catch (Exception innerEx)
         {
-            // Ignore errors in error handler
+            // Last-resort log attempt for errors inside the error handler
+            LogException(innerEx);
         }
     }
 
