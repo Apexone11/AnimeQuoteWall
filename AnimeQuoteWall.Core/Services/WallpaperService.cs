@@ -503,6 +503,10 @@ public class WallpaperService : IWallpaperService
         graphics.DrawPath(borderPen, path);
     }
 
+    /// <summary>
+    /// Creates a rounded rectangle GraphicsPath.
+    /// Caller is responsible for disposing the returned GraphicsPath.
+    /// </summary>
     private GraphicsPath CreateRoundedRectangle(int x, int y, int width, int height, int radius)
     {
         var path = new GraphicsPath();
@@ -618,6 +622,10 @@ public class WallpaperService : IWallpaperService
 
     /// <summary>
     /// Creates wallpapers for multiple monitors based on the configured multi-monitor mode.
+    /// 
+    /// IMPORTANT: In "Span" mode, all dictionary entries reference the same Bitmap instance.
+    /// The caller must dispose the bitmap only once. Do not dispose individual entries separately
+    /// as they all point to the same object.
     /// </summary>
     /// <param name="backgroundPath">Path to background image (or null for solid color)</param>
     /// <param name="quote">The quote to display</param>
@@ -635,7 +643,7 @@ public class WallpaperService : IWallpaperService
             var combined = CreateWallpaperForAllMonitors(backgroundPath, quote, settings);
             var monitors = _monitorService.GetAllMonitors();
             
-            // For span mode, we create one wallpaper but need to apply it to all monitors
+            // For span mode, all monitors reference the same bitmap instance
             // Windows will handle the spanning automatically if the image matches the combined resolution
             foreach (var monitor in monitors)
             {

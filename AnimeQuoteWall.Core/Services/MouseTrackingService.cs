@@ -38,6 +38,12 @@ public class MouseTrackingService
     /// <returns>Parallax offset as a PointF</returns>
     public PointF CalculateParallaxOffset(int screenWidth, int screenHeight, float intensity = 0.5f)
     {
+        // Validate screen dimensions to prevent division by zero
+        if (screenWidth <= 0 || screenHeight <= 0)
+        {
+            return new PointF(0, 0);
+        }
+        
         var mousePos = GetMousePosition();
         var centerX = screenWidth / 2f;
         var centerY = screenHeight / 2f;

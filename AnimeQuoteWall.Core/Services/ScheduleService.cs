@@ -233,7 +233,17 @@ public class ScheduleService
             return $"Daily at {playlist.ScheduleTime}";
         }
 
-        var days = playlist.DaysOfWeek.Select(d => dayNames[d]).ToList();
+        // Validate day indices and map to names, filtering out invalid values
+        var days = playlist.DaysOfWeek
+            .Where(d => d >= 0 && d < dayNames.Length)
+            .Select(d => dayNames[d])
+            .ToList();
+        
+        if (days.Count == 0)
+        {
+            return $"Custom at {playlist.ScheduleTime} (no valid days)";
+        }
+        
         var daysStr = days.Count == 1 ? days[0] : string.Join(", ", days.Take(days.Count - 1)) + " and " + days.Last();
 
         return $"{daysStr} at {playlist.ScheduleTime}";

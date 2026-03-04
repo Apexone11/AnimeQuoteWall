@@ -17,8 +17,9 @@ public class BackgroundService : IBackgroundService
 {
     /// <summary>
     /// Random number generator for selecting random backgrounds.
+    /// Using Random.Shared for thread-safe random number generation (.NET 6+).
     /// </summary>
-    private readonly Random _random = new();
+    private static readonly Random _random = Random.Shared;
 
     /// <summary>
     /// Gets a random background image from the specified directory.
