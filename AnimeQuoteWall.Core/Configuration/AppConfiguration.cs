@@ -17,6 +17,17 @@ public class UserSettings
 
     public string? CustomOutputPath { get; set; } // Custom output path for the wallpaper
     public string ThemeMode { get; set; } = "System"; // "System" | "Light" | "Dark"
+
+    // Animation defaults
+    public int AnimationFps { get; set; } = 24;
+    public int AnimationDurationSec { get; set; } = 6;
+    public string? LastExportDirectory { get; set; }
+    public string? FfmpegPath { get; set; }
+
+    // UI and behavior settings
+    public bool AutoRefreshPreview { get; set; } = true; // Auto-refresh preview after generation
+    public bool ShowGenerationNotifications { get; set; } = true; // Show notifications on generation
+    public bool AutoSaveToHistory { get; set; } = true; // Automatically save to history
 }
 
 /// <summary>
@@ -69,6 +80,11 @@ public class AppConfiguration
     /// Gets the path to the frames directory.
     /// </summary>
     public static string FramesDirectory => Path.Combine(DefaultBaseDirectory, "frames");
+
+    /// <summary>
+    /// Gets the directory for wallpaper history.
+    /// </summary>
+    public static string HistoryDirectory => Path.Combine(DefaultBaseDirectory, "history");
 
     /// <summary>
     /// Gets the path to the quotes JSON file (user-configurable).
@@ -124,6 +140,40 @@ public class AppConfiguration
     }
 
     /// <summary>
+    /// Gets the path to the previous wallpaper file.
+    /// </summary>
+    public static string PreviousWallpaperPath
+    {
+        get
+        {
+            LoadSettings();
+
+            var defaultPath = Path.Combine(DefaultBaseDirectory, "previous.png");
+            var custom = _userSettings?.CustomOutputPath;
+
+            if (!string.IsNullOrWhiteSpace(custom))
+            {
+                var fullPath = Path.GetFullPath(custom);
+
+                if (!IsPathSafe(fullPath))
+                    return defaultPath;
+
+                var hasExtension = Path.HasExtension(fullPath);
+                if (!hasExtension || Directory.Exists(fullPath))
+                {
+                    return Path.Combine(fullPath, "previous.png");
+                }
+
+                var dir = Path.GetDirectoryName(fullPath);
+                var fileName = Path.GetFileNameWithoutExtension(fullPath) + "_previous" + Path.GetExtension(fullPath);
+                return Path.Combine(dir ?? DefaultBaseDirectory, fileName);
+            }
+
+            return defaultPath;
+        }
+    }
+
+    /// <summary>
     /// Gets the supported image file extensions.
     /// </summary>
     public static string[] SupportedImageExtensions => new[]
@@ -150,6 +200,58 @@ public class AppConfiguration
                 SaveSettings();
             }
         }
+    }
+
+    // Animation defaults and export settings
+    public static int AnimationFps
+    {
+        get { LoadSettings(); return _userSettings?.AnimationFps ?? 24; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.AnimationFps = value; SaveSettings(); } }
+    }
+
+    public static int AnimationDurationSec
+    {
+        get { LoadSettings(); return _userSettings?.AnimationDurationSec ?? 6; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.AnimationDurationSec = value; SaveSettings(); } }
+    }
+
+    public static string? LastExportDirectory
+    {
+        get { LoadSettings(); return _userSettings?.LastExportDirectory; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.LastExportDirectory = value; SaveSettings(); } }
+    }
+
+    public static string? FfmpegPath
+    {
+        get { LoadSettings(); return _userSettings?.FfmpegPath; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.FfmpegPath = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets whether to auto-refresh preview after generation.
+    /// </summary>
+    public static bool AutoRefreshPreview
+    {
+        get { LoadSettings(); return _userSettings?.AutoRefreshPreview ?? true; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.AutoRefreshPreview = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets whether to show notifications on generation.
+    /// </summary>
+    public static bool ShowGenerationNotifications
+    {
+        get { LoadSettings(); return _userSettings?.ShowGenerationNotifications ?? true; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.ShowGenerationNotifications = value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets whether to automatically save to history.
+    /// </summary>
+    public static bool AutoSaveToHistory
+    {
+        get { LoadSettings(); return _userSettings?.AutoSaveToHistory ?? true; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.AutoSaveToHistory = value; SaveSettings(); } }
     }
 
     /// <summary>

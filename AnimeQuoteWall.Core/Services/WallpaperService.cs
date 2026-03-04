@@ -19,10 +19,34 @@ namespace AnimeQuoteWall.Core.Services;
 /// - Load and resize background images
 /// - Draw text with nice effects (shadows, outlines, etc.)
 /// </summary>
+/// <summary>
+/// Service for generating wallpapers and animation frames.
+/// 
+/// This service handles the actual image creation by combining backgrounds, text, and styling
+/// to create beautiful wallpapers. It uses the ImageCacheService to optimize background loading.
+/// 
+/// Main capabilities:
+/// - Create a single wallpaper image
+/// - Generate multiple frames for animations
+/// - Load and resize background images (with caching)
+/// - Draw text with visual effects (shadows, outlines, etc.)
+/// </summary>
 public class WallpaperService : IWallpaperService
 {
     /// <summary>
+    /// Reference to the image cache service for optimized background loading.
+    /// </summary>
+    private readonly ImageCacheService _imageCache = ImageCacheService.Instance;
+    
+    /// <summary>
     /// Creates a wallpaper image by combining a background with a quote.
+    /// 
+    /// Process:
+    /// 1. Load or create background (uses cache if available)
+    /// 2. Create a new bitmap for the wallpaper
+    /// 3. Draw the background onto the wallpaper
+    /// 4. Draw the quote text on top with styling
+    /// 
     /// </summary>
     /// <param name="backgroundPath">Path to background image (or null for solid color)</param>
     /// <param name="quote">The quote to display</param>
@@ -117,34 +141,40 @@ public class WallpaperService : IWallpaperService
     /// <inheritdoc />
     public async Task SaveImageAsync(Bitmap bitmap, string filePath)
     {
-        await Task.Run(() => bitmap.Save(filePath, ImageFormat.Png));
+        await Task.Run(() => bitmap.Save(filePath, ImageFormat.Png)).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Loads a background image from file or creates a solid color background.
+    /// Uses the image cache for performance optimization.
+    /// </summary>
+    /// <param name="backgroundPath">Path to background image file, or null/empty for solid color</param>
+    /// <param name="settings">Wallpaper settings containing target dimensions and background color</param>
+    /// <returns>Bitmap containing the background (loaded from file or solid color)</returns>
     public Bitmap LoadBackgroundBitmap(string? backgroundPath, WallpaperSettings settings)
     {
+        // Try to load from file if path is provided
         if (!string.IsNullOrEmpty(backgroundPath) && File.Exists(backgroundPath))
         {
             try
             {
-                using var originalImage = Image.FromFile(backgroundPath);
-                var resized = new Bitmap(settings.Width, settings.Height);
-                
-                using var resizeGraphics = Graphics.FromImage(resized);
-                resizeGraphics.SmoothingMode = SmoothingMode.HighQuality;
-                resizeGraphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                resizeGraphics.CompositingQuality = CompositingQuality.HighQuality;
-                
-                resizeGraphics.DrawImage(originalImage, 0, 0, settings.Width, settings.Height);
-                return resized;
+                // Use cache for background loading - this significantly improves performance
+                // when the same background is used multiple times
+                var cached = _imageCache.GetOrLoadImage(backgroundPath, settings.Width, settings.Height);
+                if (cached != null)
+                {
+                    return cached;
+                }
             }
             catch
             {
                 // Fall back to solid color if image loading fails
+                // (file might be corrupted, wrong format, etc.)
             }
         }
 
-        // Create solid color background
+        // Create solid color background as fallback
+        // This is used when no background image is provided or loading fails
         var solidBackground = new Bitmap(settings.Width, settings.Height);
         using var graphics = Graphics.FromImage(solidBackground);
         using var brush = new SolidBrush(ColorTranslator.FromHtml(settings.BackgroundColor));
