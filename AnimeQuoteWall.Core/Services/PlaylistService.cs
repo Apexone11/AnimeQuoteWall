@@ -255,13 +255,18 @@ public class PlaylistService
     }
 
     /// <summary>
-    /// Gets the file path for a playlist based on its ID.
+    /// Gets the file path for a playlist based on its ID. The id is sanitized to an
+    /// alphanumeric stem and the resulting path is asserted to live inside
+    /// <see cref="PlaylistsDirectory"/> so a crafted playlist file cannot escape the
+    /// allowed root.
     /// </summary>
     /// <param name="playlistId">The playlist ID.</param>
     /// <returns>The full file path.</returns>
     private static string GetPlaylistFilePath(string playlistId)
     {
-        return Path.Combine(PlaylistsDirectory, $"{playlistId}.json");
+        var safeStem = SafePath.SanitizeId(playlistId);
+        var candidate = Path.Combine(PlaylistsDirectory, safeStem + ".json");
+        return SafePath.RequireInsideRoot(candidate, PlaylistsDirectory, nameof(GetPlaylistFilePath));
     }
 }
 

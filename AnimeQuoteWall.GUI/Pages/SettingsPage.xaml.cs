@@ -7,6 +7,8 @@ using System.Windows.Controls;
 using AnimeQuoteWall.Core.Configuration;
 using AnimeQuoteWall.Core.Services;
 using AnimeQuoteWall.GUI;
+using AnimeQuoteWall.GUI.Dialogs;
+using AnimeQuoteWall.GUI.Services;
 using Microsoft.Win32;
 using Forms = System.Windows.Forms;
 
@@ -69,7 +71,7 @@ public partial class SettingsPage : Page
         {
             SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
         }
-        catch { /* ignore */ }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"SettingsPage: {ex.Message}"); }
     }
 
     private void OnUnloaded(object? sender, RoutedEventArgs e)
@@ -78,7 +80,7 @@ public partial class SettingsPage : Page
         {
             SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
         }
-        catch { /* ignore */ }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"SettingsPage: {ex.Message}"); }
     }
 
     private void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
@@ -90,7 +92,7 @@ public partial class SettingsPage : Page
                 RefreshMonitorList();
             });
         }
-        catch { /* ignore */ }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"SettingsPage: {ex.Message}"); }
     }
 
     /// <summary>
@@ -190,20 +192,19 @@ public partial class SettingsPage : Page
     }
 
     /// <summary>
-    /// Handles theme mode combo box selection change.
-    /// Updates the theme setting (will apply after restart).
+    /// Handles theme mode combo box selection change. Applies the new theme
+    /// immediately via <see cref="ThemeManager.ApplyTheme"/>; no restart is required.
     /// </summary>
     private void ThemeModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         try
         {
             var index = ThemeModeComboBox.SelectedIndex;
-            // Map combo box index to theme mode: 0=System, 1=Light, 2=Dark
             var mode = index == 1 ? "Light" : index == 2 ? "Dark" : "System";
             AppConfiguration.ThemeMode = mode;
-            // Theme will apply after application restart
+            ThemeManager.ApplyTheme();
         }
-        catch { /* ignore */ }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"SettingsPage: {ex.Message}"); }
     }
 
     /// <summary>
@@ -691,6 +692,82 @@ public partial class SettingsPage : Page
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error setting EnablePerMonitorApply: {ex.Message}");
+        }
+    }
+
+    private void OpenDataFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dataDir = AppConfiguration.BaseDirectory;
+        Directory.CreateDirectory(dataDir);
+        ShellLauncher.OpenFolder(dataDir);
+    }
+
+    private void OpenLogFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        var logDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "AnimeQuoteWall",
+            "logs");
+        Directory.CreateDirectory(logDir);
+        ShellLauncher.OpenFolder(logDir);
+    }
+
+    private void AboutButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new AboutDialog { Owner = Window.GetWindow(this) };
+        dialog.ShowDialog();
+    }
+
+    private async void ExportBackupButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "AnimeQuoteWall backup (*.zip)|*.zip",
+            FileName = $"AnimeQuoteWall-Backup-{DateTime.Now:yyyyMMdd-HHmm}.zip",
+            Title = "Export AnimeQuoteWall backup"
+        };
+        if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
+
+        try
+        {
+            var service = new BackupService();
+            await service.ExportAsync(dialog.FileName).ConfigureAwait(true);
+            ToastService.ShowSuccess($"Backup written to {Path.GetFileName(dialog.FileName)}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"ExportBackupButton_Click: {ex.Message}");
+            ToastService.ShowError($"Export failed: {ex.Message}");
+        }
+    }
+
+    private async void ImportBackupButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "AnimeQuoteWall backup (*.zip)|*.zip",
+            Title = "Import AnimeQuoteWall backup"
+        };
+        if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
+
+        var confirm = System.Windows.MessageBox.Show(
+            Window.GetWindow(this),
+            "Importing a backup will overwrite settings.json, quotes.json, playlists, and the backgrounds folder. Continue?",
+            "Confirm import",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes) return;
+
+        try
+        {
+            var service = new BackupService();
+            await service.ImportAsync(dialog.FileName).ConfigureAwait(true);
+            ToastService.ShowSuccess("Backup restored. Some changes may require a restart.");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"ImportBackupButton_Click: {ex.Message}");
+            ToastService.ShowError($"Import failed: {ex.Message}");
         }
     }
 }

@@ -125,7 +125,7 @@ public partial class QuotesPage : Page
             QuotesListBox.ItemsSource = null;
             QuotesListBox.ItemsSource = _filteredQuotes;
 
-            var quoteCountRun = (Run)QuoteCountTextBottom.Inlines.FirstOrDefault(i => i is Run r && r.Name == "QuoteCountRun");
+            var quoteCountRun = QuoteCountTextBottom.Inlines.OfType<Run>().FirstOrDefault(r => r.Name == "QuoteCountRun");
             if (quoteCountRun != null)
             {
                 quoteCountRun.Text = $"{_filteredQuotes.Count}";
@@ -146,7 +146,7 @@ public partial class QuotesPage : Page
         try
         {
             // Show dialog for entering quote details
-            var dialog = new SimpleQuoteDialog();
+            var dialog = new AnimeQuoteWall.GUI.Dialogs.AddQuoteDialog { Owner = Window.GetWindow(this) };
             if (dialog.ShowDialog() == true)
             {
                 // Create new quote with dialog values

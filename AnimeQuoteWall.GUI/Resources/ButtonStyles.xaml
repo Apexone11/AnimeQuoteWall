@@ -1,9 +1,24 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- ═══════════════════════════════════════════════════════════
-         MODERN PRIMARY BUTTON  (indigo gradient)
-    ═══════════════════════════════════════════════════════════ -->
+    <!-- Global keyboard focus ring -->
+    <Style x:Key="ModernFocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle Stroke="{DynamicResource PrimaryColor}"
+                               StrokeThickness="2"
+                               StrokeDashArray="2 2"
+                               RadiusX="10"
+                               RadiusY="10"
+                               Margin="-3"
+                               SnapsToDevicePixels="True"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- MODERN PRIMARY BUTTON (indigo gradient) -->
     <Style x:Key="ModernPrimaryButton" TargetType="Button">
         <Setter Property="Background">
             <Setter.Value>

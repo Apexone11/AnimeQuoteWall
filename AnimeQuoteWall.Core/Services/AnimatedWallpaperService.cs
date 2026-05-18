@@ -15,12 +15,19 @@ namespace AnimeQuoteWall.Core.Services;
 /// </summary>
 public class AnimatedWallpaperService
 {
-    /// <summary>
-    /// Checks if Wallpaper Engine is installed and running.
-    /// </summary>
+    private static readonly HttpClient SharedHttpClient = new(new SocketsHttpHandler
+    {
+        ConnectTimeout = TimeSpan.FromSeconds(3),
+        PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+        AllowAutoRedirect = false
+    })
+    {
+        Timeout = TimeSpan.FromSeconds(5),
+        DefaultRequestVersion = System.Net.HttpVersion.Version11
+    };
+
     public bool IsWallpaperEngineAvailable()
     {
-        // Use async version synchronously for backward compatibility
         return IsWallpaperEngineAvailableAsync().GetAwaiter().GetResult();
     }
 
@@ -43,9 +50,7 @@ public class AnimatedWallpaperService
             // Check if Wallpaper Engine Web API is accessible (indicates it's running)
             try
             {
-                using var httpClient = new HttpClient();
-                httpClient.Timeout = TimeSpan.FromSeconds(2);
-                using var response = await httpClient.GetAsync("http://localhost:7070/api/status").ConfigureAwait(false);
+                using var response = await SharedHttpClient.GetAsync("http://localhost:7070/api/status").ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                     return true;
             }
@@ -100,9 +105,7 @@ public class AnimatedWallpaperService
                 // Check if API is accessible
                 try
                 {
-                    using var httpClient = new HttpClient();
-                    httpClient.Timeout = TimeSpan.FromSeconds(2);
-                    using var response = await httpClient.GetAsync("http://localhost:7070/api/status").ConfigureAwait(false);
+                    using var response = await SharedHttpClient.GetAsync("http://localhost:7070/api/status").ConfigureAwait(false);
                     if (response.IsSuccessStatusCode)
                     {
                         return "Wallpaper Engine is running and API is accessible.";
@@ -222,8 +225,7 @@ public class AnimatedWallpaperService
     {
         try
         {
-            using var httpClient = new HttpClient();
-            httpClient.Timeout = TimeSpan.FromSeconds(5);
+            var httpClient = SharedHttpClient;
 
             // Check if API is available
             using var checkResponse = await httpClient.GetAsync("http://localhost:7070/api/status").ConfigureAwait(false);
@@ -276,31 +278,30 @@ public class AnimatedWallpaperService
                 return false;
             }
 
-            // Try different command formats that Wallpaper Engine might support
-            var commands = new[]
+            var commandVariants = new[]
             {
-                $"-control openWallpaper -file \"{videoPath}\"",
-                $"-control applyWallpaper -file \"{videoPath}\"",
-                $"-file \"{videoPath}\""
+                new[] { "-control", "openWallpaper", "-file", videoPath },
+                new[] { "-control", "applyWallpaper", "-file", videoPath },
+                new[] { "-file", videoPath }
             };
 
-            foreach (var args in commands)
+            foreach (var args in commandVariants)
             {
                 var processInfo = new ProcessStartInfo
                 {
                     FileName = exePath,
-                    Arguments = args,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
+                foreach (var a in args) processInfo.ArgumentList.Add(a);
 
                 try
                 {
-                    var process = Process.Start(processInfo);
+                    using var process = Process.Start(processInfo);
                     if (process != null)
                     {
-                        process.WaitForExit(3000); // Wait up to 3 seconds
+                        process.WaitForExit(3000);
                         if (process.ExitCode == 0)
                         {
                             return true;
@@ -409,8 +410,7 @@ public class AnimatedWallpaperService
     {
         try
         {
-            using var httpClient = new HttpClient();
-            httpClient.Timeout = TimeSpan.FromSeconds(5);
+            var httpClient = SharedHttpClient;
 
             // Check if API is available
             using var checkResponse = await httpClient.GetAsync("http://localhost:7070/api/status").ConfigureAwait(false);
@@ -486,28 +486,27 @@ public class AnimatedWallpaperService
                 return false;
             }
 
-            // Try commands to clear wallpaper
-            var commands = new[]
+            var commandVariants = new[]
             {
-                "-control closeWallpaper",
-                "-control stopWallpaper",
-                "-control clearWallpaper"
+                new[] { "-control", "closeWallpaper" },
+                new[] { "-control", "stopWallpaper" },
+                new[] { "-control", "clearWallpaper" }
             };
 
-            foreach (var args in commands)
+            foreach (var args in commandVariants)
             {
                 var processInfo = new ProcessStartInfo
                 {
                     FileName = exePath,
-                    Arguments = args,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
+                foreach (var a in args) processInfo.ArgumentList.Add(a);
 
                 try
                 {
-                    var process = Process.Start(processInfo);
+                    using var process = Process.Start(processInfo);
                     if (process != null)
                     {
                         process.WaitForExit(3000);
@@ -538,44 +537,49 @@ public class AnimatedWallpaperService
     {
         try
         {
-            // Use FFmpeg to extract first frame
             var ffmpegPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "ffmpeg", "ffmpeg.exe");
             if (!File.Exists(ffmpegPath))
             {
-                // Try to find FFmpeg in PATH
-                ffmpegPath = "ffmpeg";
+                System.Diagnostics.Debug.WriteLine("AnimatedWallpaperService: bundled ffmpeg.exe missing; refusing to fall back to PATH.");
+                return false;
             }
 
-            var framePath = videoPath.Replace(Path.GetExtension(videoPath), "_frame0.png");
-            
+            var framePath = Path.ChangeExtension(videoPath, null) + "_frame0.png";
+
             var processInfo = new ProcessStartInfo
             {
                 FileName = ffmpegPath,
-                Arguments = $"-i \"{videoPath}\" -vframes 1 -y \"{framePath}\"",
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
             };
+            processInfo.ArgumentList.Add("-i");
+            processInfo.ArgumentList.Add(videoPath);
+            processInfo.ArgumentList.Add("-vframes");
+            processInfo.ArgumentList.Add("1");
+            processInfo.ArgumentList.Add("-y");
+            processInfo.ArgumentList.Add(framePath);
 
-            var process = Process.Start(processInfo);
-            process?.WaitForExit(10000); // Wait up to 10 seconds
+            using var process = Process.Start(processInfo);
+            process?.WaitForExit(10000);
 
             if (File.Exists(framePath))
             {
                 var result = WallpaperSettingHelper.SetWallpaper(framePath);
-                // Clean up temporary frame file after a delay
-                Task.Run(async () =>
+                _ = Task.Run(async () =>
                 {
-                    await Task.Delay(5000);
-                    try { File.Delete(framePath); } catch { }
+                    await Task.Delay(5000).ConfigureAwait(false);
+                    try { File.Delete(framePath); }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"AnimatedWallpaperService temp-frame delete: {ex.Message}"); }
                 });
                 return result;
             }
 
             return false;
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"AnimatedWallpaperService.ExtractAndSetVideoFrame: {ex.Message}");
             return false;
         }
     }

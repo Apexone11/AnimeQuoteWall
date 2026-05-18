@@ -71,21 +71,6 @@ public partial class WallpaperPage : Page
     private System.Collections.Generic.List<Quote> _quotes = new();
     
     /// <summary>
-    /// Current zoom level for preview (1.0 = 100%).
-    /// </summary>
-    private double _currentZoom = 1.0;
-    
-    /// <summary>
-    /// Whether currently showing previous wallpaper in comparison mode.
-    /// </summary>
-    private bool _isShowingPrevious = false;
-    
-    /// <summary>
-    /// Path to the previous wallpaper (for comparison).
-    /// </summary>
-    private string? _previousWallpaperPath;
-    
-    /// <summary>
     /// Last quote used for generation (for history).
     /// </summary>
     private Quote? _lastGeneratedQuote;
@@ -120,15 +105,15 @@ public partial class WallpaperPage : Page
     {
         try
         {
-            // Ensure quotes file exists and load quotes
             await _quoteService.EnsureQuotesFileAsync(AppConfiguration.QuotesFilePath).ConfigureAwait(false);
             _quotes = await _quoteService.LoadQuotesAsync(AppConfiguration.QuotesFilePath).ConfigureAwait(false);
         }
-        catch { /* ignore errors during initialization */ }
-        
-        // Defer LoadCurrentWallpaper until UI is fully ready
-        // This prevents crashes if UI elements aren't initialized yet
-        Dispatcher.BeginInvoke(new Action(() =>
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"WallpaperPage.InitializeAsync quote load failed: {ex.Message}");
+        }
+
+        await Dispatcher.BeginInvoke(new Action(() =>
         {
             LoadCurrentWallpaper();
             InitializeMonitorSelection();
@@ -238,10 +223,10 @@ public partial class WallpaperPage : Page
                 catch { /* ignore if copy fails */ }
             }
 
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 using var bitmap = _wallpaperService.CreateWallpaperImage(randomBackground, randomQuote, settings);
-                _wallpaperService.SaveImageAsync(bitmap, monitorPath).Wait();
+                await _wallpaperService.SaveImageAsync(bitmap, monitorPath).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
             // Save to per-monitor path configuration
@@ -329,7 +314,7 @@ public partial class WallpaperPage : Page
                         if (File.Exists(monitorPath))
                         {
                             try { File.Copy(monitorPath, AppConfiguration.GetMonitorPreviousWallpaperFilePath(monitor.Index), overwrite: true); }
-                            catch { /* ignore */ }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"WallpaperPage per-monitor copy: {ex.Message}"); }
                         }
 
                         var settings = new WallpaperSettings
@@ -356,11 +341,11 @@ public partial class WallpaperPage : Page
                         if (monitor.IsPrimary)
                         {
                             try { File.Copy(monitorPath, AppConfiguration.CurrentWallpaperPath, overwrite: true); }
-                            catch { /* ignore */ }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"WallpaperPage per-monitor copy: {ex.Message}"); }
                         }
 
                         try { await _historyService.SaveToHistoryAsync(monitorPath, randomQuote, randomBackground, settings).ConfigureAwait(false); }
-                        catch { /* ignore history errors */ }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"WallpaperPage history save: {ex.Message}"); }
 
                         generatedCount++;
                     }
@@ -371,14 +356,13 @@ public partial class WallpaperPage : Page
                 }
             }).ConfigureAwait(false);
 
-            // Apply all wallpapers on UI thread
-            Dispatcher.Invoke(async () =>
+            await Dispatcher.InvokeAsync(async () =>
             {
                 foreach (var monitor in monitors)
                 {
                     var path = AppConfiguration.GetMonitorWallpaperPath(monitor.Index);
                     if (!string.IsNullOrEmpty(path) && File.Exists(path))
-                        await SetWallpaperAsync(path, monitor.Index).ConfigureAwait(false);
+                        await SetWallpaperAsync(path, monitor.Index).ConfigureAwait(true);
                 }
 
                 LoadCurrentWallpaper();
@@ -388,7 +372,7 @@ public partial class WallpaperPage : Page
                 if (errors.Count > 0)
                     msg += "\n\nErrors:\n" + string.Join("\n", errors);
                 System.Windows.MessageBox.Show(msg, "Done", MessageBoxButton.OK, generatedCount > 0 ? MessageBoxImage.Information : MessageBoxImage.Warning);
-            });
+            }).Task.Unwrap().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -410,7 +394,7 @@ public partial class WallpaperPage : Page
     /// Handles the Remove Generated button click event.
     /// Deletes the current generated wallpaper for the selected monitor and restores the previous one if available.
     /// </summary>
-    private void RemoveGeneratedButton_Click(object sender, RoutedEventArgs e)
+    private async void RemoveGeneratedButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -486,8 +470,7 @@ public partial class WallpaperPage : Page
                 {
                     File.Copy(previousPath, restoredPath, overwrite: true);
                     
-                    // Apply the restored wallpaper to the monitor
-                    if (SetWallpaper(restoredPath, targetMonitor))
+                    if (await SetWallpaperAsync(restoredPath, targetMonitor).ConfigureAwait(true))
                     {
                         // Update the per-monitor path configuration with the restored wallpaper
                         AppConfiguration.SetMonitorWallpaperPath(targetMonitor, restoredPath);
@@ -556,13 +539,13 @@ public partial class WallpaperPage : Page
     /// When a specific monitor is selected, applies only that monitor's wallpaper.
     /// When "Use Settings Default" is selected, applies each monitor's own wallpaper (per-monitor mode).
     /// </summary>
-    private void ApplyButton_Click(object sender, RoutedEventArgs e)
+    private async void ApplyButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             var selectedMonitor = GetSelectedMonitor();
             var monitors = _monitorService.GetAllMonitors();
-            
+
             if (selectedMonitor.HasValue)
             {
                 // Apply to specific monitor only - use that monitor's wallpaper
@@ -584,10 +567,9 @@ public partial class WallpaperPage : Page
                     }
                 }
                 
-                // Apply this monitor's wallpaper ONLY to this monitor
-                if (SetWallpaper(monitorPath, selectedMonitor.Value))
+                if (await SetWallpaperAsync(monitorPath, selectedMonitor.Value).ConfigureAwait(true))
                 {
-                    System.Windows.MessageBox.Show($"Wallpaper applied to {monitor?.Name ?? $"Monitor {selectedMonitor.Value}"}!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show($"Wallpaper applied to {monitor?.Name ?? $"Monitor {selectedMonitor.Value}"}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
@@ -612,10 +594,9 @@ public partial class WallpaperPage : Page
                     return;
                 }
                 
-                // Apply to primary monitor
-                if (SetWallpaper(wallpaperPath, primaryMonitor.Index))
+                if (await SetWallpaperAsync(wallpaperPath, primaryMonitor.Index).ConfigureAwait(true))
                 {
-                    System.Windows.MessageBox.Show($"Wallpaper applied to {primaryMonitor.Name}!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show($"Wallpaper applied to {primaryMonitor.Name}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
@@ -845,21 +826,6 @@ public partial class WallpaperPage : Page
     }
 
     /// <summary>
-    /// Sets the desktop wallpaper using Windows API.
-    /// Includes compatibility handling for different Windows versions and error scenarios.
-    /// Supports multi-monitor configurations.
-    /// Automatically clears animated wallpapers before applying static ones.
-    /// </summary>
-    /// <param name="path">Path to the wallpaper image file</param>
-    /// <param name="monitorIndex">Optional monitor index. If null, uses settings default.</param>
-    /// <returns>True if successful, false otherwise</returns>
-    private bool SetWallpaper(string path, int? monitorIndex = null)
-    {
-        // Use async version synchronously for backward compatibility
-        return SetWallpaperAsync(path, monitorIndex).GetAwaiter().GetResult();
-    }
-
-    /// <summary>
     /// Sets the desktop wallpaper using Windows API (async version).
     /// Includes compatibility handling for different Windows versions and error scenarios.
     /// Supports multi-monitor configurations.
@@ -936,7 +902,7 @@ public partial class WallpaperPage : Page
                     return null;
             }
         }
-        catch { /* ignore */ }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"WallpaperPage.GetSelectedMonitorIndex: {ex.Message}"); }
         return null;
     }
 

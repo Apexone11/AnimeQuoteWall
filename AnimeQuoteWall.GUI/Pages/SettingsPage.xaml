@@ -311,48 +311,92 @@
                         </StackPanel>
                     </Button>
 
-                    <!-- Restart Warning Banner — shown only when paths have changed -->
+                    <!-- Restart Warning Banner - shown only when paths have changed -->
                     <Border x:Name="RestartWarningBanner"
-                            Background="#78350F"
-                            BorderBrush="#D97706"
+                            Background="{DynamicResource WarningDark}"
+                            BorderBrush="{DynamicResource WarningColor}"
                             BorderThickness="1"
                             CornerRadius="8"
                             Padding="14,10"
                             Margin="0,16,0,0"
                             Visibility="Collapsed">
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="AlertCircleOutline" Width="18" Height="18" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#FCD34D"/>
+                            <iconPacks:PackIconMaterial Kind="AlertCircleOutline" Width="18" Height="18" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="White"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Path Changed — Restart Required"
+                                <TextBlock Text="Path changed - restart required"
                                            FontSize="13"
                                            FontWeight="SemiBold"
-                                           Foreground="#FEF3C7"
+                                           Foreground="White"
                                            Margin="0,0,0,2"/>
                                 <TextBlock Text="The new path will take effect the next time you restart the application."
                                            FontSize="12"
-                                           Foreground="#FDE68A"
+                                           Foreground="White"
+                                           Opacity="0.9"
                                            TextWrapping="Wrap"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
-                    <!-- Path validation error banner — shown when a path has a problem -->
+                    <!-- Path validation error banner -->
                     <Border x:Name="PathValidationErrorBanner"
-                            Background="#7F1D1D"
-                            BorderBrush="#EF4444"
+                            Background="{DynamicResource DangerDark}"
+                            BorderBrush="{DynamicResource DangerColor}"
                             BorderThickness="1"
                             CornerRadius="8"
                             Padding="14,10"
                             Margin="0,8,0,0"
                             Visibility="Collapsed">
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="CloseCircleOutline" Width="18" Height="18" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="#FCA5A5"/>
+                            <iconPacks:PackIconMaterial Kind="CloseCircleOutline" Width="18" Height="18" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="White"/>
                             <TextBlock x:Name="PathValidationErrorText"
                                        FontSize="12"
-                                       Foreground="#FECACA"
+                                       Foreground="White"
                                        TextWrapping="Wrap"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- Shortcuts Card -->
+            <Border Background="{DynamicResource CardBackground}"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="20"
+                    Margin="0,20,0,0">
+                <StackPanel>
+                    <TextBlock Text="Shortcuts"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource TextPrimary}"
+                               Margin="0,0,0,12"/>
+                    <WrapPanel>
+                        <Button Style="{StaticResource ModernSecondaryButton}"
+                                Content="Open data folder"
+                                Margin="0,0,8,8"
+                                Click="OpenDataFolderButton_Click"
+                                AutomationProperties.Name="Open user data folder in Explorer"/>
+                        <Button Style="{StaticResource ModernSecondaryButton}"
+                                Content="Open log folder"
+                                Margin="0,0,8,8"
+                                Click="OpenLogFolderButton_Click"
+                                AutomationProperties.Name="Open log folder in Explorer"/>
+                        <Button Style="{StaticResource ModernSecondaryButton}"
+                                Content="Export backup"
+                                Margin="0,0,8,8"
+                                Click="ExportBackupButton_Click"
+                                AutomationProperties.Name="Export settings, quotes, and backgrounds to a ZIP archive"/>
+                        <Button Style="{StaticResource ModernSecondaryButton}"
+                                Content="Import backup"
+                                Margin="0,0,8,8"
+                                Click="ImportBackupButton_Click"
+                                AutomationProperties.Name="Restore settings, quotes, and backgrounds from a ZIP archive"/>
+                        <Button Style="{StaticResource ModernSecondaryButton}"
+                                Content="About"
+                                Margin="0,0,8,8"
+                                Click="AboutButton_Click"
+                                AutomationProperties.Name="Show the About dialog"/>
+                    </WrapPanel>
                 </StackPanel>
             </Border>
 
@@ -363,9 +407,6 @@
                     CornerRadius="12"
                     Padding="20"
                     Margin="0,20,0,0">
-                <Border.Effect>
-                    <DropShadowEffect Color="#1E293B" Opacity="0.08" BlurRadius="10" ShadowDepth="2"/>
-                </Border.Effect>
                 <StackPanel>
                     <TextBlock FontSize="16"
                                FontWeight="Bold"

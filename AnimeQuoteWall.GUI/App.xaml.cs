@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using AnimeQuoteWall.Core.Configuration;
 using AnimeQuoteWall.Core.Protection;
+using AnimeQuoteWall.Core.Services;
 
 namespace AnimeQuoteWall.GUI;
 
@@ -21,7 +22,8 @@ public partial class App : System.Windows.Application
         {
             // Initialize code protection (for Steam release)
             CodeProtection.Initialize();
-            
+            ImageMagickHardening.Apply();
+
             base.OnStartup(e);
             
             // Apply theme before any window is created

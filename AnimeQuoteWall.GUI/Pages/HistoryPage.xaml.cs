@@ -184,16 +184,14 @@ public partial class HistoryPage : Page
     {
         try
         {
-            if (sender is System.Windows.Controls.Button button && button.Tag != null)
+            if (sender is System.Windows.Controls.Button button
+                && button.Tag is WallpaperHistoryEntry entry
+                && !string.IsNullOrEmpty(entry.ImagePath)
+                && SafePath.IsInsideRoot(entry.ImagePath, WallpaperHistoryService.GetHistoryDirectory())
+                && File.Exists(entry.ImagePath))
             {
-                // Get entry from Tag property
-                var entry = button.Tag as WallpaperHistoryEntry;
-                if (entry != null && File.Exists(entry.ImagePath))
-                {
-                    // Copy wallpaper to current wallpaper path (overwrites current)
-                    File.Copy(entry.ImagePath, AppConfiguration.CurrentWallpaperPath, overwrite: true);
-                    System.Windows.MessageBox.Show("Wallpaper restored!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                File.Copy(entry.ImagePath, AppConfiguration.CurrentWallpaperPath, overwrite: true);
+                System.Windows.MessageBox.Show("Wallpaper restored.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
         catch (Exception ex)
@@ -206,24 +204,17 @@ public partial class HistoryPage : Page
     /// Handles the Delete button click event.
     /// Removes the wallpaper from history after user confirmation.
     /// </summary>
-    private void DeleteButton_Click(object sender, RoutedEventArgs e)
+    private async void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            if (sender is System.Windows.Controls.Button button && button.Tag != null)
+            if (sender is System.Windows.Controls.Button button && button.Tag is WallpaperHistoryEntry entry)
             {
-                var entry = button.Tag as WallpaperHistoryEntry;
-                if (entry != null)
+                var result = System.Windows.MessageBox.Show("Are you sure you want to delete this wallpaper from history?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
                 {
-                    // Confirm deletion with user
-                    var result = System.Windows.MessageBox.Show("Are you sure you want to delete this wallpaper from history?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        // Delete from history (removes both image and metadata entry)
-                        _historyService.DeleteFromHistoryAsync(entry).Wait();
-                        // Reload history to update display
-                        LoadHistoryAsync();
-                    }
+                    await _historyService.DeleteFromHistoryAsync(entry).ConfigureAwait(true);
+                    await LoadHistoryAsync().ConfigureAwait(true);
                 }
             }
         }
@@ -254,11 +245,11 @@ public partial class HistoryPage : Page
 
             if (result != MessageBoxResult.Yes) return;
 
-            var entries = await _historyService.LoadHistoryEntriesAsync();
+            var entries = await _historyService.LoadHistoryEntriesAsync().ConfigureAwait(true);
             foreach (var entry in entries)
-                await _historyService.DeleteFromHistoryAsync(entry);
+                await _historyService.DeleteFromHistoryAsync(entry).ConfigureAwait(true);
 
-            LoadHistoryAsync();
+            await LoadHistoryAsync().ConfigureAwait(true);
         }
         catch (Exception ex)
         {

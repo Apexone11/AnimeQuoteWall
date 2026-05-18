@@ -144,9 +144,9 @@
                                                 </iconPacks:PackIconMaterial.Style>
                                             </iconPacks:PackIconMaterial>
                                         </Button>
-                                        <StackPanel Orientation="Horizontal" Margin="8,0,0,0">
-                                            <TextBlock Text="★" FontSize="14" Foreground="{DynamicResource TextTertiary}" Margin="0,0,2,0"/>
-                                            <TextBlock Text="{Binding Rating}" FontSize="12" Foreground="{DynamicResource TextTertiary}"/>
+                                        <StackPanel Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
+                                            <iconPacks:PackIconMaterial Kind="Star" Width="12" Height="12" Margin="0,0,4,0" VerticalAlignment="Center" Foreground="{DynamicResource TextTertiary}"/>
+                                            <TextBlock Text="{Binding Rating}" FontSize="12" Foreground="{DynamicResource TextTertiary}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </StackPanel>
                                     <TextBlock Text="{Binding Text}"

@@ -225,19 +225,28 @@ public class AnimationService
                 progress?.Report((i + 1) / (double)frames.Count * 0.5); // first half progress
             }
 
-            // ffmpeg command
             string inputPattern = Path.Combine(tempDir, "frame_%03d.png");
-            string arguments = $"-y -framerate {profile.FramesPerSecond} -i \"{inputPattern}\" -pix_fmt yuv420p -crf 18 -preset veryfast \"{outputPath}\"";
 
             var psi = new ProcessStartInfo
             {
                 FileName = ffmpegPath,
-                Arguments = arguments,
                 UseShellExecute = false,
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
                 CreateNoWindow = true
             };
+            psi.ArgumentList.Add("-y");
+            psi.ArgumentList.Add("-framerate");
+            psi.ArgumentList.Add(profile.FramesPerSecond.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            psi.ArgumentList.Add("-i");
+            psi.ArgumentList.Add(inputPattern);
+            psi.ArgumentList.Add("-pix_fmt");
+            psi.ArgumentList.Add("yuv420p");
+            psi.ArgumentList.Add("-crf");
+            psi.ArgumentList.Add("18");
+            psi.ArgumentList.Add("-preset");
+            psi.ArgumentList.Add("veryfast");
+            psi.ArgumentList.Add(outputPath);
 
             using var process = new Process { StartInfo = psi };
             process.Start();

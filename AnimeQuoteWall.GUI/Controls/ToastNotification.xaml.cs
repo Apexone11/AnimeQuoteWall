@@ -1,9 +1,9 @@
 using System;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace AnimeQuoteWall.GUI.Controls;
 
@@ -39,31 +39,35 @@ public partial class ToastNotification : System.Windows.Controls.UserControl
     public void Show(string message, ToastType type = ToastType.Info)
     {
         MessageTextBlock.Text = message;
-        
-        // Set icon based on type
+
         IconTextBlock.Text = type switch
         {
-            ToastType.Success => "✓",
-            ToastType.Error => "✕",
-            ToastType.Warning => "⚠",
-            _ => "ℹ"
+            ToastType.Success => "OK",
+            ToastType.Error => "X",
+            ToastType.Warning => "!",
+            _ => "i"
         };
 
-        // Set icon color based on type
-        IconTextBlock.Foreground = type switch
+        var brushKey = type switch
         {
-            ToastType.Success => new SolidColorBrush(System.Windows.Media.Color.FromRgb(34, 197, 94)),
-            ToastType.Error => new SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68)),
-            ToastType.Warning => new SolidColorBrush(System.Windows.Media.Color.FromRgb(234, 179, 8)),
-            _ => new SolidColorBrush(System.Windows.Media.Color.FromRgb(59, 130, 246))
+            ToastType.Success => "SuccessColor",
+            ToastType.Error => "DangerColor",
+            ToastType.Warning => "WarningColor",
+            _ => "PrimaryColor"
         };
+        if (System.Windows.Application.Current?.TryFindResource(brushKey) is System.Windows.Media.Brush themedBrush)
+            IconTextBlock.Foreground = themedBrush;
 
-        // Auto-dismiss after duration
-        _ = Task.Run(async () =>
+        var timer = new DispatcherTimer
         {
-            await Task.Delay(AutoDismissDuration).ConfigureAwait(false);
-            Dispatcher.Invoke(() => Dismiss());
-        });
+            Interval = TimeSpan.FromMilliseconds(AutoDismissDuration)
+        };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            Dismiss();
+        };
+        timer.Start();
     }
 
     /// <summary>

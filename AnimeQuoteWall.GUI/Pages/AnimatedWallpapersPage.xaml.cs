@@ -607,20 +607,16 @@ public partial class AnimatedWallpapersPage : Page
             }
             else
             {
-                // Show as informational warning (amber) instead of green
-                WallpaperEngineStatusBar.Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0x78, 0x35, 0x0F));
-                WallpaperEngineStatusBar.BorderBrush = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0xD9, 0x77, 0x06));
-
-                var statusIcon = WallpaperEngineStatusBar.FindName("WallpaperEngineStatusBar") as System.Windows.Controls.Border;
-                WallpaperEngineStatusText.Foreground = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromRgb(0xFD, 0xE6, 0x8A));
-                WallpaperEngineStatusText.Text = "Wallpaper Engine not found — GIFs will use first-frame fallback; MP4/WebM/MOV require Wallpaper Engine from Steam.";
+                if (System.Windows.Application.Current?.TryFindResource("WarningDark") is System.Windows.Media.Brush warnBg)
+                    WallpaperEngineStatusBar.Background = warnBg;
+                if (System.Windows.Application.Current?.TryFindResource("WarningColor") is System.Windows.Media.Brush warnBorder)
+                    WallpaperEngineStatusBar.BorderBrush = warnBorder;
+                WallpaperEngineStatusText.Foreground = System.Windows.Media.Brushes.White;
+                WallpaperEngineStatusText.Text = "Wallpaper Engine not found. GIFs will use first-frame fallback; MP4, WebM, and MOV require Wallpaper Engine from Steam.";
                 WallpaperEngineStatusBar.Visibility = Visibility.Visible;
             }
         }
-        catch { /* ignore */ }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"AnimatedWallpapersPage: {ex.Message}"); }
     }
 
     /// <summary>
@@ -792,7 +788,7 @@ public partial class AnimatedWallpapersPage : Page
                     return null;
             }
         }
-        catch { /* ignore */ }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"AnimatedWallpapersPage: {ex.Message}"); }
         return null;
     }
 
@@ -810,7 +806,7 @@ public partial class AnimatedWallpapersPage : Page
                 return monitor?.Name ?? "";
             }
         }
-        catch { /* ignore */ }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"AnimatedWallpapersPage: {ex.Message}"); }
         return "";
     }
 
