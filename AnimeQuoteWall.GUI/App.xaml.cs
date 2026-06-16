@@ -12,6 +12,8 @@ namespace AnimeQuoteWall.GUI;
 /// </summary>
 public partial class App : System.Windows.Application
 {
+    private Services.TrayIconService? _trayIcon;
+
     protected override void OnStartup(System.Windows.StartupEventArgs e)
     {
         // Global exception handler
@@ -45,6 +47,10 @@ public partial class App : System.Windows.Application
             MainWindow = window; // Set as main window
             window.Show();
 
+            // System-tray icon: minimize-to-tray plus quick Open/Exit without the taskbar.
+            _trayIcon = new Services.TrayIconService(window);
+            _trayIcon.Initialize();
+
             // Cleanup old thumbnails in background after window is shown
             System.Threading.Tasks.Task.Run(() =>
             {
@@ -65,6 +71,14 @@ public partial class App : System.Windows.Application
             System.Windows.MessageBox.Show($"Startup Error: {ex.Message}\n\n{ex.StackTrace}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             Shutdown();
         }
+    }
+
+    protected override void OnExit(System.Windows.ExitEventArgs e)
+    {
+        // Remove the tray icon so it does not linger in the notification area after exit.
+        try { _trayIcon?.Dispose(); }
+        catch (Exception ex) { LogException(ex); }
+        base.OnExit(e);
     }
 
     private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)

@@ -23,8 +23,66 @@ public partial class SimpleMainWindow : Window
     public SimpleMainWindow()
     {
         InitializeComponent();
+        RestoreWindowPlacement();
         Loaded += (s, e) => InitializeAsync();
         SizeChanged += MainWindow_SizeChanged;
+        Closing += SimpleMainWindow_Closing;
+    }
+
+    /// <summary>
+    /// Restores the saved window position/size (and maximized state) from the previous session,
+    /// but only when the saved rectangle is still visible on a connected monitor (so the window
+    /// never opens off-screen after a display was disconnected).
+    /// </summary>
+    private void RestoreWindowPlacement()
+    {
+        try
+        {
+            if (AppConfiguration.TryGetWindowPlacement(out var left, out var top, out var width, out var height, out var maximized))
+            {
+                if (IsOnAnyScreen(left, top, width, height))
+                {
+                    WindowStartupLocation = WindowStartupLocation.Manual;
+                    Left = left;
+                    Top = top;
+                    Width = width;
+                    Height = height;
+                }
+                if (maximized)
+                    WindowState = WindowState.Maximized;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"RestoreWindowPlacement: {ex.Message}");
+        }
+    }
+
+    private static bool IsOnAnyScreen(double left, double top, double width, double height)
+    {
+        var rect = new System.Drawing.Rectangle((int)left, (int)top, (int)Math.Max(1, width), (int)Math.Max(1, height));
+        foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+        {
+            if (screen.WorkingArea.IntersectsWith(rect))
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>Saves the window placement so the next launch reopens where the user left it.</summary>
+    private void SimpleMainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        try
+        {
+            var bounds = RestoreBounds; // normal-state bounds, even when maximized/minimized
+            var maximized = WindowState == WindowState.Maximized;
+            if (!bounds.IsEmpty)
+                AppConfiguration.SaveWindowPlacement(bounds.Left, bounds.Top, bounds.Width, bounds.Height, maximized);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"SaveWindowPlacement: {ex.Message}");
+        }
     }
 
     private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)

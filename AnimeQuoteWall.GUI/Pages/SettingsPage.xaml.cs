@@ -120,6 +120,9 @@ public partial class SettingsPage : Page
 
             if (StartWithWindowsCheckBox != null)
                 StartWithWindowsCheckBox.IsChecked = StartupService.IsEnabled();
+
+            if (MinimizeToTrayCheckBox != null)
+                MinimizeToTrayCheckBox.IsChecked = AppConfiguration.MinimizeToTray;
         }
         catch (Exception ex)
         {
@@ -482,6 +485,16 @@ public partial class SettingsPage : Page
     private void StartWithWindowsCheckBox_Unchecked(object sender, RoutedEventArgs e)
     {
         StartupService.SetEnabled(false, Environment.ProcessPath ?? string.Empty);
+    }
+
+    private void MinimizeToTrayCheckBox_Checked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.MinimizeToTray = true;
+    }
+
+    private void MinimizeToTrayCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.MinimizeToTray = false;
     }
 
     /// <summary>

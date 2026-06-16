@@ -91,6 +91,14 @@
                               Unchecked="StartWithWindowsCheckBox_Unchecked"
                               ToolTip="Adds a per-user startup entry (no administrator rights required)."/>
 
+                    <CheckBox x:Name="MinimizeToTrayCheckBox"
+                              Content="Minimize to the system tray instead of the taskbar"
+                              Style="{StaticResource ModernCheckBox}"
+                              Margin="0,0,0,12"
+                              Checked="MinimizeToTrayCheckBox_Checked"
+                              Unchecked="MinimizeToTrayCheckBox_Unchecked"
+                              ToolTip="When minimized, hide the window to the notification area; double-click the tray icon to restore."/>
+
                     <Separator Margin="0,8,0,12" Background="{DynamicResource BorderColor}"/>
 
                     <TextBlock Text="Advanced Features"

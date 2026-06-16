@@ -28,6 +28,14 @@ public class UserSettings
     public bool AutoRefreshPreview { get; set; } = true; // Auto-refresh preview after generation
     public bool ShowGenerationNotifications { get; set; } = true; // Show notifications on generation
     public bool AutoSaveToHistory { get; set; } = true; // Automatically save to history
+    public bool MinimizeToTray { get; set; } = true; // Hide to the system tray (notification area) when minimized
+
+    // Window placement (nullable so an unset value serializes cleanly; restored on next launch)
+    public double? WindowLeft { get; set; }
+    public double? WindowTop { get; set; }
+    public double? WindowWidth { get; set; }
+    public double? WindowHeight { get; set; }
+    public bool WindowMaximized { get; set; }
 
     // Playlist settings
     public string? ActivePlaylistId { get; set; } // ID of the currently active playlist
@@ -287,6 +295,45 @@ public class AppConfiguration
     {
         get { LoadSettings(); return _userSettings?.AutoSaveToHistory ?? true; }
         set { LoadSettings(); if (_userSettings != null) { _userSettings.AutoSaveToHistory = value; SaveSettings(); } }
+    }
+
+    /// <summary>Gets or sets whether the window hides to the system tray when minimized.</summary>
+    public static bool MinimizeToTray
+    {
+        get { LoadSettings(); return _userSettings?.MinimizeToTray ?? true; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.MinimizeToTray = value; SaveSettings(); } }
+    }
+
+    /// <summary>Persists the main window's normal-state placement so it can be restored next launch.</summary>
+    public static void SaveWindowPlacement(double left, double top, double width, double height, bool maximized)
+    {
+        LoadSettings();
+        if (_userSettings == null) return;
+        _userSettings.WindowLeft = left;
+        _userSettings.WindowTop = top;
+        _userSettings.WindowWidth = width;
+        _userSettings.WindowHeight = height;
+        _userSettings.WindowMaximized = maximized;
+        SaveSettings();
+    }
+
+    /// <summary>
+    /// Returns the saved window placement. Returns false (and zeroed outputs) when no valid
+    /// placement has been stored yet, so the caller can fall back to the default position.
+    /// </summary>
+    public static bool TryGetWindowPlacement(out double left, out double top, out double width, out double height, out bool maximized)
+    {
+        LoadSettings();
+        maximized = _userSettings?.WindowMaximized ?? false;
+        if (_userSettings?.WindowLeft is double l && _userSettings.WindowTop is double t
+            && _userSettings.WindowWidth is double w && _userSettings.WindowHeight is double h
+            && w > 0 && h > 0)
+        {
+            left = l; top = t; width = w; height = h;
+            return true;
+        }
+        left = top = width = height = 0;
+        return false;
     }
 
     /// <summary>
