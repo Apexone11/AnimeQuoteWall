@@ -123,6 +123,15 @@ public partial class SettingsPage : Page
 
             if (MinimizeToTrayCheckBox != null)
                 MinimizeToTrayCheckBox.IsChecked = AppConfiguration.MinimizeToTray;
+
+            if (FillModeComboBox != null)
+            {
+                var mode = AppConfiguration.WallpaperFillMode;
+                FillModeComboBox.SelectedIndex =
+                    mode.Equals("Fit", StringComparison.OrdinalIgnoreCase) ? 1 :
+                    mode.Equals("Stretch", StringComparison.OrdinalIgnoreCase) ? 2 :
+                    mode.Equals("Center", StringComparison.OrdinalIgnoreCase) ? 3 : 0;
+            }
         }
         catch (Exception ex)
         {
@@ -495,6 +504,12 @@ public partial class SettingsPage : Page
     private void MinimizeToTrayCheckBox_Unchecked(object sender, RoutedEventArgs e)
     {
         AppConfiguration.MinimizeToTray = false;
+    }
+
+    private void FillModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (FillModeComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string mode)
+            AppConfiguration.WallpaperFillMode = mode;
     }
 
     /// <summary>

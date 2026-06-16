@@ -195,6 +195,7 @@ public partial class WallpaperPage : Page
             {
                 Width = monitorWidth,
                 Height = monitorHeight,
+                FillMode = AppConfiguration.WallpaperFillMode,
                 BackgroundColor = "#141414",
                 FontFamily = "Segoe UI",
                 TextColor = "#FFFFFF",
@@ -332,6 +333,7 @@ public partial class WallpaperPage : Page
                         {
                             Width = monitor.Width,
                             Height = monitor.Height,
+                            FillMode = AppConfiguration.WallpaperFillMode,
                             BackgroundColor = "#141414",
                             FontFamily = "Segoe UI",
                             TextColor = "#FFFFFF",

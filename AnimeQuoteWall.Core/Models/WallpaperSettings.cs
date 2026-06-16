@@ -139,6 +139,14 @@ public class WallpaperSettings
     public float MinFontSize { get; set; } = 24.0f;
 
     /// <summary>
+    /// How the background image is fit to the wallpaper canvas:
+    /// "Fill" (cover, crop the overflow; the default and best for most wallpapers),
+    /// "Fit" (contain, letterboxed with the background colour),
+    /// "Stretch" (distort to exactly fill), or "Center" (no scaling, centred).
+    /// </summary>
+    public string FillMode { get; set; } = "Fill";
+
+    /// <summary>
     /// Validates all settings to make sure they're in acceptable ranges.
     /// Called automatically when creating wallpapers.
     /// </summary>

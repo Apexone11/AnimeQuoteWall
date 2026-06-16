@@ -37,6 +37,9 @@ public class UserSettings
     public double? WindowHeight { get; set; }
     public bool WindowMaximized { get; set; }
 
+    // Background fit mode for generated wallpapers: Fill | Fit | Stretch | Center
+    public string WallpaperFillMode { get; set; } = "Fill";
+
     // Playlist settings
     public string? ActivePlaylistId { get; set; } // ID of the currently active playlist
 
@@ -334,6 +337,16 @@ public class AppConfiguration
         }
         left = top = width = height = 0;
         return false;
+    }
+
+    /// <summary>
+    /// Gets or sets how background images are fit to the wallpaper canvas
+    /// ("Fill", "Fit", "Stretch", or "Center"). Defaults to "Fill".
+    /// </summary>
+    public static string WallpaperFillMode
+    {
+        get { LoadSettings(); var v = _userSettings?.WallpaperFillMode; return string.IsNullOrWhiteSpace(v) ? "Fill" : v; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.WallpaperFillMode = string.IsNullOrWhiteSpace(value) ? "Fill" : value; SaveSettings(); } }
     }
 
     /// <summary>

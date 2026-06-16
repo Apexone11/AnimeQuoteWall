@@ -210,6 +210,7 @@ public class PlaylistWorker : IDisposable
             {
                 Width = screenWidth,
                 Height = screenHeight,
+                FillMode = AppConfiguration.WallpaperFillMode,
                 BackgroundColor = "#141414",
                 FontFamily = "Segoe UI",
                 TextColor = "#FFFFFF",

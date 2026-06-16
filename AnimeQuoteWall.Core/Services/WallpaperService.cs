@@ -174,18 +174,20 @@ public class WallpaperService : IWallpaperService
         {
             try
             {
-                // Use cache for background loading - this significantly improves performance
-                // when the same background is used multiple times
-                var cached = _imageCache.GetOrLoadImage(backgroundPath, settings.Width, settings.Height);
-                if (cached != null)
+                // Load the source at its native size (cached). Composing it ourselves lets us
+                // apply the chosen fill mode without the aspect-ratio distortion a direct
+                // stretch-to-canvas resize would cause.
+                using var source = _imageCache.GetOrLoadImage(backgroundPath);
+                if (source != null)
                 {
-                    return cached;
+                    return FitBackground(source, settings);
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Fall back to solid color if image loading fails
                 // (file might be corrupted, wrong format, etc.)
+                System.Diagnostics.Debug.WriteLine($"WallpaperService.LoadBackgroundBitmap: {ex.Message}");
             }
         }
 
@@ -197,6 +199,67 @@ public class WallpaperService : IWallpaperService
         graphics.FillRectangle(brush, 0, 0, settings.Width, settings.Height);
 
         return solidBackground;
+    }
+
+    /// <summary>
+    /// Composes <paramref name="source"/> onto a target-size canvas using the configured
+    /// <see cref="WallpaperSettings.FillMode"/> ("Fill"/"Fit"/"Stretch"/"Center").
+    /// </summary>
+    private static Bitmap FitBackground(Bitmap source, WallpaperSettings settings)
+    {
+        int targetWidth = settings.Width;
+        int targetHeight = settings.Height;
+        var canvas = new Bitmap(targetWidth, targetHeight);
+        using var graphics = Graphics.FromImage(canvas);
+        graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+        graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+        graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+
+        // Paint the background colour first; this is what shows in the letterboxed margins
+        // for the Fit and Center modes.
+        try
+        {
+            using var bg = new SolidBrush(ColorTranslator.FromHtml(settings.BackgroundColor));
+            graphics.FillRectangle(bg, 0, 0, targetWidth, targetHeight);
+        }
+        catch
+        {
+            graphics.Clear(System.Drawing.Color.Black);
+        }
+
+        int sw = source.Width;
+        int sh = source.Height;
+        if (sw <= 0 || sh <= 0)
+            return canvas;
+
+        switch ((settings.FillMode ?? "Fill").Trim().ToLowerInvariant())
+        {
+            case "stretch":
+                graphics.DrawImage(source, 0, 0, targetWidth, targetHeight);
+                break;
+            case "center":
+                graphics.DrawImage(source, (targetWidth - sw) / 2, (targetHeight - sh) / 2, sw, sh);
+                break;
+            case "fit":
+                {
+                    double scale = Math.Min((double)targetWidth / sw, (double)targetHeight / sh);
+                    int dw = (int)Math.Round(sw * scale);
+                    int dh = (int)Math.Round(sh * scale);
+                    graphics.DrawImage(source, (targetWidth - dw) / 2, (targetHeight - dh) / 2, dw, dh);
+                    break;
+                }
+            default: // "fill" (cover): scale to cover the canvas, centre-cropping the overflow
+                {
+                    double scale = Math.Max((double)targetWidth / sw, (double)targetHeight / sh);
+                    int dw = (int)Math.Round(sw * scale);
+                    int dh = (int)Math.Round(sh * scale);
+                    graphics.DrawImage(source, (targetWidth - dw) / 2, (targetHeight - dh) / 2, dw, dh);
+                    break;
+                }
+        }
+
+        return canvas;
     }
 
     public void DrawQuote(Graphics graphics, Quote quote, int imageWidth, int imageHeight, WallpaperSettings settings)

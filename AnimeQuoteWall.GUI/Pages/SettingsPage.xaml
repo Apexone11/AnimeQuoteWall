@@ -122,6 +122,26 @@
                               Checked="EnablePerMonitorApplyCheckBox_Checked"
                               Unchecked="EnablePerMonitorApplyCheckBox_Unchecked"
                               ToolTip="Allow applying different wallpapers to different monitors."/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                        <TextBlock Text="Background fit:"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"/>
+                        <ComboBox x:Name="FillModeComboBox"
+                                  Width="200"
+                                  Height="40"
+                                  SelectionChanged="FillModeComboBox_SelectionChanged"
+                                  Style="{StaticResource ModernComboBox}"
+                                  ToolTip="How background images are fit to the wallpaper: Fill (cover and crop), Fit (letterbox), Stretch (distort), or Center."
+                                  AutomationProperties.Name="Background fit mode">
+                            <ComboBoxItem Content="Fill (cover)" Tag="Fill"/>
+                            <ComboBoxItem Content="Fit (letterbox)" Tag="Fit"/>
+                            <ComboBoxItem Content="Stretch" Tag="Stretch"/>
+                            <ComboBoxItem Content="Center" Tag="Center"/>
+                        </ComboBox>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 
