@@ -23,8 +23,8 @@
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#818CF8" Offset="0"/>
-                    <GradientStop Color="#6366F1" Offset="1"/>
+                    <GradientStop Color="{DynamicResource PrimaryButtonGradientTop}" Offset="0"/>
+                    <GradientStop Color="{DynamicResource PrimaryButtonGradientBottom}" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
@@ -47,7 +47,7 @@
                             RenderTransformOrigin="0.5,0.5">
                         <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
                         <Border.Effect>
-                            <DropShadowEffect Color="#6366F1" Opacity="0.28" BlurRadius="10" ShadowDepth="0"/>
+                            <DropShadowEffect Color="{DynamicResource PrimaryButtonGlow}" Opacity="0.28" BlurRadius="10" ShadowDepth="0"/>
                         </Border.Effect>
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                           RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -81,14 +81,14 @@
                             <Setter TargetName="border" Property="Background">
                                 <Setter.Value>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#9CA3F9" Offset="0"/>
-                                        <GradientStop Color="#7C7DF3" Offset="1"/>
+                                        <GradientStop Color="{DynamicResource PrimaryButtonHoverTop}" Offset="0"/>
+                                        <GradientStop Color="{DynamicResource PrimaryButtonHoverBottom}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
                             <Setter TargetName="border" Property="Effect">
                                 <Setter.Value>
-                                    <DropShadowEffect Color="#818CF8" Opacity="0.45" BlurRadius="14" ShadowDepth="0"/>
+                                    <DropShadowEffect Color="{DynamicResource PrimaryButtonHoverGlow}" Opacity="0.45" BlurRadius="14" ShadowDepth="0"/>
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
@@ -96,14 +96,14 @@
                             <Setter TargetName="border" Property="Background">
                                 <Setter.Value>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#6B73F0" Offset="0"/>
-                                        <GradientStop Color="#4F46E5" Offset="1"/>
+                                        <GradientStop Color="{DynamicResource PrimaryButtonPressedTop}" Offset="0"/>
+                                        <GradientStop Color="{DynamicResource PrimaryButtonPressedBottom}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
                             <Setter TargetName="border" Property="Effect">
                                 <Setter.Value>
-                                    <DropShadowEffect Color="#6366F1" Opacity="0.18" BlurRadius="4" ShadowDepth="0"/>
+                                    <DropShadowEffect Color="{DynamicResource PrimaryButtonGlow}" Opacity="0.18" BlurRadius="4" ShadowDepth="0"/>
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
@@ -123,8 +123,8 @@
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#34D399" Offset="0"/>
-                    <GradientStop Color="#10B981" Offset="1"/>
+                    <GradientStop Color="{DynamicResource SuccessButtonGradientTop}" Offset="0"/>
+                    <GradientStop Color="{DynamicResource SuccessButtonGradientBottom}" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
@@ -147,7 +147,7 @@
                             RenderTransformOrigin="0.5,0.5">
                         <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
                         <Border.Effect>
-                            <DropShadowEffect Color="#10B981" Opacity="0.28" BlurRadius="10" ShadowDepth="0"/>
+                            <DropShadowEffect Color="{DynamicResource SuccessButtonGlow}" Opacity="0.28" BlurRadius="10" ShadowDepth="0"/>
                         </Border.Effect>
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                           RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -181,14 +181,14 @@
                             <Setter TargetName="border" Property="Background">
                                 <Setter.Value>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#4ADE80" Offset="0"/>
-                                        <GradientStop Color="#22C55E" Offset="1"/>
+                                        <GradientStop Color="{DynamicResource SuccessButtonHoverTop}" Offset="0"/>
+                                        <GradientStop Color="{DynamicResource SuccessButtonHoverBottom}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
                             <Setter TargetName="border" Property="Effect">
                                 <Setter.Value>
-                                    <DropShadowEffect Color="#22C55E" Opacity="0.45" BlurRadius="14" ShadowDepth="0"/>
+                                    <DropShadowEffect Color="{DynamicResource SuccessButtonHoverGlow}" Opacity="0.45" BlurRadius="14" ShadowDepth="0"/>
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
@@ -196,14 +196,14 @@
                             <Setter TargetName="border" Property="Background">
                                 <Setter.Value>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#22C55E" Offset="0"/>
-                                        <GradientStop Color="#059669" Offset="1"/>
+                                        <GradientStop Color="{DynamicResource SuccessButtonPressedTop}" Offset="0"/>
+                                        <GradientStop Color="{DynamicResource SuccessButtonPressedBottom}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
                             <Setter TargetName="border" Property="Effect">
                                 <Setter.Value>
-                                    <DropShadowEffect Color="#10B981" Opacity="0.18" BlurRadius="4" ShadowDepth="0"/>
+                                    <DropShadowEffect Color="{DynamicResource SuccessButtonGlow}" Opacity="0.18" BlurRadius="4" ShadowDepth="0"/>
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
@@ -223,8 +223,8 @@
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#F87171" Offset="0"/>
-                    <GradientStop Color="#EF4444" Offset="1"/>
+                    <GradientStop Color="{DynamicResource DangerButtonGradientTop}" Offset="0"/>
+                    <GradientStop Color="{DynamicResource DangerButtonGradientBottom}" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
@@ -247,7 +247,7 @@
                             RenderTransformOrigin="0.5,0.5">
                         <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
                         <Border.Effect>
-                            <DropShadowEffect Color="#EF4444" Opacity="0.28" BlurRadius="10" ShadowDepth="0"/>
+                            <DropShadowEffect Color="{DynamicResource DangerButtonGlow}" Opacity="0.28" BlurRadius="10" ShadowDepth="0"/>
                         </Border.Effect>
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                           RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -281,14 +281,14 @@
                             <Setter TargetName="border" Property="Background">
                                 <Setter.Value>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#FB7185" Offset="0"/>
-                                        <GradientStop Color="#F43F5E" Offset="1"/>
+                                        <GradientStop Color="{DynamicResource DangerButtonHoverTop}" Offset="0"/>
+                                        <GradientStop Color="{DynamicResource DangerButtonHoverBottom}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
                             <Setter TargetName="border" Property="Effect">
                                 <Setter.Value>
-                                    <DropShadowEffect Color="#F43F5E" Opacity="0.45" BlurRadius="14" ShadowDepth="0"/>
+                                    <DropShadowEffect Color="{DynamicResource DangerButtonHoverGlow}" Opacity="0.45" BlurRadius="14" ShadowDepth="0"/>
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
@@ -296,14 +296,14 @@
                             <Setter TargetName="border" Property="Background">
                                 <Setter.Value>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#F43F5E" Offset="0"/>
-                                        <GradientStop Color="#DC2626" Offset="1"/>
+                                        <GradientStop Color="{DynamicResource DangerButtonPressedTop}" Offset="0"/>
+                                        <GradientStop Color="{DynamicResource DangerButtonPressedBottom}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
                             <Setter TargetName="border" Property="Effect">
                                 <Setter.Value>
-                                    <DropShadowEffect Color="#EF4444" Opacity="0.18" BlurRadius="4" ShadowDepth="0"/>
+                                    <DropShadowEffect Color="{DynamicResource DangerButtonGlow}" Opacity="0.18" BlurRadius="4" ShadowDepth="0"/>
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
@@ -323,12 +323,12 @@
         <Setter Property="Background">
             <Setter.Value>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#FBBF24" Offset="0"/>
-                    <GradientStop Color="#F59E0B" Offset="1"/>
+                    <GradientStop Color="{DynamicResource WarningButtonGradientTop}" Offset="0"/>
+                    <GradientStop Color="{DynamicResource WarningButtonGradientBottom}" Offset="1"/>
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
-        <Setter Property="Foreground"  Value="#1C1917"/>
+        <Setter Property="Foreground"  Value="{DynamicResource WarningButtonForeground}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="FontSize"    Value="14"/>
         <Setter Property="FontWeight"  Value="SemiBold"/>
@@ -347,7 +347,7 @@
                             RenderTransformOrigin="0.5,0.5">
                         <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
                         <Border.Effect>
-                            <DropShadowEffect Color="#F59E0B" Opacity="0.28" BlurRadius="10" ShadowDepth="0"/>
+                            <DropShadowEffect Color="{DynamicResource WarningButtonGlow}" Opacity="0.28" BlurRadius="10" ShadowDepth="0"/>
                         </Border.Effect>
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                           RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -381,14 +381,14 @@
                             <Setter TargetName="border" Property="Background">
                                 <Setter.Value>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#FCD34D" Offset="0"/>
-                                        <GradientStop Color="#FBBF24" Offset="1"/>
+                                        <GradientStop Color="{DynamicResource WarningButtonHoverTop}" Offset="0"/>
+                                        <GradientStop Color="{DynamicResource WarningButtonHoverBottom}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
                             <Setter TargetName="border" Property="Effect">
                                 <Setter.Value>
-                                    <DropShadowEffect Color="#FBBF24" Opacity="0.45" BlurRadius="14" ShadowDepth="0"/>
+                                    <DropShadowEffect Color="{DynamicResource WarningButtonHoverGlow}" Opacity="0.45" BlurRadius="14" ShadowDepth="0"/>
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
@@ -589,13 +589,13 @@
                             <Setter TargetName="border" Property="Background">
                                 <Setter.Value>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#34D399" Offset="0"/>
-                                        <GradientStop Color="#10B981" Offset="1"/>
+                                        <GradientStop Color="{DynamicResource SuccessButtonGradientTop}" Offset="0"/>
+                                        <GradientStop Color="{DynamicResource SuccessButtonGradientBottom}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Setter.Value>
                             </Setter>
                             <Setter Property="Foreground" Value="White"/>
-                            <Setter TargetName="border" Property="BorderBrush" Value="#22C55E"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource ToggleCheckedBorderBrush}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryColor}"/>
@@ -617,7 +617,7 @@
         <Setter Property="Padding"         Value="24"/>
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#000000" Opacity="0.10" BlurRadius="18" ShadowDepth="2"/>
+                <DropShadowEffect Color="{DynamicResource ShadowColor}" Opacity="0.10" BlurRadius="18" ShadowDepth="2"/>
             </Setter.Value>
         </Setter>
         <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
@@ -692,7 +692,7 @@
                                 CornerRadius="6"
                                 VerticalAlignment="Center">
                             <Border.Effect>
-                                <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="4" ShadowDepth="1"/>
+                                <DropShadowEffect Color="{DynamicResource ShadowColor}" Opacity="0.08" BlurRadius="4" ShadowDepth="1"/>
                             </Border.Effect>
                         </Border>
                         <Path x:Name="checkMark"
@@ -723,7 +723,7 @@
                             <Setter TargetName="checkBoxBorder" Property="BorderBrush" Value="{DynamicResource PrimaryColor}"/>
                             <Setter TargetName="checkBoxBorder" Property="Effect">
                                 <Setter.Value>
-                                    <DropShadowEffect Color="#7C83FF" Opacity="0.3" BlurRadius="6" ShadowDepth="0"/>
+                                    <DropShadowEffect Color="{DynamicResource AccentGlowColor}" Opacity="0.3" BlurRadius="6" ShadowDepth="0"/>
                                 </Setter.Value>
                             </Setter>
                         </Trigger>

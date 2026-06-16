@@ -32,7 +32,7 @@ public class TimeEffectService
     public Color CalculateTimeBasedColorShift()
     {
         var timeInfo = GetCurrentTime();
-        
+
         // Day: brighter, warmer colors
         // Night: darker, cooler colors
         if (timeInfo.IsDaytime)
@@ -49,7 +49,7 @@ public class TimeEffectService
         else
         {
             // Night: darker, bluer
-            var hourProgress = timeInfo.Hour >= 20 
+            var hourProgress = timeInfo.Hour >= 20
                 ? (timeInfo.Hour - 20) / 10f // 8 PM to 6 AM
                 : (timeInfo.Hour + 4) / 10f; // Midnight to 6 AM
             var brightness = 0.4f + 0.2f * (float)Math.Sin(hourProgress * Math.PI);
@@ -67,7 +67,7 @@ public class TimeEffectService
     public float CalculateTimeBasedOpacity()
     {
         var timeInfo = GetCurrentTime();
-        
+
         // Example: fade in during morning, fade out during evening
         if (timeInfo.Hour >= 6 && timeInfo.Hour < 12)
         {
@@ -83,7 +83,7 @@ public class TimeEffectService
         else
         {
             // Evening/Night: fade out from 1.0 to 0.5
-            var progress = timeInfo.Hour >= 20 
+            var progress = timeInfo.Hour >= 20
                 ? (timeInfo.Hour - 20 + timeInfo.Minute / 60f) / 10f
                 : (timeInfo.Hour + 4 + timeInfo.Minute / 60f) / 10f;
             return 1.0f - 0.5f * (float)Math.Min(progress, 1.0);

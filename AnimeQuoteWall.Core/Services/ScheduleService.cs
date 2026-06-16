@@ -155,8 +155,8 @@ public class ScheduleService
             return false;
 
         // Check if we're within a 5-second window of the scheduled time
-        return now.Hour == hour && 
-               now.Minute == minute && 
+        return now.Hour == hour &&
+               now.Minute == minute &&
                now.Second < 5;
     }
 
@@ -227,7 +227,7 @@ public class ScheduleService
             return "Custom (invalid)";
 
         var dayNames = new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
-        
+
         if (playlist.DaysOfWeek == null || playlist.DaysOfWeek.Count == 0)
         {
             return $"Daily at {playlist.ScheduleTime}";
@@ -238,12 +238,12 @@ public class ScheduleService
             .Where(d => d >= 0 && d < dayNames.Length)
             .Select(d => dayNames[d])
             .ToList();
-        
+
         if (days.Count == 0)
         {
             return $"Custom at {playlist.ScheduleTime} (no valid days)";
         }
-        
+
         var daysStr = days.Count == 1 ? days[0] : string.Join(", ", days.Take(days.Count - 1)) + " and " + days.Last();
 
         return $"{daysStr} at {playlist.ScheduleTime}";

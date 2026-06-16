@@ -91,3 +91,8 @@ settings.json
 # Memory placeholder
 /AnimeQuoteWall.GUI/SimpleMainWindow*.backup
 /AnimeQuoteWall.CLI/Program.cs.backup
+
+# Internal planning/strategy docs - kept local only. Never published to GitHub and
+# never bundled into the installer, MSIX, or Steam build (the installer ships build
+# output only, not repo docs).
+/docs/internal/

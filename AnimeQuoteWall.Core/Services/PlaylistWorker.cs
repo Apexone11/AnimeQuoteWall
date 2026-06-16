@@ -58,7 +58,7 @@ public class PlaylistWorker : IDisposable
 
         _isRunning = true;
         _cancellationTokenSource = new CancellationTokenSource();
-        _performanceMonitor.AutoPauseEnabled = AppConfiguration.AutoPauseOnFullscreen;
+        ApplyPausePolicySettings();
         _performanceMonitor.StartMonitoring();
 
         _workerTask = Task.Run(() => WorkerLoopAsync(_cancellationTokenSource.Token));
@@ -82,6 +82,23 @@ public class PlaylistWorker : IDisposable
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
         _workerTask = null;
+    }
+
+    /// <summary>
+    /// Copies the current pause-policy settings from <see cref="AppConfiguration"/> onto the
+    /// performance monitor. Called on start and once per loop iteration so changes made in
+    /// Settings take effect without restarting the worker. Low-Power mode forces every pause
+    /// rule on regardless of the individual toggles.
+    /// </summary>
+    private void ApplyPausePolicySettings()
+    {
+        var lowPower = AppConfiguration.LowPowerMode;
+        _performanceMonitor.AutoPauseEnabled = AppConfiguration.AutoPauseOnFullscreen || lowPower;
+        _performanceMonitor.PauseOnBattery = AppConfiguration.PauseOnBattery || lowPower;
+        _performanceMonitor.PauseOnMaximizedWindow = AppConfiguration.PauseOnMaximizedWindow || lowPower;
+        _performanceMonitor.MaximizedCoverageThresholdPercent = AppConfiguration.MaximizedCoverageThresholdPercent;
+        _performanceMonitor.PauseOnRemoteDesktop = AppConfiguration.PauseOnRemoteDesktop || lowPower;
+        _performanceMonitor.PerAppPauseProcesses = AppConfiguration.PerAppPauseProcesses;
     }
 
     /// <summary>
@@ -204,10 +221,12 @@ public class PlaylistWorker : IDisposable
                 MinFontSize = 32
             };
 
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 using var bitmap = _wallpaperService.CreateWallpaperImage(entry.BackgroundPath, entry.Quote, settings);
-                _wallpaperService.SaveImageAsync(bitmap, AppConfiguration.CurrentWallpaperPath).Wait();
+                // await rather than .Wait() so the save runs without blocking the worker
+                // thread or wrapping faults in an AggregateException (CLAUDE.md async rules).
+                await _wallpaperService.SaveImageAsync(bitmap, AppConfiguration.CurrentWallpaperPath).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
             // Apply wallpaper
@@ -265,7 +284,7 @@ public class PlaylistWorker : IDisposable
         {
             // Ensure file path is absolute and properly formatted
             var fullPath = Path.GetFullPath(path);
-            
+
             // Windows API requires the file to exist and be accessible
             if (!File.Exists(fullPath))
                 return;
@@ -273,7 +292,7 @@ public class PlaylistWorker : IDisposable
             // Set wallpaper with Windows API
             // This works on Windows 7, 8, 8.1, 10, and 11
             var result = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, fullPath, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
-            
+
             // Result of 0 typically indicates failure, but we don't throw exceptions
             // as wallpaper setting can fail for various reasons (permissions, file locks, etc.)
             if (result == 0)

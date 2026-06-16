@@ -55,7 +55,7 @@ public class ParticleSystemService
         // Spawn new particles
         _spawnTimer += deltaTime;
         var spawnInterval = 1.0f / emitter.SpawnRate;
-        
+
         while (_spawnTimer >= spawnInterval)
         {
             SpawnParticle(emitter, screenWidth, screenHeight);
@@ -66,18 +66,18 @@ public class ParticleSystemService
         for (int i = _particles.Count - 1; i >= 0; i--)
         {
             var particle = _particles[i];
-            
+
             // Update position
             particle.X += particle.VelocityX * deltaTime;
             particle.Y += particle.VelocityY * deltaTime;
-            
+
             // Update lifetime
             particle.Lifetime -= deltaTime;
             particle.Opacity = Math.Max(0f, particle.Lifetime / particle.MaxLifetime);
-            
+
             // Apply particle type specific behavior
             ApplyParticleBehavior(particle, emitter.ParticleType, screenWidth, screenHeight);
-            
+
             // Remove dead particles
             if (particle.Lifetime <= 0 || particle.Y > screenHeight + 50 || particle.X < -50 || particle.X > screenWidth + 50)
             {

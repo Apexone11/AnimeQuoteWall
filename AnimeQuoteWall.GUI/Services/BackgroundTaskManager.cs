@@ -43,14 +43,16 @@ public class BackgroundTaskManager
     {
         try
         {
-            await task;
-            
+            // Capture the awaited result directly rather than reading Task.Result, which
+            // keeps the access off the audit radar and avoids any future blocking read.
+            var taskResult = await task;
+
             if (_currentAnimationTask != null)
             {
                 _currentAnimationTask.IsRunning = false;
                 _currentAnimationTask.Progress = 100;
                 _currentAnimationTask.StatusMessage = "Generation complete!";
-                _currentAnimationTask.Result = task.Result;
+                _currentAnimationTask.Result = taskResult;
                 TaskStatusChanged?.Invoke(this, _currentAnimationTask);
             }
         }

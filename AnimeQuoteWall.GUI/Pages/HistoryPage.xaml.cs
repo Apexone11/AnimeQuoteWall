@@ -23,17 +23,17 @@ public class HistoryItemViewModel
     /// Path to the wallpaper image file.
     /// </summary>
     public string ImagePath { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// Timestamp when the wallpaper was generated.
     /// </summary>
     public DateTime Timestamp { get; set; }
-    
+
     /// <summary>
     /// Path to thumbnail image (same as ImagePath for now).
     /// </summary>
     public string ThumbnailPath { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// The underlying history entry with full metadata.
     /// </summary>
@@ -55,7 +55,7 @@ public partial class HistoryPage : Page
     /// Service for managing wallpaper history.
     /// </summary>
     private readonly WallpaperHistoryService _historyService = new();
-    
+
     /// <summary>
     /// List of wallpaper history entries loaded from metadata.
     /// </summary>

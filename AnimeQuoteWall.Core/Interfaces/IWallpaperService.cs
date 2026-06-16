@@ -24,15 +24,17 @@ public interface IWallpaperService
     /// <param name="quote">The quote to render in the frames.</param>
     /// <param name="settings">Wallpaper generation settings.</param>
     /// <param name="outputDirectory">Directory to save the frames.</param>
+    /// <param name="cancellationToken">Token to cancel the (potentially long) frame loop.</param>
     /// <returns>List of generated frame file paths.</returns>
-    Task<List<string>> GenerateAnimationFramesAsync(string? backgroundPath, Quote quote, WallpaperSettings settings, string outputDirectory);
+    Task<List<string>> GenerateAnimationFramesAsync(string? backgroundPath, Quote quote, WallpaperSettings settings, string outputDirectory, System.Threading.CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Saves a bitmap to the specified path.
     /// </summary>
     /// <param name="bitmap">The bitmap to save.</param>
     /// <param name="filePath">Path to save the image.</param>
-    Task SaveImageAsync(Bitmap bitmap, string filePath);
+    /// <param name="cancellationToken">Token to cancel the save.</param>
+    Task SaveImageAsync(Bitmap bitmap, string filePath, System.Threading.CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Loads a background bitmap from the specified path or creates a solid color bitmap.

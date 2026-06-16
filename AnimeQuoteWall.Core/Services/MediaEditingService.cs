@@ -21,7 +21,12 @@ public class MediaEditingService
         if (string.IsNullOrWhiteSpace(imagePath) || !File.Exists(imagePath))
             throw new FileNotFoundException($"Image file not found: {imagePath}");
 
-        return new Bitmap(imagePath);
+        // Load through a disposed stream and clone, so the source file is NOT locked for the
+        // returned Bitmap's lifetime. new Bitmap(path) keeps an exclusive lock and would stop
+        // the user deleting/overwriting their own image (CLAUDE.md Section 5).
+        using var stream = File.OpenRead(imagePath);
+        using var temp = new Bitmap(stream);
+        return new Bitmap(temp);
     }
 
     /// <summary>
@@ -33,7 +38,7 @@ public class MediaEditingService
             throw new FileNotFoundException($"Video file not found: {videoPath}");
 
         var frames = new List<Bitmap>();
-        
+
         try
         {
             // Use ImageMagick to extract frames from video/GIF
@@ -47,7 +52,7 @@ public class MediaEditingService
                 using var ms = new MemoryStream();
                 frame.Write(ms, MagickFormat.Bmp);
                 ms.Position = 0;
-                
+
                 // Create bitmap from stream and clone it to ensure it's independent of the stream
                 using var tempBitmap = new Bitmap(ms);
                 var bitmap = new Bitmap(tempBitmap);
@@ -62,7 +67,12 @@ public class MediaEditingService
                 var bitmap = LoadImage(videoPath);
                 frames.Add(bitmap);
             }
-            catch { }
+            catch (System.Exception inner)
+            {
+                // Best-effort fallback only; surface the reason in the debug log rather
+                // than swallowing it silently (CLAUDE.md: no empty catch blocks).
+                System.Diagnostics.Debug.WriteLine($"MediaEditingService.ExtractFrames fallback failed: {inner.Message}");
+            }
         }
 
         return frames;
@@ -77,7 +87,7 @@ public class MediaEditingService
             throw new ArgumentNullException(nameof(image));
 
         var result = new Bitmap(image.Width, image.Height);
-        
+
         using (var graphics = Graphics.FromImage(result))
         {
             graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
@@ -175,7 +185,7 @@ public class MediaEditingService
 
         var result = new Bitmap(image);
         var wallpaperService = new WallpaperService();
-        
+
         // Use WallpaperService to draw the quote overlay
         using (var graphics = Graphics.FromImage(result))
         {
@@ -201,9 +211,10 @@ public class MediaEditingService
             using var blurredMs = new MemoryStream();
             magickImage.Write(blurredMs);
             blurredMs.Position = 0;
-            var blurred = new Bitmap(blurredMs);
+            // using ensures the intermediate bitmap (and its native GDI+ handle) is released
+            // even if DrawImage throws.
+            using var blurred = new Bitmap(blurredMs);
             graphics.DrawImage(blurred, 0, 0);
-            blurred.Dispose();
         }
         catch
         {
@@ -216,7 +227,7 @@ public class MediaEditingService
     {
         // Draw original image
         graphics.DrawImage(source, 0, 0);
-        
+
         // Apply glow effect (simplified - would need more complex implementation for true glow)
         // For now, just draw a slightly brighter version
         using var glowImage = new Bitmap(source);
@@ -229,7 +240,7 @@ public class MediaEditingService
             new float[] { 0.1f, 0.1f, 0.1f, 0, 1 }
         });
 
-        var imageAttributes = new ImageAttributes();
+        using var imageAttributes = new ImageAttributes();
         imageAttributes.SetColorMatrix(colorMatrix);
         graphics.DrawImage(glowImage, new Rectangle(0, 0, source.Width, source.Height), 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, imageAttributes);
     }
@@ -246,7 +257,7 @@ public class MediaEditingService
         });
 
         using var graphics = Graphics.FromImage(destination);
-        var imageAttributes = new ImageAttributes();
+        using var imageAttributes = new ImageAttributes();
         imageAttributes.SetColorMatrix(colorMatrix);
         graphics.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height), 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, imageAttributes);
     }
@@ -263,7 +274,7 @@ public class MediaEditingService
         });
 
         using var graphics = Graphics.FromImage(destination);
-        var imageAttributes = new ImageAttributes();
+        using var imageAttributes = new ImageAttributes();
         imageAttributes.SetColorMatrix(colorMatrix);
         graphics.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height), 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, imageAttributes);
     }
@@ -281,7 +292,7 @@ public class MediaEditingService
         });
 
         using var graphics = Graphics.FromImage(destination);
-        var imageAttributes = new ImageAttributes();
+        using var imageAttributes = new ImageAttributes();
         imageAttributes.SetColorMatrix(colorMatrix);
         graphics.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height), 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, imageAttributes);
     }
@@ -299,7 +310,7 @@ public class MediaEditingService
         });
 
         using var graphics = Graphics.FromImage(destination);
-        var imageAttributes = new ImageAttributes();
+        using var imageAttributes = new ImageAttributes();
         imageAttributes.SetColorMatrix(colorMatrix);
         graphics.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height), 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, imageAttributes);
     }
@@ -317,7 +328,7 @@ public class MediaEditingService
         });
 
         using var graphics = Graphics.FromImage(destination);
-        var imageAttributes = new ImageAttributes();
+        using var imageAttributes = new ImageAttributes();
         imageAttributes.SetColorMatrix(colorMatrix);
         graphics.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height), 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, imageAttributes);
     }

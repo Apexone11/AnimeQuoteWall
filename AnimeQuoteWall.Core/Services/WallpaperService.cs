@@ -44,7 +44,7 @@ public class WallpaperService : IWallpaperService
     /// Reference to the monitor service for multi-monitor support.
     /// </summary>
     private readonly MonitorService _monitorService = new MonitorService();
-    
+
     /// <summary>
     /// Creates a wallpaper image by combining a background with a quote.
     /// 
@@ -64,22 +64,22 @@ public class WallpaperService : IWallpaperService
     {
         // Load the background (either from file or create a solid color one)
         using var background = LoadBackgroundBitmap(backgroundPath, settings);
-        
+
         // Create a new image for our wallpaper
         var wallpaper = new Bitmap(background.Width, background.Height);
-        
+
         // Get a drawing surface to work with
         using var graphics = Graphics.FromImage(wallpaper);
-        
+
         // Configure graphics for high quality rendering
         ConfigureGraphicsQuality(graphics);
-        
+
         // Step 1: Draw the background image
         graphics.DrawImage(background, 0, 0, wallpaper.Width, wallpaper.Height);
-        
+
         // Step 2: Draw the quote on top
         DrawQuote(graphics, quote, wallpaper.Width, wallpaper.Height, settings);
-        
+
         return wallpaper;
     }
 
@@ -105,51 +105,59 @@ public class WallpaperService : IWallpaperService
     /// <param name="settings">Visual settings</param>
     /// <param name="outputDirectory">Where to save the frames</param>
     /// <returns>List of paths to all generated frame images</returns>
-    public async Task<List<string>> GenerateAnimationFramesAsync(string? backgroundPath, Quote quote, WallpaperSettings settings, string outputDirectory)
+    public async Task<List<string>> GenerateAnimationFramesAsync(string? backgroundPath, Quote quote, WallpaperSettings settings, string outputDirectory, System.Threading.CancellationToken cancellationToken = default)
     {
         // Create a unique folder for this set of frames (uses current date/time)
         var frameTimestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
         var frameDir = Path.Combine(outputDirectory, frameTimestamp);
         Directory.CreateDirectory(frameDir);
 
-        var generatedFrames = new List<string>();
-
-        // Load the background once (reuse it for all frames)
-        using var background = LoadBackgroundBitmap(backgroundPath, settings);
-
-        // Generate each frame
-        for (int frame = 0; frame < settings.AnimationFrames; frame++)
+        // The frame loop is CPU-bound GDI+ work. Run it off the calling (often UI) thread and
+        // honor cancellation so navigating away does not orphan a long render
+        // (CLAUDE.md Sections 1 and 5).
+        return await Task.Run(() =>
         {
-            // Create a new image for this frame
-            using var frameBitmap = new Bitmap(background.Width, background.Height);
-            using var graphics = Graphics.FromImage(frameBitmap);
-            
-            // Use our helper method for quality settings
-            ConfigureGraphicsQuality(graphics);
+            var generatedFrames = new List<string>();
 
-            // Draw the background
-            graphics.DrawImage(background, 0, 0, frameBitmap.Width, frameBitmap.Height);
+            // Load the background once (reuse it for all frames)
+            using var background = LoadBackgroundBitmap(backgroundPath, settings);
 
-            // Calculate how far through the animation we are (0.0 to 1.0)
-            // Used for smooth transitions between frames
-            var progress = frame / (float)(settings.AnimationFrames - 1);
-            
-            // Draw the quote with animation effects
-            DrawAnimatedQuote(graphics, quote, frameBitmap.Width, frameBitmap.Height, settings, progress);
+            // Generate each frame
+            for (int frame = 0; frame < settings.AnimationFrames; frame++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            // Save this frame as a PNG file
-            var framePath = Path.Combine(frameDir, $"frame_{frame:D3}.png");
-            frameBitmap.Save(framePath, ImageFormat.Png);
-            generatedFrames.Add(framePath);
-        }
+                // Create a new image for this frame
+                using var frameBitmap = new Bitmap(background.Width, background.Height);
+                using var graphics = Graphics.FromImage(frameBitmap);
 
-        return generatedFrames;
+                // Use our helper method for quality settings
+                ConfigureGraphicsQuality(graphics);
+
+                // Draw the background
+                graphics.DrawImage(background, 0, 0, frameBitmap.Width, frameBitmap.Height);
+
+                // Calculate how far through the animation we are (0.0 to 1.0)
+                // Used for smooth transitions between frames
+                var progress = frame / (float)(settings.AnimationFrames - 1);
+
+                // Draw the quote with animation effects
+                DrawAnimatedQuote(graphics, quote, frameBitmap.Width, frameBitmap.Height, settings, progress);
+
+                // Save this frame as a PNG file
+                var framePath = Path.Combine(frameDir, $"frame_{frame:D3}.png");
+                frameBitmap.Save(framePath, ImageFormat.Png);
+                generatedFrames.Add(framePath);
+            }
+
+            return generatedFrames;
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task SaveImageAsync(Bitmap bitmap, string filePath)
+    public async Task SaveImageAsync(Bitmap bitmap, string filePath, System.Threading.CancellationToken cancellationToken = default)
     {
-        await Task.Run(() => bitmap.Save(filePath, ImageFormat.Png)).ConfigureAwait(false);
+        await Task.Run(() => bitmap.Save(filePath, ImageFormat.Png), cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -187,7 +195,7 @@ public class WallpaperService : IWallpaperService
         using var graphics = Graphics.FromImage(solidBackground);
         using var brush = new SolidBrush(ColorTranslator.FromHtml(settings.BackgroundColor));
         graphics.FillRectangle(brush, 0, 0, settings.Width, settings.Height);
-        
+
         return solidBackground;
     }
 
@@ -208,7 +216,7 @@ public class WallpaperService : IWallpaperService
         {
             // Fail silently during development
         }
-        
+
         DrawAnimatedQuote(graphics, quote, imageWidth, imageHeight, settings, 0.5f);
     }
 
@@ -219,7 +227,7 @@ public class WallpaperService : IWallpaperService
     {
         // Apply time-based opacity if provided
         var baseOpacity = timeBasedOpacity ?? 1.0f;
-        
+
         // Apply parallax offset if provided
         var parallaxX = parallaxOffset?.X ?? 0f;
         var parallaxY = parallaxOffset?.Y ?? 0f;
@@ -227,10 +235,10 @@ public class WallpaperService : IWallpaperService
         // Calculate font size properly
         var fontSize = Math.Max(imageHeight / settings.FontSizeFactor, settings.MinFontSize);
         var panelWidth = (int)(imageWidth * settings.MaxPanelWidthPercent);
-        
+
         using var font = CreateAnimeFont(fontSize, settings);
         var wrappedLines = WrapText(graphics, quote.Text, font, panelWidth - 80);
-        
+
         // Calculate required panel height
         var lineHeight = font.Height;
         var totalTextHeight = wrappedLines.Count * (lineHeight + 10);
@@ -244,7 +252,7 @@ public class WallpaperService : IWallpaperService
         // Apply time-based color shift if provided
         var textColor = ColorTranslator.FromHtml(settings.TextColor);
         var outlineColor = ColorTranslator.FromHtml(settings.OutlineColor);
-        
+
         if (timeBasedColorShift.HasValue)
         {
             var shift = timeBasedColorShift.Value;
@@ -303,7 +311,7 @@ public class WallpaperService : IWallpaperService
                 if (dx != 0 || dy != 0)
                 {
                     using var outlineBrush = new SolidBrush(outlineColor);
-                    graphics.DrawString(characterAnimeText, smallerFont, outlineBrush, 
+                    graphics.DrawString(characterAnimeText, smallerFont, outlineBrush,
                         characterAnimeX + dx, characterAnimeY + dy);
                 }
             }
@@ -324,10 +332,10 @@ public class WallpaperService : IWallpaperService
         // Calculate font size properly - divide height by factor
         var fontSize = Math.Max(imageHeight / settings.FontSizeFactor, settings.MinFontSize);
         var panelWidth = (int)(imageWidth * settings.MaxPanelWidthPercent);
-        
+
         using var font = CreateAnimeFont(fontSize, settings);
         var wrappedLines = WrapText(graphics, quote.Text, font, panelWidth - 80);
-        
+
         // Calculate required panel height based on text
         var lineHeight = font.Height;
         var totalTextHeight = wrappedLines.Count * (lineHeight + 10); // Add spacing between lines
@@ -461,7 +469,7 @@ public class WallpaperService : IWallpaperService
                 if (dx != 0 || dy != 0)
                 {
                     using var outlineBrush = new SolidBrush(outlineColor);
-                    graphics.DrawString(characterAnimeText, smallerFont, outlineBrush, 
+                    graphics.DrawString(characterAnimeText, smallerFont, outlineBrush,
                         characterAnimeX + dx, characterAnimeY + dy);
                 }
             }
@@ -481,9 +489,9 @@ public class WallpaperService : IWallpaperService
         var cornerRadius = 20;
         var panelColor = ColorTranslator.FromHtml(settings.PanelColor);
         var alpha = (int)(settings.PanelOpacity * 255);
-        
+
         using var path = CreateRoundedRectangle(x, y, width, height, cornerRadius);
-        
+
         // Draw glow effect
         var glowSize = (int)(20 * glowIntensity);
         for (int i = glowSize; i > 0; i--)
@@ -511,20 +519,20 @@ public class WallpaperService : IWallpaperService
     {
         var path = new GraphicsPath();
         var diameter = radius * 2;
-        
+
         path.AddArc(x, y, diameter, diameter, 180, 90);
         path.AddArc(x + width - diameter, y, diameter, diameter, 270, 90);
         path.AddArc(x + width - diameter, y + height - diameter, diameter, diameter, 0, 90);
         path.AddArc(x, y + height - diameter, diameter, diameter, 90, 90);
         path.CloseFigure();
-        
+
         return path;
     }
 
     private Font CreateAnimeFont(float fontSize, WallpaperSettings settings)
     {
         var fontFamilies = new[] { settings.FontFamily }.Concat(settings.FallbackFonts).ToArray();
-        
+
         foreach (var familyName in fontFamilies)
         {
             try
@@ -545,19 +553,19 @@ public class WallpaperService : IWallpaperService
     {
         var lines = new List<string>();
         var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        
+
         if (words.Length == 0)
         {
             return lines;
         }
 
         var currentLine = words[0];
-        
+
         for (int i = 1; i < words.Length; i++)
         {
             var testLine = currentLine + " " + words[i];
             var testSize = graphics.MeasureString(testLine, font);
-            
+
             if (testSize.Width > maxWidth)
             {
                 lines.Add(currentLine);
@@ -568,7 +576,7 @@ public class WallpaperService : IWallpaperService
                 currentLine = testLine;
             }
         }
-        
+
         lines.Add(currentLine);
         return lines;
     }
@@ -612,7 +620,7 @@ public class WallpaperService : IWallpaperService
     public Bitmap CreateWallpaperForAllMonitors(string? backgroundPath, Quote quote, WallpaperSettings? settings = null)
     {
         var combinedBounds = _monitorService.GetCombinedBounds();
-        
+
         var combinedSettings = settings ?? new WallpaperSettings();
         combinedSettings.Width = combinedBounds.Width;
         combinedSettings.Height = combinedBounds.Height;
@@ -642,7 +650,7 @@ public class WallpaperService : IWallpaperService
             // Create one large wallpaper spanning all monitors
             var combined = CreateWallpaperForAllMonitors(backgroundPath, quote, settings);
             var monitors = _monitorService.GetAllMonitors();
-            
+
             // For span mode, all monitors reference the same bitmap instance
             // Windows will handle the spanning automatically if the image matches the combined resolution
             foreach (var monitor in monitors)

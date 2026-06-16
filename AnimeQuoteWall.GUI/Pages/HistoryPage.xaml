@@ -102,7 +102,7 @@
                                         Cursor="Hand"
                                         MouseLeftButtonDown="HistoryItem_MouseLeftButtonDown">
                                     <Border.Effect>
-                                        <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="8" ShadowDepth="1"/>
+                                        <DropShadowEffect Color="{DynamicResource ShadowColor}" Opacity="0.08" BlurRadius="8" ShadowDepth="1"/>
                                     </Border.Effect>
                                     <Border.Style>
                                         <Style TargetType="Border">

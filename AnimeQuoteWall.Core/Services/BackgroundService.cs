@@ -52,7 +52,7 @@ public class BackgroundService : IBackgroundService
         }
 
         var images = new List<string>();
-        
+
         // Search for files with supported image extensions
         foreach (var extension in AppConfiguration.SupportedImageExtensions)
         {
@@ -63,7 +63,7 @@ public class BackgroundService : IBackgroundService
 
         // Filter to only valid image files
         var validImages = images.Where(IsValidImageFile).ToList();
-        
+
         // Deduplicate by file content hash (keep first occurrence)
         return DeduplicateByContentHash(validImages);
     }

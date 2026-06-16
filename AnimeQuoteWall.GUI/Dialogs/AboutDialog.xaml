@@ -74,8 +74,7 @@
                            Foreground="{DynamicResource TextSecondary}"
                            Margin="0,0,0,14">
                     MahApps.Metro.IconPacks (MIT), Magick.NET (Apache 2.0),
-                    SixLabors.ImageSharp (Apache 2.0 / Six Labors Split License),
-                    FFmpeg (LGPL 2.1+).
+                    FFmpeg (LGPL 2.1+, bundled as a separate process).
                 </TextBlock>
 
                 <TextBlock Text="Project links"

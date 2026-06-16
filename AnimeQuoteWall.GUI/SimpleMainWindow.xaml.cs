@@ -88,13 +88,13 @@ public partial class SimpleMainWindow : Window
             var labelVisibility = _isSidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
 
             // Nav item labels
-            if (NavWallpaperLabel    != null) NavWallpaperLabel.Visibility    = labelVisibility;
-            if (NavAnimatedLabel     != null) NavAnimatedLabel.Visibility     = labelVisibility;
-            if (NavQuotesLabel       != null) NavQuotesLabel.Visibility       = labelVisibility;
-            if (NavBackgroundsLabel  != null) NavBackgroundsLabel.Visibility  = labelVisibility;
-            if (NavHistoryLabel      != null) NavHistoryLabel.Visibility      = labelVisibility;
-            if (NavPlaylistsLabel    != null) NavPlaylistsLabel.Visibility    = labelVisibility;
-            if (NavSettingsLabel     != null) NavSettingsLabel.Visibility     = labelVisibility;
+            if (NavWallpaperLabel != null) NavWallpaperLabel.Visibility = labelVisibility;
+            if (NavAnimatedLabel != null) NavAnimatedLabel.Visibility = labelVisibility;
+            if (NavQuotesLabel != null) NavQuotesLabel.Visibility = labelVisibility;
+            if (NavBackgroundsLabel != null) NavBackgroundsLabel.Visibility = labelVisibility;
+            if (NavHistoryLabel != null) NavHistoryLabel.Visibility = labelVisibility;
+            if (NavPlaylistsLabel != null) NavPlaylistsLabel.Visibility = labelVisibility;
+            if (NavSettingsLabel != null) NavSettingsLabel.Visibility = labelVisibility;
 
             // Group section headers
             if (NavGroupLabel1 != null) NavGroupLabel1.Visibility = labelVisibility;
@@ -103,10 +103,10 @@ public partial class SimpleMainWindow : Window
 
             // Branding text and footer
             if (SidebarBrandText != null) SidebarBrandText.Visibility = labelVisibility;
-            if (SidebarFooter    != null) SidebarFooter.Visibility    = labelVisibility;
+            if (SidebarFooter != null) SidebarFooter.Visibility = labelVisibility;
 
             // Collapse button icon and label
-            if (CollapseIcon  != null) CollapseIcon.Kind = _isSidebarCollapsed ? PackIconMaterialKind.ChevronRight : PackIconMaterialKind.ChevronLeft;
+            if (CollapseIcon != null) CollapseIcon.Kind = _isSidebarCollapsed ? PackIconMaterialKind.ChevronRight : PackIconMaterialKind.ChevronLeft;
             if (CollapseLabel != null) CollapseLabel.Visibility = labelVisibility;
         }
         catch (Exception ex)
@@ -126,7 +126,7 @@ public partial class SimpleMainWindow : Window
                     if (t.IsFaulted && t.Exception != null)
                         System.Diagnostics.Debug.WriteLine($"EnsureDirectories failed: {t.Exception.GetBaseException().Message}");
                 }, System.Threading.Tasks.TaskScheduler.Default);
-            
+
             // Wait for Frame to be fully loaded before navigating
             if (ContentFrame != null)
             {
@@ -180,7 +180,7 @@ public partial class SimpleMainWindow : Window
             if (sender is System.Windows.Controls.Button button)
             {
                 string? pageName = null;
-                
+
                 // Get page name from Tag, or determine from button name if Tag is "Selected"
                 var tagValue = button.Tag?.ToString();
                 if (tagValue == "Selected")
@@ -202,7 +202,7 @@ public partial class SimpleMainWindow : Window
                 {
                     pageName = tagValue;
                 }
-                
+
                 if (!string.IsNullOrEmpty(pageName))
                 {
                     NavigateToPage(pageName);
@@ -301,7 +301,7 @@ public partial class SimpleMainWindow : Window
             {
                 // Create a new page instance on UI thread (required for WPF)
                 // Pages handle their own async data loading internally
-                    page = pageName switch
+                page = pageName switch
                 {
                     "Wallpaper" => new WallpaperPage(),
                     "Quotes" => new QuotesPage(),
@@ -312,7 +312,7 @@ public partial class SimpleMainWindow : Window
                     "Settings" => new SettingsPage(),
                     _ => null
                 };
-                
+
                 // Store reference for potential future use (currently unused but kept for extensibility)
                 if (page != null)
                 {

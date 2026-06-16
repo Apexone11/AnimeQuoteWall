@@ -19,13 +19,17 @@ public static class ShellLauncher
 
         try
         {
-            Process.Start(new ProcessStartInfo
+            var psi = new ProcessStartInfo
             {
                 FileName = "explorer.exe",
                 UseShellExecute = false,
-                CreateNoWindow = false,
-                Arguments = $"\"{folder}\""
-            });
+                CreateNoWindow = false
+            };
+            // ArgumentList escapes each argument individually, preventing argument
+            // injection from folder paths containing spaces, quotes, or metacharacters
+            // (CLAUDE.md Section 2: never stitch paths into a single Arguments string).
+            psi.ArgumentList.Add(folder);
+            Process.Start(psi);
         }
         catch (Exception ex)
         {

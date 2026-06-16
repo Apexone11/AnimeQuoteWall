@@ -220,7 +220,7 @@ public class PlaylistService
         {
             return null; // Fail silently if integrity check fails
         }
-        
+
         var allPlaylists = await LoadAllPlaylistsAsync().ConfigureAwait(false);
         return allPlaylists.FirstOrDefault(p => p.Enabled);
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Windows;
 using AnimeQuoteWall.Core.Configuration;
@@ -25,7 +25,7 @@ public partial class App : System.Windows.Application
             ImageMagickHardening.Apply();
 
             base.OnStartup(e);
-            
+
             // Apply theme before any window is created
             ThemeManager.ApplyTheme();
             ThemeManager.StartSystemThemeWatch();
@@ -73,7 +73,7 @@ public partial class App : System.Windows.Application
         {
             // Log to file
             LogException(e.Exception);
-            
+
             // Show user-friendly error dialog
             var message = GetUserFriendlyErrorMessage(e.Exception);
             var result = System.Windows.MessageBox.Show(
@@ -81,7 +81,7 @@ public partial class App : System.Windows.Application
                 "Application Error",
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Warning);
-            
+
             e.Handled = result == System.Windows.MessageBoxResult.Yes;
         }
         catch (Exception fallbackEx)
@@ -126,10 +126,10 @@ public partial class App : System.Windows.Application
                 "AnimeQuoteWall",
                 "logs");
             Directory.CreateDirectory(logDir);
-            
+
             var logFile = Path.Combine(logDir, $"error_{DateTime.Now:yyyyMMdd}.txt");
             var logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}\n\n";
-            
+
             File.AppendAllText(logFile, logEntry);
         }
         catch
@@ -149,22 +149,22 @@ public partial class App : System.Windows.Application
         // Handle common error types with friendly messages
         if (ex is System.IO.FileNotFoundException)
             return "A required file could not be found. Please ensure all application files are present.";
-        
+
         if (ex is System.IO.DirectoryNotFoundException)
             return "A required folder could not be found. Please check your file paths in Settings.";
-        
+
         if (ex is UnauthorizedAccessException)
             return "Access denied. Please run the application as administrator or check file permissions.";
-        
+
         if (ex is System.IO.IOException)
             return "A file operation failed. The file may be in use by another program.";
-        
+
         if (ex is OutOfMemoryException)
             return "The application ran out of memory. Try closing other applications or reducing the number of images.";
-        
+
         if (message.Contains("XamlParseException") || message.Contains("StaticResource"))
             return "A UI component failed to load. This may be resolved by restarting the application.";
-        
+
         // Default: show simplified message
         return $"An error occurred: {message}";
     }

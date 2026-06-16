@@ -83,7 +83,7 @@ public partial class AnimatedWallpapersPage : Page
         _animatedWallpapersDirectory = Path.Combine(AppConfiguration.DefaultBaseDirectory, "animated_wallpapers");
         Directory.CreateDirectory(_animatedWallpapersDirectory);
         _thumbnailService = new VideoThumbnailService();
-        
+
         // Load wallpapers asynchronously to improve startup performance
         Loaded += async (s, e) =>
         {
@@ -91,7 +91,7 @@ public partial class AnimatedWallpapersPage : Page
             await LoadAnimatedWallpapersAsync();
             await UpdateWallpaperEngineStatusAsync();
         };
-        
+
         Unloaded += (s, e) => _cancellationTokenSource?.Cancel();
     }
 
@@ -155,7 +155,7 @@ public partial class AnimatedWallpapersPage : Page
 
             // Create items with thumbnails (process in batches for better performance)
             var items = new List<AnimatedWallpaperItem>();
-            
+
             // Process files in parallel batches
             const int batchSize = 5;
             for (int i = 0; i < files.Count; i += batchSize)
@@ -190,7 +190,7 @@ public partial class AnimatedWallpapersPage : Page
                 }
 
                 items.AddRange(batchItems);
-                
+
                 // Update UI incrementally for better perceived performance
                 if (!cancellationToken.IsCancellationRequested)
                 {
@@ -215,15 +215,15 @@ public partial class AnimatedWallpapersPage : Page
 
                 AnimatedWallpapersItemsControl.ItemsSource = items;
                 UpdateCount(items.Count);
-                
+
                 // Update grid columns based on available width
                 UpdateAnimatedGridColumns();
-                
+
                 if (LoadingIndicator != null)
                     LoadingIndicator.Visibility = Visibility.Collapsed;
                 if (ContentScrollViewer != null)
                     ContentScrollViewer.Visibility = Visibility.Visible;
-                
+
                 // Reset selection
                 _selectedItem = null;
                 _selectedBorder = null;
@@ -245,7 +245,7 @@ public partial class AnimatedWallpapersPage : Page
                     LoadingIndicator.Visibility = Visibility.Collapsed;
                 if (ContentScrollViewer != null)
                     ContentScrollViewer.Visibility = Visibility.Visible;
-                
+
                 System.Windows.MessageBox.Show(
                     $"Failed to load animated wallpapers: {ex.Message}\n\nPlease check that the animated wallpapers folder exists and is accessible.",
                     "Error Loading Animated Wallpapers",
@@ -263,7 +263,7 @@ public partial class AnimatedWallpapersPage : Page
         var fileInfo = new FileInfo(path);
         var sizeInMB = fileInfo.Length / (1024.0 * 1024.0);
         var extension = Path.GetExtension(path).ToLowerInvariant();
-        
+
         // Generate preview path
         string previewPath;
         if (extension == ".gif")
@@ -276,14 +276,14 @@ public partial class AnimatedWallpapersPage : Page
             // For videos, generate or get cached thumbnail
             previewPath = _thumbnailService.GetOrCreateThumbnail(path) ?? path;
         }
-        
+
         return new AnimatedWallpaperItem
         {
             FileName = Path.GetFileName(path),
             FilePath = path,
             PreviewPath = previewPath,
-            FileSize = sizeInMB < 1 
-                ? $"{(fileInfo.Length / 1024.0):F1} KB" 
+            FileSize = sizeInMB < 1
+                ? $"{(fileInfo.Length / 1024.0):F1} KB"
                 : $"{sizeInMB:F2} MB",
             Format = extension.ToUpperInvariant().Substring(1),
             Duration = GetDurationInfo(path, extension)
@@ -438,9 +438,9 @@ public partial class AnimatedWallpapersPage : Page
             {
                 var color = brush.Color;
                 border.Background = new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromArgb(255, 
-                        (byte)Math.Min(255, color.R + 10), 
-                        (byte)Math.Min(255, color.G + 10), 
+                    System.Windows.Media.Color.FromArgb(255,
+                        (byte)Math.Min(255, color.R + 10),
+                        (byte)Math.Min(255, color.G + 10),
                         (byte)Math.Min(255, color.B + 10)));
             }
         }
@@ -484,14 +484,14 @@ public partial class AnimatedWallpapersPage : Page
         {
             _selectedItem = item;
             _selectedBorder = border;
-            
+
             // Visual feedback for selection
             border.BorderThickness = new Thickness(3);
             border.BorderBrush = new System.Windows.Media.SolidColorBrush(
                 System.Windows.Media.Color.FromRgb(129, 140, 248)); // Purple accent
             border.Background = new System.Windows.Media.SolidColorBrush(
                 System.Windows.Media.Color.FromArgb(30, 129, 140, 248)); // Light purple tint
-            
+
             // Update button states — enabled when an item is selected
             if (ApplyAnimatedButton != null)
                 ApplyAnimatedButton.IsEnabled = _selectedItem != null;
@@ -510,10 +510,12 @@ public partial class AnimatedWallpapersPage : Page
         {
             var monitor = GetSelectedMonitor();
             var animatedService = new AnimatedWallpaperService();
-            
-            // First, clear the animated wallpaper from Wallpaper Engine
-            var cleared = animatedService.ClearAnimatedWallpaper(monitor);
-            
+
+            // First, clear the animated wallpaper from Wallpaper Engine. Run off the UI thread:
+            // ClearAnimatedWallpaper probes Wallpaper Engine over HTTP (up to a 5s timeout) and
+            // would otherwise freeze the window (CLAUDE.md Sections 1 and 5).
+            var cleared = await Task.Run(() => animatedService.ClearAnimatedWallpaper(monitor));
+
             if (!cleared && await animatedService.IsWallpaperEngineAvailableAsync().ConfigureAwait(true))
             {
                 // If clearing failed but Wallpaper Engine is available, warn the user
@@ -524,19 +526,19 @@ public partial class AnimatedWallpapersPage : Page
                     "Warning",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning);
-                
+
                 if (result == MessageBoxResult.No)
                 {
                     return;
                 }
             }
-            
+
             // Small delay to ensure Wallpaper Engine processes the clear command
             await Task.Delay(500).ConfigureAwait(true);
-            
+
             // Now try to apply the previous static wallpaper
             var prev = AppConfiguration.PreviousWallpaperPath;
-            
+
             if (File.Exists(prev))
             {
                 if (WallpaperSettingHelper.SetWallpaper(prev, monitor))
@@ -622,7 +624,7 @@ public partial class AnimatedWallpapersPage : Page
     /// <summary>
     /// Handles the Apply Animated Wallpaper button click event.
     /// </summary>
-    private void ApplyAnimatedButton_Click(object sender, RoutedEventArgs e)
+    private async void ApplyAnimatedButton_Click(object sender, RoutedEventArgs e)
     {
         if (_selectedItem == null || string.IsNullOrWhiteSpace(_selectedItem.FilePath))
         {
@@ -634,11 +636,17 @@ public partial class AnimatedWallpapersPage : Page
         {
             var service = new AnimatedWallpaperService();
             var extension = System.IO.Path.GetExtension(_selectedItem.FilePath).ToLowerInvariant();
-            
+            var filePath = _selectedItem.FilePath;
+
+            // Probing Wallpaper Engine performs a network call with a multi-second timeout,
+            // so run it off the UI thread; otherwise the window freezes when WE is absent
+            // (CLAUDE.md Section 5; never GetAwaiter().GetResult() on the dispatcher).
+            bool weAvailable = await Task.Run(() => service.IsWallpaperEngineAvailable());
+
             // Check if Wallpaper Engine is available for video files
-            if ((extension == ".mp4" || extension == ".webm" || extension == ".mov") && !service.IsWallpaperEngineAvailable())
+            if ((extension == ".mp4" || extension == ".webm" || extension == ".mov") && !weAvailable)
             {
-                var status = service.GetWallpaperEngineStatus();
+                var status = await Task.Run(() => service.GetWallpaperEngineStatus());
                 var result = System.Windows.MessageBox.Show(
                     $"Wallpaper Engine is not available.\n\nStatus: {status}\n\n" +
                     "Animated wallpapers (MP4/WebM/MOV) require Wallpaper Engine to work.\n\n" +
@@ -652,9 +660,9 @@ public partial class AnimatedWallpapersPage : Page
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    // Extract first frame and set as static
+                    // Extract first frame and set as static (off the UI thread)
                     var monitorIndex = GetSelectedMonitor();
-                    var success = service.SetAnimatedWallpaper(_selectedItem.FilePath, monitorIndex);
+                    var success = await Task.Run(() => service.SetAnimatedWallpaper(filePath, monitorIndex));
                     if (success)
                     {
                         System.Windows.MessageBox.Show(
@@ -674,13 +682,13 @@ public partial class AnimatedWallpapersPage : Page
 
             // Get selected monitor
             var selectedMonitor = GetSelectedMonitor();
-            
-            // Try to apply animated wallpaper with monitor selection
-            var wallpaperSuccess = service.SetAnimatedWallpaper(_selectedItem.FilePath, selectedMonitor);
+
+            // Try to apply animated wallpaper with monitor selection (off the UI thread)
+            var wallpaperSuccess = await Task.Run(() => service.SetAnimatedWallpaper(filePath, selectedMonitor));
 
             if (wallpaperSuccess)
             {
-                if (extension == ".gif" && !service.IsWallpaperEngineAvailable())
+                if (extension == ".gif" && !weAvailable)
                 {
                     System.Windows.MessageBox.Show(
                         $"First frame of '{_selectedItem.FileName}' applied as static wallpaper.\n\n" +
@@ -698,7 +706,7 @@ public partial class AnimatedWallpapersPage : Page
                           "If the wallpaper is not animating, ensure Wallpaper Engine is running."
                         : $"Animated wallpaper '{_selectedItem.FileName}' applied to {monitorName}!\n\n" +
                           "If the wallpaper is not animating, ensure Wallpaper Engine is running.";
-                    
+
                     System.Windows.MessageBox.Show(
                         message,
                         "Success",
@@ -734,7 +742,7 @@ public partial class AnimatedWallpapersPage : Page
             if (MonitorSelectionComboBox == null) return;
 
             MonitorSelectionComboBox.Items.Clear();
-            
+
             // Add default option
             var defaultItem = new ComboBoxItem
             {
@@ -754,7 +762,7 @@ public partial class AnimatedWallpapersPage : Page
                     // Shorten long display names
                     displayName = displayName.Substring(0, 17) + "...";
                 }
-                
+
                 var item = new ComboBoxItem
                 {
                     Content = $"{displayName} ({monitor.Width}x{monitor.Height}){(monitor.IsPrimary ? " [Primary]" : "")}",

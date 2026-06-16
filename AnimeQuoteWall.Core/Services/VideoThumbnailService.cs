@@ -74,7 +74,7 @@ public class VideoThumbnailService
             // Use ImageMagick to extract frame from video
             using var collection = new MagickImageCollection();
             collection.Read(videoPath);
-            
+
             if (collection.Count == 0)
                 return null;
 
@@ -102,8 +102,8 @@ public class VideoThumbnailService
             try
             {
                 using var image = new MagickImage(videoPath);
-                image.Resize(new MagickGeometry((uint)width, (uint)height) 
-                { 
+                image.Resize(new MagickGeometry((uint)width, (uint)height)
+                {
                     FillArea = true,
                     IgnoreAspectRatio = false
                 });
@@ -168,12 +168,34 @@ public class VideoThumbnailService
         try
         {
             var fileInfo = new FileInfo(filePath);
-            // Use file size and last write time as hash
-            return $"{fileInfo.Length}_{fileInfo.LastWriteTime.Ticks}".GetHashCode().ToString("X");
+            // Size + last-write composed directly as hex. string.GetHashCode is randomized per
+            // process since .NET Core, so using it here meant the cache key changed every launch
+            // and thumbnails were regenerated on every run. This key is stable across runs.
+            return $"{fileInfo.Length:X}_{fileInfo.LastWriteTimeUtc.Ticks:X}";
         }
         catch
         {
-            return Path.GetFileName(filePath).GetHashCode().ToString("X");
+            return StableHash(Path.GetFileName(filePath));
+        }
+    }
+
+    /// <summary>
+    /// Deterministic 32-bit FNV-1a hash (stable across processes, unlike string.GetHashCode).
+    /// Used only for cache-key generation, not for security.
+    /// </summary>
+    private static string StableHash(string value)
+    {
+        unchecked
+        {
+            const uint offsetBasis = 2166136261;
+            const uint prime = 16777619;
+            uint hash = offsetBasis;
+            foreach (char c in value)
+            {
+                hash ^= c;
+                hash *= prime;
+            }
+            return hash.ToString("X");
         }
     }
 

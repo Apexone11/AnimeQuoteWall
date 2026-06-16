@@ -117,7 +117,7 @@
                                     CornerRadius="12"
                                     Cursor="Hand">
                                 <Border.Effect>
-                                    <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="8" ShadowDepth="1"/>
+                                    <DropShadowEffect Color="{DynamicResource ShadowColor}" Opacity="0.08" BlurRadius="8" ShadowDepth="1"/>
                                 </Border.Effect>
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
@@ -137,7 +137,7 @@
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsFavorite}" Value="True">
                                                                 <Setter Property="Kind" Value="Heart"/>
-                                                                <Setter Property="Foreground" Value="#EF4444"/>
+                                                                <Setter Property="Foreground" Value="{DynamicResource DangerColor}"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>

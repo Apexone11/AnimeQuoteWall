@@ -26,6 +26,25 @@ public class AnimatedWallpaperService
         DefaultRequestVersion = System.Net.HttpVersion.Version11
     };
 
+    /// <summary>
+    /// Returns true if a process with the given name is running. The Process objects returned
+    /// by GetProcessesByName each hold a native handle and are disposed here to avoid leaking
+    /// handles on these frequently-polled probe paths.
+    /// </summary>
+    private static bool IsProcessRunning(string processName)
+    {
+        var processes = Process.GetProcessesByName(processName);
+        try
+        {
+            return processes.Length > 0;
+        }
+        finally
+        {
+            foreach (var p in processes)
+                p.Dispose();
+        }
+    }
+
     public bool IsWallpaperEngineAvailable()
     {
         return IsWallpaperEngineAvailableAsync().GetAwaiter().GetResult();
@@ -39,12 +58,7 @@ public class AnimatedWallpaperService
         try
         {
             // First check if Wallpaper Engine process is running (most reliable)
-            var processes = Process.GetProcessesByName("wallpaper32");
-            if (processes.Length > 0)
-                return true;
-
-            processes = Process.GetProcessesByName("wallpaper64");
-            if (processes.Length > 0)
+            if (IsProcessRunning("wallpaper32") || IsProcessRunning("wallpaper64"))
                 return true;
 
             // Check if Wallpaper Engine Web API is accessible (indicates it's running)
@@ -62,7 +76,7 @@ public class AnimatedWallpaperService
             // Check if Wallpaper Engine is installed in common locations
             var steamPath = Environment.GetEnvironmentVariable("ProgramFiles(x86)") ?? Environment.GetEnvironmentVariable("ProgramFiles");
             var wallpaperEnginePath = Path.Combine(steamPath ?? "", "Steam", "steamapps", "common", "wallpaper_engine");
-            
+
             if (Directory.Exists(wallpaperEnginePath))
                 return true;
 
@@ -96,11 +110,8 @@ public class AnimatedWallpaperService
     {
         try
         {
-            // Check if process is running
-            var processes32 = Process.GetProcessesByName("wallpaper32");
-            var processes64 = Process.GetProcessesByName("wallpaper64");
-            
-            if (processes32.Length > 0 || processes64.Length > 0)
+            // Check if process is running (handles disposed inside the helper)
+            if (IsProcessRunning("wallpaper32") || IsProcessRunning("wallpaper64"))
             {
                 // Check if API is accessible
                 try
@@ -120,7 +131,7 @@ public class AnimatedWallpaperService
             // Check if installed but not running
             var steamPath = Environment.GetEnvironmentVariable("ProgramFiles(x86)") ?? Environment.GetEnvironmentVariable("ProgramFiles");
             var wallpaperEnginePath = Path.Combine(steamPath ?? "", "Steam", "steamapps", "common", "wallpaper_engine");
-            
+
             if (Directory.Exists(wallpaperEnginePath))
             {
                 return "Wallpaper Engine is installed but not running. Please start Wallpaper Engine from Steam.";
@@ -148,7 +159,7 @@ public class AnimatedWallpaperService
         try
         {
             var extension = Path.GetExtension(videoPath).ToLowerInvariant();
-            
+
             // Try Wallpaper Engine integration first
             if (IsWallpaperEngineAvailable() && (extension == ".mp4" || extension == ".webm" || extension == ".mov"))
             {
@@ -183,7 +194,7 @@ public class AnimatedWallpaperService
         try
         {
             var fullPath = Path.GetFullPath(videoPath);
-            
+
             // Method 1: Try Wallpaper Engine Web API (localhost:7070)
             if (TryWallpaperEngineWebAPI(fullPath, monitorIndex))
             {
@@ -237,7 +248,7 @@ public class AnimatedWallpaperService
             // Determine monitor parameter
             // If monitorIndex is specified, use it; otherwise use settings default (-1 for all monitors)
             var monitorParam = monitorIndex ?? -1; // -1 means all monitors, specific index for single monitor
-            
+
             // Set wallpaper using API
             var requestBody = new
             {
@@ -247,7 +258,7 @@ public class AnimatedWallpaperService
 
             var json = JsonSerializer.Serialize(requestBody);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
+
             using var response = await httpClient.PostAsync("http://localhost:7070/api/setWallpaper", content).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
@@ -266,7 +277,7 @@ public class AnimatedWallpaperService
         {
             var steamPath = Environment.GetEnvironmentVariable("ProgramFiles(x86)") ?? Environment.GetEnvironmentVariable("ProgramFiles");
             var wallpaperEnginePath = Path.Combine(steamPath ?? "", "Steam", "steamapps", "common", "wallpaper_engine");
-            
+
             var exePath = Path.Combine(wallpaperEnginePath, "wallpaper64.exe");
             if (!File.Exists(exePath))
             {
@@ -334,7 +345,7 @@ public class AnimatedWallpaperService
             // This is a fallback when Wallpaper Engine is not available
             using var image = new ImageMagick.MagickImage(gifPath);
             image.Write(gifPath.Replace(".gif", "_frame0.png"));
-            
+
             var framePath = gifPath.Replace(".gif", "_frame0.png");
             if (File.Exists(framePath))
             {
@@ -342,8 +353,14 @@ public class AnimatedWallpaperService
                 // Clean up temporary frame file after a delay
                 Task.Run(async () =>
                 {
-                    await Task.Delay(5000);
-                    try { File.Delete(framePath); } catch { }
+                    await Task.Delay(5000).ConfigureAwait(false);
+                    try { File.Delete(framePath); }
+                    catch (System.Exception delEx)
+                    {
+                        // Temp frame cleanup is best-effort; log instead of swallowing
+                        // silently (CLAUDE.md: no empty catch blocks).
+                        System.Diagnostics.Debug.WriteLine($"AnimatedWallpaperService: temp frame cleanup failed: {delEx.Message}");
+                    }
                 });
                 return result;
             }

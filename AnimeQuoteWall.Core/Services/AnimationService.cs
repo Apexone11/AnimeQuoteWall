@@ -94,7 +94,7 @@ public class AnimationService
             {
                 // Create wallpaper image for this frame with enhanced features
                 bitmap = CreateWallpaperImageWithEffects(backgroundPath, quote, settings, profile, eased);
-                
+
                 // Apply particle and other overlay effects
                 ApplyEnhancedAnimationEffects(bitmap, settings, profile, eased, null);
 
@@ -258,7 +258,26 @@ public class AnimationService
             // Rough progress bump during encode (second half)
             progress?.Report(0.75);
 
-            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // On cancellation or failure, kill the ffmpeg process tree before disposal so it
+                // does not become a zombie holding a lock on the temp frame directory (CLAUDE.md
+                // Sections 1 and 14).
+                try
+                {
+                    if (!process.HasExited)
+                        process.Kill(entireProcessTree: true);
+                }
+                catch (Exception killEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"AnimationService: ffmpeg kill failed: {killEx.Message}");
+                }
+                throw;
+            }
 
             // Complete reading
             await Task.WhenAll(stdOutTask, stdErrTask).ConfigureAwait(false);
@@ -302,17 +321,17 @@ public class AnimationService
         // Load background
         using var background = _wallpaperService.LoadBackgroundBitmap(backgroundPath, settings);
         var bitmap = new System.Drawing.Bitmap(background.Width, background.Height);
-        
+
         using var graphics = System.Drawing.Graphics.FromImage(bitmap);
         WallpaperService.ConfigureGraphicsQuality(graphics);
-        
+
         // Draw background
         graphics.DrawImage(background, 0, 0, bitmap.Width, bitmap.Height);
-        
+
         // Draw quote with enhanced animations
-        _wallpaperService.DrawAnimatedQuote(graphics, quote, bitmap.Width, bitmap.Height, settings, eased, 
+        _wallpaperService.DrawAnimatedQuote(graphics, quote, bitmap.Width, bitmap.Height, settings, eased,
             profile.TextAnimationType, profile.MotionEffects);
-        
+
         return bitmap;
     }
 
@@ -343,7 +362,7 @@ public class AnimationService
                 MinSpeed = profile.ParticleSettings.ParticleSpeed * 0.5f,
                 MaxSpeed = profile.ParticleSettings.ParticleSpeed
             };
-            
+
             // Update particles (deltaTime based on frame progress)
             var deltaTime = 1f / profile.FramesPerSecond;
             particleService.UpdateParticles(deltaTime, bitmap.Width, bitmap.Height, emitter);

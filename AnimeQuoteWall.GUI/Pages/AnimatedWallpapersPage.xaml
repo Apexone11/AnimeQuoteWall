@@ -173,7 +173,7 @@
                                     MouseLeave="AnimatedItem_MouseLeave"
                                     MouseLeftButtonUp="AnimatedItem_MouseLeftButtonUp">
                                 <Border.Effect>
-                                    <DropShadowEffect Color="#1E293B" Opacity="0.06" BlurRadius="8" ShadowDepth="2"/>
+                                    <DropShadowEffect Color="{DynamicResource ShadowColor}" Opacity="0.06" BlurRadius="8" ShadowDepth="2"/>
                                 </Border.Effect>
                                 <Border.Style>
                                     <Style TargetType="Border">
@@ -183,7 +183,7 @@
                                                 <Setter Property="BorderBrush" Value="{DynamicResource PrimaryColor}"/>
                                                 <Setter Property="Effect">
                                                     <Setter.Value>
-                                                        <DropShadowEffect Color="#818CF8" Opacity="0.3" BlurRadius="12" ShadowDepth="0"/>
+                                                        <DropShadowEffect Color="{DynamicResource AccentGlowColor}" Opacity="0.3" BlurRadius="12" ShadowDepth="0"/>
                                                     </Setter.Value>
                                                 </Setter>
                                             </Trigger>
@@ -209,14 +209,14 @@
                                                 </Image.Source>
                                             </Image>
                                             <!-- Gradient overlay for better text visibility -->
-                                            <Border Background="#00000000">
+                                            <Border Background="Transparent">
                                                 <Border.Style>
                                                     <Style TargetType="Border">
                                                         <Setter Property="Background">
                                                             <Setter.Value>
                                                                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                                    <GradientStop Color="#00000000" Offset="0.6"/>
-                                                                    <GradientStop Color="#80000000" Offset="1"/>
+                                                                    <GradientStop Color="Transparent" Offset="0.6"/>
+                                                                    <GradientStop Color="{DynamicResource ScrimColor}" Offset="1"/>
                                                                 </LinearGradientBrush>
                                                             </Setter.Value>
                                                         </Setter>
@@ -224,7 +224,7 @@
                                                 </Border.Style>
                                             </Border>
                                             <!-- Play icon overlay for videos -->
-                                            <Border Background="#60000000"
+                                            <Border Background="{DynamicResource ScrimBackgroundSoft}"
                                                     VerticalAlignment="Center"
                                                     HorizontalAlignment="Center"
                                                     CornerRadius="50"
@@ -242,7 +242,7 @@
                                                     </Style>
                                                 </Border.Style>
                                                 <Border.Effect>
-                                                    <DropShadowEffect Color="#000000" Opacity="0.5" BlurRadius="8" ShadowDepth="2"/>
+                                                    <DropShadowEffect Color="{DynamicResource ShadowColor}" Opacity="0.5" BlurRadius="8" ShadowDepth="2"/>
                                                 </Border.Effect>
                                                 <iconPacks:PackIconMaterial Kind="PlayCircleOutline"
                                                                             Width="36"
@@ -252,14 +252,14 @@
                                                                             VerticalAlignment="Center"/>
                                             </Border>
                                             <!-- Format badge -->
-                                            <Border Background="#CC6366F1"
+                                            <Border Background="{DynamicResource PrimaryOverlayBrush}"
                                                     CornerRadius="0,0,8,0"
                                                     VerticalAlignment="Top"
                                                     HorizontalAlignment="Left"
                                                     Padding="10,6"
                                                     Margin="0">
                                                 <Border.Effect>
-                                                    <DropShadowEffect Color="#6366F1" Opacity="0.4" BlurRadius="4" ShadowDepth="1"/>
+                                                    <DropShadowEffect Color="{DynamicResource AccentGlowColor}" Opacity="0.4" BlurRadius="4" ShadowDepth="1"/>
                                                 </Border.Effect>
                                                 <TextBlock Text="{Binding Format}"
                                                            FontSize="11"

@@ -23,8 +23,8 @@ public class WallpaperSettings
     /// Wallpaper width in pixels. Must be between 320 and 7680.
     /// Default: 2560 (standard for 1440p monitors)
     /// </summary>
-    public int Width 
-    { 
+    public int Width
+    {
         get => _width;
         set
         {
@@ -38,8 +38,8 @@ public class WallpaperSettings
     /// Wallpaper height in pixels. Must be between 240 and 4320.
     /// Default: 1440 (standard for 1440p monitors)
     /// </summary>
-    public int Height 
-    { 
+    public int Height
+    {
         get => _height;
         set
         {
@@ -65,7 +65,7 @@ public class WallpaperSettings
     /// Backup fonts if the main font isn't available on your system.
     /// The program will try each one in order until it finds one that works.
     /// </summary>
-    public string[] FallbackFonts { get; set; } = 
+    public string[] FallbackFonts { get; set; } =
     {
         "Trebuchet MS", "Verdana", "Segoe UI", "Calibri"
     };
@@ -92,8 +92,8 @@ public class WallpaperSettings
     /// Panel opacity/transparency (0.0 = invisible, 1.0 = fully solid).
     /// Default: 0.85 (slightly transparent)
     /// </summary>
-    public float PanelOpacity 
-    { 
+    public float PanelOpacity
+    {
         get => _panelOpacity;
         set
         {
@@ -107,8 +107,8 @@ public class WallpaperSettings
     /// Number of animation frames to generate (more = smoother but slower).
     /// Default: 16 frames
     /// </summary>
-    public int AnimationFrames 
-    { 
+    public int AnimationFrames
+    {
         get => _animationFrames;
         set
         {
@@ -145,7 +145,7 @@ public class WallpaperSettings
     /// <returns>True if all settings are valid</returns>
     public bool IsValid()
     {
-        return Width > 0 && Height > 0 
+        return Width > 0 && Height > 0
             && PanelOpacity >= 0.0f && PanelOpacity <= 1.0f
             && AnimationFrames > 0
             && FontSizeFactor > 0

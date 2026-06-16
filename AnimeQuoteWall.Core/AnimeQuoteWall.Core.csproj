@@ -21,7 +21,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <!-- SixLabors.ImageSharp removed: v3.x ships under the Six Labors Split License
+         (commercial license required for closed-source distribution), which is on the
+         CLAUDE.md forbidden list for the Steam ship. It was unreferenced in code; the
+         image pipeline uses Magick.NET (Apache-2.0) and System.Drawing.Common. -->
     <PackageReference Include="System.Drawing.Common" Version="9.0.10" />
     <PackageReference Include="System.Text.Json" Version="9.0.10" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.13.1" />

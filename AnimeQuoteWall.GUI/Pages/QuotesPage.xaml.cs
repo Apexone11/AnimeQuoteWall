@@ -40,7 +40,7 @@ public partial class QuotesPage : Page
         {
             await _quoteService.EnsureQuotesFileAsync(AppConfiguration.QuotesFilePath).ConfigureAwait(false);
             _quotes = await _quoteService.LoadQuotesAsync(AppConfiguration.QuotesFilePath).ConfigureAwait(false);
-            
+
             // Auto-categorize by anime name if no categories exist
             foreach (var quote in _quotes)
             {
@@ -49,7 +49,7 @@ public partial class QuotesPage : Page
                     quote.Categories = new List<string> { quote.Anime };
                 }
             }
-            
+
             // Update category filter dropdown and apply filters on UI thread
             Dispatcher.Invoke(() =>
             {
@@ -81,7 +81,7 @@ public partial class QuotesPage : Page
 
         CategoryFilterComboBox.Items.Clear();
         CategoryFilterComboBox.Items.Add(new ComboBoxItem { Content = "All Categories", Tag = "" });
-        
+
         foreach (var category in categories)
         {
             CategoryFilterComboBox.Items.Add(new ComboBoxItem { Content = category, Tag = category });
@@ -100,7 +100,7 @@ public partial class QuotesPage : Page
         // Filter by category
         if (!string.IsNullOrEmpty(_selectedCategory))
         {
-            _filteredQuotes = _filteredQuotes.Where(q => 
+            _filteredQuotes = _filteredQuotes.Where(q =>
                 q.Categories != null && q.Categories.Contains(_selectedCategory, StringComparer.OrdinalIgnoreCase)
             ).ToList();
         }

@@ -27,7 +27,7 @@ public class ImageCacheService : IDisposable
     /// Using singleton pattern ensures all parts of the application share the same cache.
     /// </summary>
     private static ImageCacheService? _instance;
-    
+
     /// <summary>
     /// Gets the singleton instance of the ImageCacheService.
     /// Creates a new instance if one doesn't exist.
@@ -38,22 +38,22 @@ public class ImageCacheService : IDisposable
     /// Dictionary storing cached images, keyed by cache key (path + size).
     /// </summary>
     private readonly Dictionary<string, CachedImage> _cache = new();
-    
+
     /// <summary>
     /// Lock object for thread-safe access to the cache dictionary.
     /// </summary>
     private readonly object _lock = new();
-    
+
     /// <summary>
     /// Maximum number of images to cache before eviction starts.
     /// </summary>
     private readonly int _maxCacheSize;
-    
+
     /// <summary>
     /// Maximum memory usage in bytes before eviction starts.
     /// </summary>
     private readonly long _maxMemoryBytes;
-    
+
     /// <summary>
     /// Current memory usage in bytes by all cached images.
     /// </summary>
@@ -63,7 +63,7 @@ public class ImageCacheService : IDisposable
     /// Default maximum number of images to cache.
     /// </summary>
     private const int DefaultMaxCacheSize = 50;
-    
+
     /// <summary>
     /// Default maximum memory usage: 500MB.
     /// </summary>
@@ -107,7 +107,7 @@ public class ImageCacheService : IDisposable
 
         // Load image asynchronously
         var bitmap = await Task.Run(() => LoadImage(imagePath, width, height)).ConfigureAwait(false);
-        
+
         if (bitmap == null)
             return null;
 
@@ -118,7 +118,7 @@ public class ImageCacheService : IDisposable
 
             // Calculate memory usage
             var memoryUsage = EstimateMemoryUsage(bitmap);
-            
+
             // Don't cache if single image exceeds memory limit
             if (memoryUsage > _maxMemoryBytes)
             {
@@ -160,7 +160,7 @@ public class ImageCacheService : IDisposable
 
         // Load synchronously
         var bitmap = LoadImage(imagePath, width, height);
-        
+
         if (bitmap == null)
             return null;
 
@@ -169,7 +169,7 @@ public class ImageCacheService : IDisposable
             EvictIfNeeded();
 
             var memoryUsage = EstimateMemoryUsage(bitmap);
-            
+
             if (memoryUsage > _maxMemoryBytes)
             {
                 return bitmap;
@@ -211,7 +211,7 @@ public class ImageCacheService : IDisposable
     public void RemoveFromCache(string imagePath, int? width = null, int? height = null)
     {
         var cacheKey = GetCacheKey(imagePath, width, height);
-        
+
         lock (_lock)
         {
             if (_cache.TryGetValue(cacheKey, out var cached))
@@ -235,7 +235,7 @@ public class ImageCacheService : IDisposable
         try
         {
             using var original = Image.FromFile(imagePath);
-            
+
             if (!width.HasValue && !height.HasValue)
             {
                 // Return original size
@@ -262,7 +262,7 @@ public class ImageCacheService : IDisposable
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
             graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
             graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-            
+
             graphics.DrawImage(original, 0, 0, targetWidth, targetHeight);
             return resized;
         }
@@ -321,12 +321,12 @@ public class ImageCacheService : IDisposable
         /// The cached bitmap image.
         /// </summary>
         public Bitmap Image { get; set; } = null!;
-        
+
         /// <summary>
         /// Timestamp of last access (for LRU eviction).
         /// </summary>
         public DateTime LastAccessed { get; set; }
-        
+
         /// <summary>
         /// Estimated memory usage in bytes.
         /// </summary>

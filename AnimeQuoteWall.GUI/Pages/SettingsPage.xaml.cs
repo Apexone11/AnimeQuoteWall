@@ -51,6 +51,7 @@ public partial class SettingsPage : Page
             UpdateThemeCombo();
             UpdateDefaultsInfo();
             UpdateBehaviorSettings();
+            UpdatePerformanceSettings();
             UpdateMonitorSettings();
         }
         catch (Exception ex)
@@ -104,18 +105,21 @@ public partial class SettingsPage : Page
         {
             if (AutoRefreshPreviewCheckBox != null)
                 AutoRefreshPreviewCheckBox.IsChecked = AppConfiguration.AutoRefreshPreview;
-            
+
             if (ShowNotificationsCheckBox != null)
                 ShowNotificationsCheckBox.IsChecked = AppConfiguration.ShowGenerationNotifications;
-            
+
             if (AutoSaveHistoryCheckBox != null)
                 AutoSaveHistoryCheckBox.IsChecked = AppConfiguration.AutoSaveToHistory;
-            
+
             if (EnableAnimatedApplyCheckBox != null)
                 EnableAnimatedApplyCheckBox.IsChecked = AppConfiguration.EnableAnimatedApply;
-            
+
             if (EnablePerMonitorApplyCheckBox != null)
                 EnablePerMonitorApplyCheckBox.IsChecked = AppConfiguration.EnablePerMonitorApply;
+
+            if (StartWithWindowsCheckBox != null)
+                StartWithWindowsCheckBox.IsChecked = StartupService.IsEnabled();
         }
         catch (Exception ex)
         {
@@ -132,10 +136,10 @@ public partial class SettingsPage : Page
         {
             if (BackgroundsPathTextBox != null)
                 BackgroundsPathTextBox.Text = AppConfiguration.BackgroundsDirectory;
-            
+
             if (QuotesPathTextBox != null)
                 QuotesPathTextBox.Text = AppConfiguration.QuotesFilePath;
-            
+
             if (OutputPathTextBox != null)
                 OutputPathTextBox.Text = AppConfiguration.CurrentWallpaperPath;
         }
@@ -155,7 +159,7 @@ public partial class SettingsPage : Page
         {
             if (DefaultPathsInfo == null)
                 return;
-                
+
             var baseDir = AppConfiguration.DefaultBaseDirectory;
             DefaultPathsInfo.Text =
                 $"Base: {baseDir}\n" +
@@ -178,7 +182,7 @@ public partial class SettingsPage : Page
         {
             if (ThemeModeComboBox == null)
                 return;
-                
+
             var mode = AppConfiguration.ThemeMode;
             // Map theme mode to combo box index: 0=System, 1=Light, 2=Dark
             var index = mode.Equals("Light", StringComparison.OrdinalIgnoreCase) ? 1 :
@@ -461,6 +465,156 @@ public partial class SettingsPage : Page
     }
 
     /// <summary>
+    /// Registers the app to start at sign-in via the per-user HKCU Run key (no admin needed).
+    /// </summary>
+    private void StartWithWindowsCheckBox_Checked(object sender, RoutedEventArgs e)
+    {
+        var exePath = Environment.ProcessPath;
+        if (string.IsNullOrWhiteSpace(exePath))
+            return;
+        if (!StartupService.SetEnabled(true, exePath))
+            ToastService.ShowError("Could not enable Start with Windows.");
+    }
+
+    /// <summary>
+    /// Removes the per-user startup entry.
+    /// </summary>
+    private void StartWithWindowsCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        StartupService.SetEnabled(false, Environment.ProcessPath ?? string.Empty);
+    }
+
+    /// <summary>
+    /// Populates the Performance and Power controls from the current configuration.
+    /// </summary>
+    private void UpdatePerformanceSettings()
+    {
+        try
+        {
+            if (LowPowerModeCheckBox != null) LowPowerModeCheckBox.IsChecked = AppConfiguration.LowPowerMode;
+            if (PauseOnFullscreenCheckBox != null) PauseOnFullscreenCheckBox.IsChecked = AppConfiguration.AutoPauseOnFullscreen;
+            if (PauseOnMaximizedCheckBox != null) PauseOnMaximizedCheckBox.IsChecked = AppConfiguration.PauseOnMaximizedWindow;
+            if (PauseOnBatteryCheckBox != null) PauseOnBatteryCheckBox.IsChecked = AppConfiguration.PauseOnBattery;
+            if (PauseOnRemoteDesktopCheckBox != null) PauseOnRemoteDesktopCheckBox.IsChecked = AppConfiguration.PauseOnRemoteDesktop;
+            if (CoverageThresholdSlider != null) CoverageThresholdSlider.Value = AppConfiguration.MaximizedCoverageThresholdPercent;
+            if (FpsCapSlider != null) FpsCapSlider.Value = AppConfiguration.AnimationFpsCap;
+            if (RenderScaleSlider != null) RenderScaleSlider.Value = AppConfiguration.RenderScalePercent;
+            if (PerAppPauseTextBox != null) PerAppPauseTextBox.Text = string.Join(", ", AppConfiguration.PerAppPauseProcesses);
+            UpdateCoverageThresholdLabel();
+            UpdateFpsCapLabel();
+            UpdateRenderScaleLabel();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error updating performance settings: {ex.Message}");
+        }
+    }
+
+    private void UpdateCoverageThresholdLabel()
+    {
+        if (CoverageThresholdLabel != null)
+            CoverageThresholdLabel.Text = $"Maximized coverage threshold: {(int)(CoverageThresholdSlider?.Value ?? 95)}%";
+    }
+
+    private void UpdateFpsCapLabel()
+    {
+        if (FpsCapLabel != null)
+            FpsCapLabel.Text = $"Animation framerate cap: {(int)(FpsCapSlider?.Value ?? 30)} fps";
+    }
+
+    private void UpdateRenderScaleLabel()
+    {
+        if (RenderScaleLabel != null)
+            RenderScaleLabel.Text = $"Render scale: {(int)(RenderScaleSlider?.Value ?? 100)}%";
+    }
+
+    private void LowPowerModeCheckBox_Checked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.LowPowerMode = true;
+    }
+
+    private void LowPowerModeCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.LowPowerMode = false;
+    }
+
+    private void PauseOnFullscreenCheckBox_Checked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.AutoPauseOnFullscreen = true;
+    }
+
+    private void PauseOnFullscreenCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.AutoPauseOnFullscreen = false;
+    }
+
+    private void PauseOnMaximizedCheckBox_Checked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.PauseOnMaximizedWindow = true;
+    }
+
+    private void PauseOnMaximizedCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.PauseOnMaximizedWindow = false;
+    }
+
+    private void PauseOnBatteryCheckBox_Checked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.PauseOnBattery = true;
+    }
+
+    private void PauseOnBatteryCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.PauseOnBattery = false;
+    }
+
+    private void PauseOnRemoteDesktopCheckBox_Checked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.PauseOnRemoteDesktop = true;
+    }
+
+    private void PauseOnRemoteDesktopCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        AppConfiguration.PauseOnRemoteDesktop = false;
+    }
+
+    private void CoverageThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        AppConfiguration.MaximizedCoverageThresholdPercent = (int)e.NewValue;
+        UpdateCoverageThresholdLabel();
+    }
+
+    private void FpsCapSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        AppConfiguration.AnimationFpsCap = (int)e.NewValue;
+        UpdateFpsCapLabel();
+    }
+
+    private void RenderScaleSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        AppConfiguration.RenderScalePercent = (int)e.NewValue;
+        UpdateRenderScaleLabel();
+    }
+
+    /// <summary>
+    /// Parses the comma/semicolon-separated process list into the per-app pause configuration.
+    /// </summary>
+    private void PerAppPauseTextBox_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+    {
+        try
+        {
+            var names = (PerAppPauseTextBox?.Text ?? string.Empty)
+                .Split(new[] { ',', ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+            AppConfiguration.PerAppPauseProcesses = names;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error parsing per-app pause list: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Updates the monitor settings UI with current configuration.
     /// </summary>
     private void UpdateMonitorSettings()
@@ -498,7 +652,7 @@ public partial class SettingsPage : Page
         {
             if (MonitorCheckboxesPanel == null)
                 return;
-                
+
             MonitorCheckboxesPanel.Children.Clear();
 
             var monitors = _monitorService.GetAllMonitors();
@@ -549,7 +703,7 @@ public partial class SettingsPage : Page
             if (MonitorModeComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string mode)
             {
                 AppConfiguration.MultiMonitorMode = mode;
-                
+
                 // Update monitor selection panel visibility
                 // Only show checkboxes for "All" mode (per-monitor selection)
                 if (MonitorSelectionPanel != null)

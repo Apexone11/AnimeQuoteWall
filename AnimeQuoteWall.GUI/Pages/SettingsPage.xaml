@@ -83,6 +83,14 @@
                               Checked="AutoSaveHistoryCheckBox_Checked"
                               Unchecked="AutoSaveHistoryCheckBox_Unchecked"/>
 
+                    <CheckBox x:Name="StartWithWindowsCheckBox"
+                              Content="Start AnimeQuoteWall when Windows starts"
+                              Style="{StaticResource ModernCheckBox}"
+                              Margin="0,0,0,12"
+                              Checked="StartWithWindowsCheckBox_Checked"
+                              Unchecked="StartWithWindowsCheckBox_Unchecked"
+                              ToolTip="Adds a per-user startup entry (no administrator rights required)."/>
+
                     <Separator Margin="0,8,0,12" Background="{DynamicResource BorderColor}"/>
 
                     <TextBlock Text="Advanced Features"
@@ -106,6 +114,116 @@
                               Checked="EnablePerMonitorApplyCheckBox_Checked"
                               Unchecked="EnablePerMonitorApplyCheckBox_Unchecked"
                               ToolTip="Allow applying different wallpapers to different monitors."/>
+                </StackPanel>
+            </Border>
+
+            <!-- Performance and Power Settings Card -->
+            <Border Style="{StaticResource ModernCard}" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource TextPrimary}"
+                               Margin="0,0,0,18">
+                        <InlineUIContainer>
+                            <iconPacks:PackIconMaterial Kind="SpeedometerSlow" Width="18" Height="18" VerticalAlignment="Center"/>
+                        </InlineUIContainer>
+                        <Run Text=" Performance and Power"/>
+                    </TextBlock>
+
+                    <CheckBox x:Name="LowPowerModeCheckBox"
+                              Content="Low-Power mode (caps framerate, disables heavy effects, enables all pause rules)"
+                              Style="{StaticResource ModernCheckBox}"
+                              Margin="0,0,0,14"
+                              Checked="LowPowerModeCheckBox_Checked"
+                              Unchecked="LowPowerModeCheckBox_Unchecked"
+                              ToolTip="Recommended for laptops and low-end machines."
+                              AutomationProperties.Name="Enable Low-Power mode"/>
+
+                    <TextBlock Text="Pause wallpaper rotation and animation when:"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextSecondary}"
+                               Margin="0,0,0,10"/>
+
+                    <CheckBox x:Name="PauseOnFullscreenCheckBox"
+                              Content="A fullscreen app is running (games, movies)"
+                              Style="{StaticResource ModernCheckBox}"
+                              Margin="0,0,0,10"
+                              Checked="PauseOnFullscreenCheckBox_Checked"
+                              Unchecked="PauseOnFullscreenCheckBox_Unchecked"/>
+                    <CheckBox x:Name="PauseOnMaximizedCheckBox"
+                              Content="A window covers most of the screen (maximized)"
+                              Style="{StaticResource ModernCheckBox}"
+                              Margin="0,0,0,10"
+                              Checked="PauseOnMaximizedCheckBox_Checked"
+                              Unchecked="PauseOnMaximizedCheckBox_Unchecked"/>
+                    <CheckBox x:Name="PauseOnBatteryCheckBox"
+                              Content="The device is on battery power"
+                              Style="{StaticResource ModernCheckBox}"
+                              Margin="0,0,0,10"
+                              Checked="PauseOnBatteryCheckBox_Checked"
+                              Unchecked="PauseOnBatteryCheckBox_Unchecked"/>
+                    <CheckBox x:Name="PauseOnRemoteDesktopCheckBox"
+                              Content="In a Remote Desktop session"
+                              Style="{StaticResource ModernCheckBox}"
+                              Margin="0,0,0,14"
+                              Checked="PauseOnRemoteDesktopCheckBox_Checked"
+                              Unchecked="PauseOnRemoteDesktopCheckBox_Unchecked"/>
+
+                    <StackPanel Margin="0,0,0,14">
+                        <TextBlock x:Name="CoverageThresholdLabel"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   Margin="0,0,0,4"/>
+                        <Slider x:Name="CoverageThresholdSlider"
+                                Minimum="50" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
+                                Width="280" HorizontalAlignment="Left"
+                                ValueChanged="CoverageThresholdSlider_ValueChanged"
+                                AutomationProperties.Name="Maximized coverage threshold percent"/>
+                    </StackPanel>
+
+                    <TextBlock Text="Always pause for these apps (process names, comma-separated; .exe optional):"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextSecondary}"
+                               Margin="0,0,0,6"
+                               TextWrapping="Wrap"/>
+                    <TextBox x:Name="PerAppPauseTextBox"
+                             Padding="10"
+                             Margin="0,0,0,4"
+                             Background="{DynamicResource HoverBackground}"
+                             BorderBrush="{DynamicResource BorderColor}"
+                             BorderThickness="1"
+                             FontSize="13"
+                             Foreground="{DynamicResource TextPrimary}"
+                             LostKeyboardFocus="PerAppPauseTextBox_LostKeyboardFocus"
+                             ToolTip="Example: chrome, photoshop, obs64"
+                             AutomationProperties.Name="Per-application pause list"/>
+
+                    <Separator Margin="0,14,0,14" Background="{DynamicResource BorderColor}"/>
+
+                    <StackPanel Margin="0,0,0,14">
+                        <TextBlock x:Name="FpsCapLabel"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   Margin="0,0,0,4"/>
+                        <Slider x:Name="FpsCapSlider"
+                                Minimum="5" Maximum="60" TickFrequency="5" IsSnapToTickEnabled="True"
+                                Width="280" HorizontalAlignment="Left"
+                                ValueChanged="FpsCapSlider_ValueChanged"
+                                AutomationProperties.Name="Animation framerate cap"/>
+                    </StackPanel>
+
+                    <StackPanel>
+                        <TextBlock x:Name="RenderScaleLabel"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   Margin="0,0,0,4"/>
+                        <Slider x:Name="RenderScaleSlider"
+                                Minimum="50" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
+                                Width="280" HorizontalAlignment="Left"
+                                ValueChanged="RenderScaleSlider_ValueChanged"
+                                AutomationProperties.Name="Render scale percent"/>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 

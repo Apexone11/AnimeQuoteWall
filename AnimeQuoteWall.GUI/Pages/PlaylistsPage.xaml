@@ -97,7 +97,7 @@
                                     CornerRadius="10"
                                     Cursor="Hand">
                                 <Border.Effect>
-                                    <DropShadowEffect Color="#1E293B" Opacity="0.04" BlurRadius="6" ShadowDepth="1"/>
+                                    <DropShadowEffect Color="{DynamicResource ShadowColor}" Opacity="0.04" BlurRadius="6" ShadowDepth="1"/>
                                 </Border.Effect>
                                 <Grid>
                                     <Grid.ColumnDefinitions>

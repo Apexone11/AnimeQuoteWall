@@ -187,7 +187,7 @@ See `CONTRIBUTING.md`. The short version:
 
 MIT. See `LICENSE`.
 
-The bundled FFmpeg binary is provided under its own license (LGPL v2.1+). MahApps.Metro.IconPacks (MIT), Magick.NET (Apache-2.0), SixLabors.ImageSharp (Apache-2.0/Six Labors Split License).
+The bundled FFmpeg binary is provided under its own license (LGPL v2.1+) and is invoked as a separate process, not linked. MahApps.Metro.IconPacks (MIT), Magick.NET (Apache-2.0).
 
 ---
 

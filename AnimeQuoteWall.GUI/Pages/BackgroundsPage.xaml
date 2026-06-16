@@ -146,7 +146,7 @@
                                         Cursor="Hand"
                                         Height="92">
                                     <Border.Effect>
-                                        <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="8" ShadowDepth="1"/>
+                                        <DropShadowEffect Color="{DynamicResource ShadowColor}" Opacity="0.08" BlurRadius="8" ShadowDepth="1"/>
                                     </Border.Effect>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <Border Background="{DynamicResource HoverBackground}"

@@ -28,12 +28,12 @@ internal static class StringEncryption
         {
             var data = Convert.FromBase64String(encrypted);
             var decrypted = new byte[data.Length];
-            
+
             for (int i = 0; i < data.Length; i++)
             {
                 decrypted[i] = (byte)(data[i] ^ _key[i % _key.Length]);
             }
-            
+
             return Encoding.UTF8.GetString(decrypted);
         }
         catch
@@ -56,12 +56,12 @@ internal static class StringEncryption
 
         var data = Encoding.UTF8.GetBytes(plainText);
         var encrypted = new byte[data.Length];
-        
+
         for (int i = 0; i < data.Length; i++)
         {
             encrypted[i] = (byte)(data[i] ^ _key[i % _key.Length]);
         }
-        
+
         return Convert.ToBase64String(encrypted);
     }
 }
@@ -81,10 +81,10 @@ internal static class ObfuscationHelper
             // Simple integrity check - verify critical methods exist
             var type = Type.GetType("AnimeQuoteWall.Core.Services.WallpaperService");
             if (type == null) return false;
-            
-            var method = type.GetMethod("CreateWallpaperImage", 
+
+            var method = type.GetMethod("CreateWallpaperImage",
                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-            
+
             return method != null;
         }
         catch
@@ -103,14 +103,14 @@ internal static class ObfuscationHelper
             // Check if assembly has been modified
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             var location = assembly.Location;
-            
+
             if (string.IsNullOrEmpty(location))
                 return true; // Allow in-memory assemblies (for testing)
-            
+
             var fileInfo = new System.IO.FileInfo(location);
             var lastWrite = fileInfo.LastWriteTime;
             var now = DateTime.Now;
-            
+
             // Basic check: file shouldn't be modified after compilation
             // (This is a simple check - for production, use code signing)
             return true; // Always pass for now - implement stronger checks for Steam release

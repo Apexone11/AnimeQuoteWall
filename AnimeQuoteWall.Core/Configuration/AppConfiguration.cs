@@ -34,14 +34,22 @@ public class UserSettings
 
     // Performance settings
     public bool AutoPauseOnFullscreen { get; set; } = true; // Automatically pause playlists when fullscreen apps are running
+    public bool PauseOnBattery { get; set; } = false; // Pause animation/rotation when the device is on battery power
+    public bool PauseOnMaximizedWindow { get; set; } = false; // Pause when a foreground window covers most of the screen
+    public int MaximizedCoverageThresholdPercent { get; set; } = 95; // Screen-coverage percent that counts as "maximized"
+    public bool PauseOnRemoteDesktop { get; set; } = true; // Pause during Remote Desktop sessions to save bandwidth/CPU
+    public List<string> PerAppPauseProcesses { get; set; } = new(); // Foreground process names (no extension) that force a pause
+    public bool LowPowerMode { get; set; } = false; // One-click low-power profile: caps FPS, disables heavy effects, enables all pause rules
+    public int AnimationFpsCap { get; set; } = 30; // Cap for in-app/desktop animation framerate
+    public int RenderScalePercent { get; set; } = 100; // Downscale render resolution (50-100) to bound GPU/CPU use
 
     // Multi-monitor settings
     public string MultiMonitorMode { get; set; } = "Primary"; // "Primary", "All", "Span"
     public List<int> EnabledMonitorIndices { get; set; } = new(); // List of monitor indices to use (empty = all)
-    
+
     // Per-monitor wallpaper paths (monitor index -> wallpaper path)
     public Dictionary<int, string> PerMonitorWallpaperPaths { get; set; } = new();
-    
+
     // Feature flags
     public bool EnableAnimatedApply { get; set; } = true;
     public bool EnablePerMonitorApply { get; set; } = true;
@@ -54,6 +62,11 @@ public class AppConfiguration
 {
     private static UserSettings? _userSettings;
     private static readonly string _settingsFilePath;
+
+    // Guards lazy load and serializes saves so the UI thread and the background PlaylistWorker
+    // cannot interleave writes to settings.json (Monitor is re-entrant, so LoadSettings may
+    // call SaveSettings while holding the lock).
+    private static readonly object _settingsLock = new();
 
     static AppConfiguration()
     {
@@ -345,10 +358,10 @@ public class AppConfiguration
 
             using var key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
             if (key == null) return false;
-            
+
             var valueObj = key.GetValue("AppsUseLightTheme");
             if (valueObj == null) return false;
-            
+
             if (valueObj is int i) return i == 0; // 0 = dark, 1 = light
             if (valueObj is long l) return l == 0;
             return false;
@@ -562,21 +575,29 @@ public class AppConfiguration
     /// </summary>
     private static void SaveSettings()
     {
-        try
+        // Serialize concurrent saves and write atomically (temp file + move) so a concurrent
+        // reader can never observe a half-written settings.json.
+        lock (_settingsLock)
         {
-            var directory = Path.GetDirectoryName(_settingsFilePath);
-            if (!string.IsNullOrEmpty(directory))
+            try
             {
-                Directory.CreateDirectory(directory);
-            }
+                var directory = Path.GetDirectoryName(_settingsFilePath);
+                if (!string.IsNullOrEmpty(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
 
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            var json = JsonSerializer.Serialize(_userSettings, options);
-            File.WriteAllText(_settingsFilePath, json);
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Failed to save settings: {ex.Message}");
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var json = JsonSerializer.Serialize(_userSettings, options);
+
+                var tempPath = _settingsFilePath + ".tmp";
+                File.WriteAllText(tempPath, json);
+                File.Move(tempPath, _settingsFilePath, overwrite: true);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to save settings: {ex.Message}");
+            }
         }
     }
 
@@ -597,6 +618,72 @@ public class AppConfiguration
         get { LoadSettings(); return _userSettings?.AutoPauseOnFullscreen ?? true; }
         set { LoadSettings(); if (_userSettings != null) { _userSettings.AutoPauseOnFullscreen = value; SaveSettings(); } }
     }
+
+    /// <summary>Gets or sets whether to pause animation/rotation while the device is on battery power.</summary>
+    public static bool PauseOnBattery
+    {
+        get { LoadSettings(); return _userSettings?.PauseOnBattery ?? false; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.PauseOnBattery = value; SaveSettings(); } }
+    }
+
+    /// <summary>Gets or sets whether to pause when a foreground window covers most of the screen.</summary>
+    public static bool PauseOnMaximizedWindow
+    {
+        get { LoadSettings(); return _userSettings?.PauseOnMaximizedWindow ?? false; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.PauseOnMaximizedWindow = value; SaveSettings(); } }
+    }
+
+    /// <summary>Gets or sets the screen-coverage percent (50-100) that counts as a maximized window.</summary>
+    public static int MaximizedCoverageThresholdPercent
+    {
+        get { LoadSettings(); return Math.Clamp(_userSettings?.MaximizedCoverageThresholdPercent ?? 95, 50, 100); }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.MaximizedCoverageThresholdPercent = Math.Clamp(value, 50, 100); SaveSettings(); } }
+    }
+
+    /// <summary>Gets or sets whether to pause during Remote Desktop sessions to save bandwidth and CPU.</summary>
+    public static bool PauseOnRemoteDesktop
+    {
+        get { LoadSettings(); return _userSettings?.PauseOnRemoteDesktop ?? true; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.PauseOnRemoteDesktop = value; SaveSettings(); } }
+    }
+
+    /// <summary>Gets or sets the foreground process names (without extension) that force a pause.</summary>
+    public static List<string> PerAppPauseProcesses
+    {
+        get { LoadSettings(); return _userSettings?.PerAppPauseProcesses ?? new List<string>(); }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.PerAppPauseProcesses = value ?? new List<string>(); SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets the one-click low-power profile. When enabled, the pause policy treats
+    /// battery/maximized/RDP rules as active and the effective FPS cap is lowered, regardless
+    /// of the individual toggles. See <see cref="EffectiveAnimationFpsCap"/>.
+    /// </summary>
+    public static bool LowPowerMode
+    {
+        get { LoadSettings(); return _userSettings?.LowPowerMode ?? false; }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.LowPowerMode = value; SaveSettings(); } }
+    }
+
+    /// <summary>Gets or sets the animation framerate cap (5-60 fps).</summary>
+    public static int AnimationFpsCap
+    {
+        get { LoadSettings(); return Math.Clamp(_userSettings?.AnimationFpsCap ?? 30, 5, 60); }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.AnimationFpsCap = Math.Clamp(value, 5, 60); SaveSettings(); } }
+    }
+
+    /// <summary>Gets or sets the render-scale percent (50-100); lower values reduce GPU/CPU cost.</summary>
+    public static int RenderScalePercent
+    {
+        get { LoadSettings(); return Math.Clamp(_userSettings?.RenderScalePercent ?? 100, 50, 100); }
+        set { LoadSettings(); if (_userSettings != null) { _userSettings.RenderScalePercent = Math.Clamp(value, 50, 100); SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// The effective animation FPS cap after applying Low-Power mode. In Low-Power mode the
+    /// cap is the smaller of the user's cap and 20 fps, to bound battery and CPU use.
+    /// </summary>
+    public static int EffectiveAnimationFpsCap => LowPowerMode ? Math.Min(AnimationFpsCap, 20) : AnimationFpsCap;
 
     /// <summary>
     /// Gets or sets the multi-monitor mode.
@@ -664,7 +751,7 @@ public class AppConfiguration
             {
                 _userSettings.PerMonitorWallpaperPaths = new Dictionary<int, string>();
             }
-            
+
             // If wallpaperPath is empty or null, remove the key instead of storing empty string
             if (string.IsNullOrWhiteSpace(wallpaperPath))
             {
@@ -674,11 +761,11 @@ public class AppConfiguration
             {
                 _userSettings.PerMonitorWallpaperPaths[monitorIndex] = wallpaperPath;
             }
-            
+
             SaveSettings();
         }
     }
-    
+
     /// <summary>
     /// Clears the wallpaper path for a specific monitor.
     /// </summary>
@@ -700,7 +787,10 @@ public class AppConfiguration
     public static Dictionary<int, string> GetAllMonitorWallpaperPaths()
     {
         LoadSettings();
-        return _userSettings?.PerMonitorWallpaperPaths ?? new Dictionary<int, string>();
+        // Return a copy, not the live dictionary, so callers cannot mutate shared state.
+        return _userSettings?.PerMonitorWallpaperPaths is { } paths
+            ? new Dictionary<int, string>(paths)
+            : new Dictionary<int, string>();
     }
 
     /// <summary>
@@ -713,7 +803,7 @@ public class AppConfiguration
         LoadSettings();
         var baseDir = DefaultBaseDirectory;
         var custom = _userSettings?.CustomOutputPath;
-        
+
         if (!string.IsNullOrWhiteSpace(custom))
         {
             var fullPath = Path.GetFullPath(custom);
@@ -728,7 +818,7 @@ public class AppConfiguration
                 return Path.Combine(dir ?? DefaultBaseDirectory, $"monitor_{monitorIndex}.png");
             }
         }
-        
+
         return Path.Combine(baseDir, $"monitor_{monitorIndex}.png");
     }
 
@@ -742,7 +832,7 @@ public class AppConfiguration
         LoadSettings();
         var baseDir = DefaultBaseDirectory;
         var custom = _userSettings?.CustomOutputPath;
-        
+
         if (!string.IsNullOrWhiteSpace(custom))
         {
             var fullPath = Path.GetFullPath(custom);
@@ -757,7 +847,7 @@ public class AppConfiguration
                 return Path.Combine(dir ?? DefaultBaseDirectory, $"monitor_{monitorIndex}_previous.png");
             }
         }
-        
+
         return Path.Combine(baseDir, $"monitor_{monitorIndex}_previous.png");
     }
 

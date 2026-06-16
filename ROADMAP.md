@@ -1,8 +1,8 @@
-# 🗺️ Roadmap
+# Roadmap
 
 This roadmap outlines planned fixes and improvements. We're focusing on refining existing features rather than adding major new ones.
 
-## 🔧 Bug Fixes & Stability
+## Bug Fixes and Stability
 
 ### High Priority
 - [ ] Fix per-monitor wallpaper feature (currently disabled)
@@ -17,7 +17,7 @@ This roadmap outlines planned fixes and improvements. We're focusing on refining
 - [ ] Better handling of corrupted image files
 - [ ] Settings validation improvements
 
-## ✨ Feature Improvements
+## Feature Improvements
 
 ### Existing Features to Enhance
 - [ ] **Quote Management**
@@ -60,13 +60,13 @@ This roadmap outlines planned fixes and improvements. We're focusing on refining
 - [ ] System tray icon with quick actions
 - [ ] Startup with Windows option
 
-## 📚 Documentation
+## Documentation
 - [ ] Video tutorials for new users
 - [ ] FAQ page for common questions
 - [ ] Troubleshooting guide
 - [ ] Performance tips guide
 
-## 🎯 Future Considerations
+## Future Considerations
 
 These are ideas we might explore later:
 - Steam Workshop integration (if releasing on Steam)
@@ -75,14 +75,14 @@ These are ideas we might explore later:
 - Community quote sharing (privacy-respecting)
 - Portable mode (run from USB drive)
 
-## 📅 Timeline
+## Timeline
 
 We don't have fixed dates, but general priorities:
 1. **Next Update (v1.3.2)** - High priority bug fixes
 2. **Following Update (v1.4.0)** - Quote management improvements
 3. **Future Updates** - UI enhancements and performance
 
-## 💡 Suggest Features
+## Suggest Features
 
 Have an idea? Open an issue on GitHub with the `enhancement` label!
 

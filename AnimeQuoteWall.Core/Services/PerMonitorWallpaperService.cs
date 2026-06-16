@@ -120,7 +120,7 @@ public class PerMonitorWallpaperService : IDisposable
     public List<string> GetMonitorDevicePaths()
     {
         var paths = new List<string>();
-        
+
         if (!IsAvailable)
             return paths;
 
@@ -236,7 +236,7 @@ public class PerMonitorWallpaperService : IDisposable
         try
         {
             var devicePaths = GetMonitorDevicePaths();
-            
+
             // Apply all wallpapers in sequence without delays
             // Windows will batch these operations internally
             foreach (var kvp in monitorWallpaperMap)

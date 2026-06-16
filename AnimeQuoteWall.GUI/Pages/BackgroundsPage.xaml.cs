@@ -40,7 +40,7 @@ public partial class BackgroundsPage : Page
     /// Service for managing background images.
     /// </summary>
     private readonly IBackgroundService _backgroundService;
-    
+
     /// <summary>
     /// Cancellation token source for async operations.
     /// </summary>
@@ -120,8 +120,8 @@ public partial class BackgroundsPage : Page
                             {
                                 FileName = Path.GetFileName(path),
                                 ImagePath = path,
-                                FileSize = sizeInMB < 1 
-                                    ? $"{(fileInfo.Length / 1024.0):F1} KB" 
+                                FileSize = sizeInMB < 1
+                                    ? $"{(fileInfo.Length / 1024.0):F1} KB"
                                     : $"{sizeInMB:F2} MB"
                             };
                         }
@@ -180,7 +180,7 @@ public partial class BackgroundsPage : Page
                     LoadingIndicator.Visibility = Visibility.Collapsed;
                 if (EmptyStateBorder != null)
                     EmptyStateBorder.Visibility = Visibility.Visible;
-                
+
                 System.Windows.MessageBox.Show(
                     $"Failed to load backgrounds: {ex.Message}\n\nPlease check that the backgrounds folder exists and is accessible.",
                     "Error Loading Backgrounds",

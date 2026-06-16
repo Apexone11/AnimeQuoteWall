@@ -137,7 +137,7 @@ public static class WallpaperSettingHelper
 
             var extension = Path.GetExtension(imagePath).ToLowerInvariant();
             var supportedExtensions = new[] { ".bmp", ".jpg", ".jpeg", ".png", ".gif" };
-            
+
             if (!Array.Exists(supportedExtensions, ext => ext == extension))
                 return false;
 

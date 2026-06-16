@@ -128,7 +128,7 @@
                                 VerticalAlignment="Center"
                                 DockPanel.Dock="Left">
                             <Border.Effect>
-                                <DropShadowEffect Color="#6366F1" Opacity="0.5" BlurRadius="10" ShadowDepth="0"/>
+                                <DropShadowEffect Color="{DynamicResource AccentGlowColor}" Opacity="0.5" BlurRadius="10" ShadowDepth="0"/>
                             </Border.Effect>
                             <Image Source="Resources/appicon.png"
                                    Stretch="Uniform"

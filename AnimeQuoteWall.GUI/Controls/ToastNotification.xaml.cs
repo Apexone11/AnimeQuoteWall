@@ -18,6 +18,12 @@ public partial class ToastNotification : System.Windows.Controls.UserControl
     /// </summary>
     private const int AutoDismissDuration = 4000;
 
+    /// <summary>The auto-dismiss timer; stored so it can be stopped on an early manual dismiss.</summary>
+    private DispatcherTimer? _timer;
+
+    /// <summary>Guards against running the dismiss animation/event more than once.</summary>
+    private bool _dismissed;
+
     /// <summary>
     /// Event raised when the toast is dismissed.
     /// </summary>
@@ -58,16 +64,13 @@ public partial class ToastNotification : System.Windows.Controls.UserControl
         if (System.Windows.Application.Current?.TryFindResource(brushKey) is System.Windows.Media.Brush themedBrush)
             IconTextBlock.Foreground = themedBrush;
 
-        var timer = new DispatcherTimer
+        _timer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(AutoDismissDuration)
         };
-        timer.Tick += (_, _) =>
-        {
-            timer.Stop();
-            Dismiss();
-        };
-        timer.Start();
+        // Dismiss() stops the timer, so a manual close before the tick leaves no live timer.
+        _timer.Tick += (_, _) => Dismiss();
+        _timer.Start();
     }
 
     /// <summary>
@@ -75,6 +78,13 @@ public partial class ToastNotification : System.Windows.Controls.UserControl
     /// </summary>
     public void Dismiss()
     {
+        // Idempotent: both a manual close and the auto-dismiss timer can call this. Stop the
+        // timer and guard so the fade-out animation and Dismissed event run exactly once.
+        if (_dismissed)
+            return;
+        _dismissed = true;
+        _timer?.Stop();
+
         var fadeOut = new DoubleAnimation
         {
             From = 1.0,

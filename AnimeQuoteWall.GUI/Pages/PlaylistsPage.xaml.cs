@@ -37,7 +37,7 @@ public partial class PlaylistsPage : Page
         try
         {
             _playlists = await _playlistService.LoadAllPlaylistsAsync().ConfigureAwait(false);
-            
+
             Dispatcher.Invoke(() =>
             {
                 UpdatePlaylistList();
@@ -79,7 +79,7 @@ public partial class PlaylistsPage : Page
             if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.PlaylistName))
             {
                 var playlist = await _playlistService.CreatePlaylistAsync(dialog.PlaylistName).ConfigureAwait(false);
-                
+
                 // Open edit dialog to configure the playlist
                 var editDialog = new PlaylistEditDialog(playlist, _playlistService, _scheduleService);
                 if (editDialog.ShowDialog() == true)
@@ -152,10 +152,10 @@ public partial class PlaylistsPage : Page
     private void PlaylistsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         _selectedPlaylist = PlaylistsListBox?.SelectedItem as Playlist;
-        
+
         if (EditPlaylistButton != null)
             EditPlaylistButton.IsEnabled = _selectedPlaylist != null;
-        
+
         if (DeletePlaylistButton != null)
             DeletePlaylistButton.IsEnabled = _selectedPlaylist != null;
     }
@@ -177,7 +177,7 @@ public partial class PlaylistsPage : Page
                 {
                     await _playlistService.DisableAllPlaylistsAsync().ConfigureAwait(false);
                 }
-                
+
                 await LoadPlaylistsAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -392,7 +392,10 @@ public partial class PlaylistEditDialog : Window
 
                     _playlist.ScheduleTime = timeTextBox.Text.Trim();
 
-                    await _playlistService.UpdatePlaylistAsync(_playlist).ConfigureAwait(false);
+                    // GUI code: do NOT use ConfigureAwait(false) here. DialogResult and Close()
+                    // must run on the UI thread, so the continuation has to resume on the
+                    // dispatcher (CLAUDE.md Section 1).
+                    await _playlistService.UpdatePlaylistAsync(_playlist);
                     DialogResult = true;
                     Close();
                 }

@@ -32,4 +32,56 @@
     <SolidColorBrush x:Key="DisabledForeground" Color="#4B5563"/>
     <SolidColorBrush x:Key="DisabledBackground" Color="#1F2937"/>
     <SolidColorBrush x:Key="ScrimBackground"    Color="#80000000"/>
+
+    <!-- Effect / overlay tokens. Theme-aware so DropShadowEffect.Color and media
+         overlays follow light/dark switching. Color resources (not brushes) are used
+         where the consumer property is of type Color (e.g. DropShadowEffect.Color). -->
+    <Color x:Key="ShadowColor">#000000</Color>
+    <Color x:Key="AccentGlowColor">#818CF8</Color>
+    <Color x:Key="ScrimColor">#80000000</Color>
+    <SolidColorBrush x:Key="ScrimBackgroundSoft" Color="#66000000"/>
+    <SolidColorBrush x:Key="PrimaryOverlayBrush" Color="#CC818CF8"/>
+
+    <!-- Brand button gradient ramps. These are intentionally identical in light and
+         dark themes so the primary/success/danger/warning buttons stay vibrant and
+         consistent. Color resources are used because GradientStop.Color and
+         DropShadowEffect.Color are of type Color. -->
+    <!-- Primary (indigo) -->
+    <Color x:Key="PrimaryButtonGradientTop">#818CF8</Color>
+    <Color x:Key="PrimaryButtonGradientBottom">#6366F1</Color>
+    <Color x:Key="PrimaryButtonGlow">#6366F1</Color>
+    <Color x:Key="PrimaryButtonHoverTop">#9CA3F9</Color>
+    <Color x:Key="PrimaryButtonHoverBottom">#7C7DF3</Color>
+    <Color x:Key="PrimaryButtonHoverGlow">#818CF8</Color>
+    <Color x:Key="PrimaryButtonPressedTop">#6B73F0</Color>
+    <Color x:Key="PrimaryButtonPressedBottom">#4F46E5</Color>
+    <!-- Success (green) -->
+    <Color x:Key="SuccessButtonGradientTop">#34D399</Color>
+    <Color x:Key="SuccessButtonGradientBottom">#10B981</Color>
+    <Color x:Key="SuccessButtonGlow">#10B981</Color>
+    <Color x:Key="SuccessButtonHoverTop">#4ADE80</Color>
+    <Color x:Key="SuccessButtonHoverBottom">#22C55E</Color>
+    <Color x:Key="SuccessButtonHoverGlow">#22C55E</Color>
+    <Color x:Key="SuccessButtonPressedTop">#22C55E</Color>
+    <Color x:Key="SuccessButtonPressedBottom">#059669</Color>
+    <!-- Danger (red) -->
+    <Color x:Key="DangerButtonGradientTop">#F87171</Color>
+    <Color x:Key="DangerButtonGradientBottom">#EF4444</Color>
+    <Color x:Key="DangerButtonGlow">#EF4444</Color>
+    <Color x:Key="DangerButtonHoverTop">#FB7185</Color>
+    <Color x:Key="DangerButtonHoverBottom">#F43F5E</Color>
+    <Color x:Key="DangerButtonHoverGlow">#F43F5E</Color>
+    <Color x:Key="DangerButtonPressedTop">#F43F5E</Color>
+    <Color x:Key="DangerButtonPressedBottom">#DC2626</Color>
+    <!-- Warning (amber) -->
+    <Color x:Key="WarningButtonGradientTop">#FBBF24</Color>
+    <Color x:Key="WarningButtonGradientBottom">#F59E0B</Color>
+    <Color x:Key="WarningButtonGlow">#F59E0B</Color>
+    <Color x:Key="WarningButtonHoverTop">#FCD34D</Color>
+    <Color x:Key="WarningButtonHoverBottom">#FBBF24</Color>
+    <Color x:Key="WarningButtonHoverGlow">#FBBF24</Color>
+    <!-- Warning button uses dark text on the amber fill for contrast. Brush type. -->
+    <SolidColorBrush x:Key="WarningButtonForeground" Color="#1C1917"/>
+    <!-- Toggle-on border accent (green). Brush type (BorderBrush). -->
+    <SolidColorBrush x:Key="ToggleCheckedBorderBrush" Color="#22C55E"/>
 </ResourceDictionary>

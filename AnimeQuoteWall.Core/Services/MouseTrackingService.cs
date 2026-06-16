@@ -43,7 +43,7 @@ public class MouseTrackingService
         {
             return new PointF(0, 0);
         }
-        
+
         var mousePos = GetMousePosition();
         var centerX = screenWidth / 2f;
         var centerY = screenHeight / 2f;

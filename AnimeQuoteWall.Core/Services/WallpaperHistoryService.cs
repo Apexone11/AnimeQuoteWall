@@ -27,7 +27,7 @@ public class WallpaperHistoryService
     /// Default: %LOCALAPPDATA%\AnimeQuotes\history\
     /// </summary>
     private static readonly string HistoryDirectory = AppConfiguration.HistoryDirectory;
-    
+
     /// <summary>
     /// Path to the metadata JSON file containing wallpaper information.
     /// </summary>

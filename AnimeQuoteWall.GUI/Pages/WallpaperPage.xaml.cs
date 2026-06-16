@@ -44,17 +44,17 @@ public partial class WallpaperPage : Page
     /// Service for managing quotes.
     /// </summary>
     private readonly IQuoteService _quoteService;
-    
+
     /// <summary>
     /// Service for managing background images.
     /// </summary>
     private readonly IBackgroundService _backgroundService;
-    
+
     /// <summary>
     /// Service for generating wallpaper images.
     /// </summary>
     private readonly IWallpaperService _wallpaperService;
-    
+
     /// <summary>
     /// Service for managing wallpaper history.
     /// </summary>
@@ -64,22 +64,22 @@ public partial class WallpaperPage : Page
     /// Service for detecting monitors.
     /// </summary>
     private readonly MonitorService _monitorService = new MonitorService();
-    
+
     /// <summary>
     /// List of available quotes loaded from file.
     /// </summary>
     private System.Collections.Generic.List<Quote> _quotes = new();
-    
+
     /// <summary>
     /// Last quote used for generation (for history).
     /// </summary>
     private Quote? _lastGeneratedQuote;
-    
+
     /// <summary>
     /// Last background path used for generation (for history).
     /// </summary>
     private string? _lastBackgroundPath;
-    
+
     /// <summary>
     /// Last settings used for generation (for history).
     /// </summary>
@@ -130,7 +130,12 @@ public partial class WallpaperPage : Page
         {
             _quotes = await _quoteService.LoadQuotesAsync(AppConfiguration.QuotesFilePath).ConfigureAwait(false);
         }
-        catch { /* ignore errors */ }
+        catch (Exception ex)
+        {
+            // Do not silently swallow: a failed reload leaves _quotes stale, which previously
+            // hid corrupt-quotes-file failures (CLAUDE.md Sections 0 and 8).
+            System.Diagnostics.Debug.WriteLine($"WallpaperPage.RefreshQuotesAsync: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -151,7 +156,6 @@ public partial class WallpaperPage : Page
         {
             // Safety check: ensure button exists
             if (GenerateButton == null) return;
-            GenerateButton.IsEnabled = false;
 
             // Get available backgrounds
             var backgrounds = _backgroundService.GetAllBackgroundImages(AppConfiguration.BackgroundsDirectory);
@@ -170,11 +174,15 @@ public partial class WallpaperPage : Page
                 return;
             }
 
+            // All validation passed; disable the button only now so the early-return validation
+            // paths above can never leave it permanently disabled.
+            GenerateButton.IsEnabled = false;
+
             // Get selected monitor or use primary
             var selectedMonitor = GetSelectedMonitor();
             var targetMonitor = selectedMonitor ?? _monitorService.GetPrimaryMonitor()?.Index ?? 0;
             var monitor = _monitorService.GetMonitorByIndex(targetMonitor);
-            
+
             // Get monitor-specific resolution
             var monitorWidth = monitor?.Width ?? 1920;
             var monitorHeight = monitor?.Height ?? 1080;
@@ -205,7 +213,7 @@ public partial class WallpaperPage : Page
 
             // Get monitor-specific path
             var monitorPath = AppConfiguration.GetMonitorWallpaperFilePath(targetMonitor);
-            
+
             // Save current wallpaper as previous before generating new one (per-monitor)
             if (File.Exists(monitorPath))
             {
@@ -213,7 +221,7 @@ public partial class WallpaperPage : Page
                 {
                     var previousPath = AppConfiguration.GetMonitorPreviousWallpaperFilePath(targetMonitor);
                     File.Copy(monitorPath, previousPath, overwrite: true);
-                    
+
                     // Also save to global previous path for backward compatibility (primary monitor only)
                     if (monitor?.IsPrimary == true)
                     {
@@ -231,7 +239,7 @@ public partial class WallpaperPage : Page
 
             // Save to per-monitor path configuration
             AppConfiguration.SetMonitorWallpaperPath(targetMonitor, monitorPath);
-            
+
             // Also save to current path for backward compatibility (primary monitor only)
             if (monitor?.IsPrimary == true)
             {
@@ -274,7 +282,6 @@ public partial class WallpaperPage : Page
         try
         {
             if (GenerateAllMonitorsButton == null) return;
-            GenerateAllMonitorsButton.IsEnabled = false;
 
             var backgrounds = _backgroundService.GetAllBackgroundImages(AppConfiguration.BackgroundsDirectory);
 
@@ -296,6 +303,10 @@ public partial class WallpaperPage : Page
                 System.Windows.MessageBox.Show("No monitors detected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
+            // All validation passed; disable the button only now so the early-return paths
+            // above can never leave it permanently disabled.
+            GenerateAllMonitorsButton.IsEnabled = false;
 
             var generatedCount = 0;
             var errors = new List<string>();
@@ -387,7 +398,7 @@ public partial class WallpaperPage : Page
     private void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
         LoadCurrentWallpaper();
-            System.Windows.MessageBox.Show("Preview refreshed!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        System.Windows.MessageBox.Show("Preview refreshed!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     /// <summary>
@@ -402,35 +413,35 @@ public partial class WallpaperPage : Page
             var selectedMonitor = GetSelectedMonitor();
             var targetMonitor = selectedMonitor ?? _monitorService.GetPrimaryMonitor()?.Index ?? 0;
             var monitor = _monitorService.GetMonitorByIndex(targetMonitor);
-            
+
             // Get per-monitor wallpaper path for the selected monitor
             var currentPath = AppConfiguration.GetMonitorWallpaperPath(targetMonitor);
-            
+
             // Fallback to CurrentWallpaperPath for primary monitor (backward compatibility)
             if (string.IsNullOrEmpty(currentPath) && monitor?.IsPrimary == true)
             {
                 currentPath = AppConfiguration.CurrentWallpaperPath;
             }
-            
+
             // Get per-monitor previous wallpaper path
             var previousPath = AppConfiguration.GetMonitorPreviousWallpaperFilePath(targetMonitor);
-            
+
             // Fallback to global PreviousWallpaperPath for primary monitor (backward compatibility)
             if (!File.Exists(previousPath) && monitor?.IsPrimary == true)
             {
                 previousPath = AppConfiguration.PreviousWallpaperPath;
             }
-            
+
             // Delete current wallpaper if it exists
             if (!string.IsNullOrEmpty(currentPath) && File.Exists(currentPath))
             {
                 try
                 {
                     File.Delete(currentPath);
-                    
+
                     // Clear the per-monitor path from configuration
                     AppConfiguration.ClearMonitorWallpaperPath(targetMonitor);
-                    
+
                     // Also clear CurrentWallpaperPath if this is the primary monitor
                     if (monitor?.IsPrimary == true && File.Exists(AppConfiguration.CurrentWallpaperPath))
                     {
@@ -460,7 +471,7 @@ public partial class WallpaperPage : Page
                     MessageBoxImage.Information);
                 return;
             }
-            
+
             // Restore previous wallpaper if available (apply to the same monitor)
             if (!string.IsNullOrEmpty(previousPath) && File.Exists(previousPath))
             {
@@ -469,12 +480,12 @@ public partial class WallpaperPage : Page
                 try
                 {
                     File.Copy(previousPath, restoredPath, overwrite: true);
-                    
+
                     if (await SetWallpaperAsync(restoredPath, targetMonitor).ConfigureAwait(true))
                     {
                         // Update the per-monitor path configuration with the restored wallpaper
                         AppConfiguration.SetMonitorWallpaperPath(targetMonitor, restoredPath);
-                        
+
                         // Also update CurrentWallpaperPath if this is the primary monitor
                         if (monitor?.IsPrimary == true)
                         {
@@ -484,7 +495,7 @@ public partial class WallpaperPage : Page
                             }
                             catch { /* ignore if copy fails */ }
                         }
-                        
+
                         LoadCurrentWallpaper();
                         System.Windows.MessageBox.Show(
                             $"Removed generated wallpaper and restored previous wallpaper for {monitor?.Name ?? $"Monitor {targetMonitor}"}.",
@@ -551,7 +562,7 @@ public partial class WallpaperPage : Page
                 // Apply to specific monitor only - use that monitor's wallpaper
                 var monitor = _monitorService.GetMonitorByIndex(selectedMonitor.Value);
                 var monitorPath = AppConfiguration.GetMonitorWallpaperPath(selectedMonitor.Value);
-                
+
                 if (string.IsNullOrEmpty(monitorPath) || !File.Exists(monitorPath))
                 {
                     // Fallback to current path for primary monitor
@@ -559,14 +570,14 @@ public partial class WallpaperPage : Page
                     {
                         monitorPath = AppConfiguration.CurrentWallpaperPath;
                     }
-                    
+
                     if (string.IsNullOrEmpty(monitorPath) || !File.Exists(monitorPath))
                     {
                         System.Windows.MessageBox.Show($"No wallpaper found for {monitor?.Name ?? $"Monitor {selectedMonitor.Value}"}. Generate one first!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
                 }
-                
+
                 if (await SetWallpaperAsync(monitorPath, selectedMonitor.Value).ConfigureAwait(true))
                 {
                     System.Windows.MessageBox.Show($"Wallpaper applied to {monitor?.Name ?? $"Monitor {selectedMonitor.Value}"}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -586,14 +597,14 @@ public partial class WallpaperPage : Page
                     System.Windows.MessageBox.Show("No primary monitor detected.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-                
+
                 var wallpaperPath = AppConfiguration.CurrentWallpaperPath;
                 if (string.IsNullOrEmpty(wallpaperPath) || !File.Exists(wallpaperPath))
                 {
                     System.Windows.MessageBox.Show("No wallpaper found. Generate one first!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-                
+
                 if (await SetWallpaperAsync(wallpaperPath, primaryMonitor.Index).ConfigureAwait(true))
                 {
                     System.Windows.MessageBox.Show($"Wallpaper applied to {primaryMonitor.Name}.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -653,12 +664,15 @@ public partial class WallpaperPage : Page
                         bitmap.CacheOption = BitmapCacheOption.OnLoad;
                         bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                         bitmap.UriSource = new Uri(monitorPath, UriKind.Absolute);
+                        // Downsample to the preview width rather than decoding the full-resolution
+                        // wallpaper (e.g. 3840x2160) into memory for a small card (CLAUDE.md Section 5).
+                        bitmap.DecodePixelWidth = 480;
                         bitmap.EndInit();
                         bitmap.Freeze();
 
                         previewItem.PreviewImage = bitmap;
                         previewItem.WallpaperPath = monitorPath;
-                        
+
                         // Show monitor resolution as quote text placeholder
                         // Quote text can be enhanced later to load from history metadata
                         previewItem.QuoteText = $"{monitor.Width}x{monitor.Height}";
@@ -675,10 +689,10 @@ public partial class WallpaperPage : Page
             if (previewItems.Count > 0)
             {
                 MonitorPreviewsItemsControl.ItemsSource = previewItems;
-                
+
                 // Update grid columns based on available width
                 UpdateMonitorPreviewGridColumns();
-                
+
                 if (previewItems.Any(p => p.PreviewImage != null))
                 {
                     NoPreviewBorder.Visibility = Visibility.Collapsed;
@@ -765,12 +779,12 @@ public partial class WallpaperPage : Page
     /// Windows API constant: Set desktop wallpaper action.
     /// </summary>
     private const int SPI_SETDESKWALLPAPER = 20;
-    
+
     /// <summary>
     /// Windows API constant: Update INI file flag.
     /// </summary>
     private const int SPIF_UPDATEINIFILE = 0x01;
-    
+
     /// <summary>
     /// Windows API constant: Send change notification flag.
     /// </summary>
@@ -786,7 +800,7 @@ public partial class WallpaperPage : Page
             if (MonitorSelectionComboBox == null) return;
 
             MonitorSelectionComboBox.Items.Clear();
-            
+
             // Add default option
             var defaultItem = new ComboBoxItem
             {
@@ -806,7 +820,7 @@ public partial class WallpaperPage : Page
                     // Shorten long display names
                     displayName = displayName.Substring(0, 17) + "...";
                 }
-                
+
                 var item = new ComboBoxItem
                 {
                     Content = $"{displayName} ({monitor.Width}x{monitor.Height}){(monitor.IsPrimary ? " [Primary]" : "")}",
@@ -848,7 +862,9 @@ public partial class WallpaperPage : Page
             var animatedService = new AnimatedWallpaperService();
             if (await animatedService.IsWallpaperEngineAvailableAsync().ConfigureAwait(false))
             {
-                animatedService.ClearAnimatedWallpaper(monitorIndex);
+                // Run off the UI thread: ClearAnimatedWallpaper makes a synchronous HTTP call
+                // (up to a 5s timeout) and would otherwise freeze the dispatcher (CLAUDE.md S1/S5).
+                await Task.Run(() => animatedService.ClearAnimatedWallpaper(monitorIndex)).ConfigureAwait(false);
                 // Small delay to ensure Wallpaper Engine processes the clear command
                 await Task.Delay(300).ConfigureAwait(false);
             }
@@ -872,7 +888,7 @@ public partial class WallpaperPage : Page
             {
                 return AnimeQuoteWall.Core.Services.WallpaperSettingHelper.SetWallpaper(path, primaryMonitor.Index);
             }
-            
+
             // Fallback: apply to primary monitor using standard API
             return AnimeQuoteWall.Core.Services.WallpaperSettingHelper.SetWallpaper(path);
         }
@@ -1018,7 +1034,7 @@ public partial class WallpaperPage : Page
     {
         // Update grid columns when size changes
         UpdateMonitorPreviewGridColumns();
-        
+
         // Force layout update for monitor previews
         if (MonitorPreviewsItemsControl != null)
         {
@@ -1040,7 +1056,7 @@ public partial class WallpaperPage : Page
                 {
                     var monitors = _monitorService.GetAllMonitors();
                     var monitor = monitors.FirstOrDefault(m => m.Index == item.MonitorIndex);
-                    
+
                     if (monitor != null)
                     {
                         // Find and select the corresponding combo box item
