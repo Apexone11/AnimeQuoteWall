@@ -570,13 +570,22 @@ public class AppConfiguration
     }
 
     /// <summary>
-    /// Loads user settings from disk.
+    /// Loads user settings from disk. Thread-safe: double-checked under the settings lock so the
+    /// UI thread and the background worker cannot both initialize, or read a half-populated object.
     /// </summary>
     private static void LoadSettings()
     {
         if (_userSettings != null)
             return;
+        lock (_settingsLock)
+        {
+            if (_userSettings == null)
+                LoadSettingsCore();
+        }
+    }
 
+    private static void LoadSettingsCore()
+    {
         try
         {
             if (File.Exists(_settingsFilePath))
@@ -790,11 +799,15 @@ public class AppConfiguration
     public static string? GetMonitorWallpaperPath(int monitorIndex)
     {
         LoadSettings();
-        if (_userSettings?.PerMonitorWallpaperPaths != null && _userSettings.PerMonitorWallpaperPaths.ContainsKey(monitorIndex))
+        lock (_settingsLock)
         {
-            return _userSettings.PerMonitorWallpaperPaths[monitorIndex];
+            if (_userSettings?.PerMonitorWallpaperPaths != null
+                && _userSettings.PerMonitorWallpaperPaths.TryGetValue(monitorIndex, out var path))
+            {
+                return path;
+            }
+            return null;
         }
-        return null;
     }
 
     /// <summary>
@@ -805,22 +818,16 @@ public class AppConfiguration
     public static void SetMonitorWallpaperPath(int monitorIndex, string wallpaperPath)
     {
         LoadSettings();
-        if (_userSettings != null)
+        lock (_settingsLock)
         {
-            if (_userSettings.PerMonitorWallpaperPaths == null)
-            {
-                _userSettings.PerMonitorWallpaperPaths = new Dictionary<int, string>();
-            }
+            if (_userSettings == null) return;
+            _userSettings.PerMonitorWallpaperPaths ??= new Dictionary<int, string>();
 
             // If wallpaperPath is empty or null, remove the key instead of storing empty string
             if (string.IsNullOrWhiteSpace(wallpaperPath))
-            {
                 _userSettings.PerMonitorWallpaperPaths.Remove(monitorIndex);
-            }
             else
-            {
                 _userSettings.PerMonitorWallpaperPaths[monitorIndex] = wallpaperPath;
-            }
 
             SaveSettings();
         }
@@ -833,10 +840,13 @@ public class AppConfiguration
     public static void ClearMonitorWallpaperPath(int monitorIndex)
     {
         LoadSettings();
-        if (_userSettings?.PerMonitorWallpaperPaths != null)
+        lock (_settingsLock)
         {
-            _userSettings.PerMonitorWallpaperPaths.Remove(monitorIndex);
-            SaveSettings();
+            if (_userSettings?.PerMonitorWallpaperPaths != null)
+            {
+                _userSettings.PerMonitorWallpaperPaths.Remove(monitorIndex);
+                SaveSettings();
+            }
         }
     }
 
@@ -847,10 +857,14 @@ public class AppConfiguration
     public static Dictionary<int, string> GetAllMonitorWallpaperPaths()
     {
         LoadSettings();
-        // Return a copy, not the live dictionary, so callers cannot mutate shared state.
-        return _userSettings?.PerMonitorWallpaperPaths is { } paths
-            ? new Dictionary<int, string>(paths)
-            : new Dictionary<int, string>();
+        lock (_settingsLock)
+        {
+            // Return a copy, not the live dictionary, so callers cannot mutate shared state, and
+            // take the snapshot under the lock so no other thread mutates mid-enumeration.
+            return _userSettings?.PerMonitorWallpaperPaths is { } paths
+                ? new Dictionary<int, string>(paths)
+                : new Dictionary<int, string>();
+        }
     }
 
     /// <summary>

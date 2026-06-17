@@ -16,7 +16,9 @@ public sealed class TrayIconService : IDisposable
 {
     private readonly Window _window;
     private NotifyIcon? _notifyIcon;
+    private ContextMenuStrip? _menu;
     private Icon? _icon;
+    private bool _ownsIcon;
     private bool _disposed;
 
     /// <summary>Creates the tray service for the given main window.</summary>
@@ -28,18 +30,18 @@ public sealed class TrayIconService : IDisposable
     /// <summary>Creates the tray icon and begins listening for window minimize events.</summary>
     public void Initialize()
     {
-        var menu = new ContextMenuStrip();
-        menu.Items.Add("Open AnimeQuoteWall", null, (_, _) => ShowWindow());
-        menu.Items.Add("Hide to tray", null, (_, _) => _window.Hide());
-        menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Exit", null, (_, _) => System.Windows.Application.Current.Shutdown());
+        _menu = new ContextMenuStrip();
+        _menu.Items.Add("Open AnimeQuoteWall", null, (_, _) => ShowWindow());
+        _menu.Items.Add("Hide to tray", null, (_, _) => _window.Hide());
+        _menu.Items.Add(new ToolStripSeparator());
+        _menu.Items.Add("Exit", null, (_, _) => System.Windows.Application.Current.Shutdown());
 
         _icon = LoadAppIcon();
         _notifyIcon = new NotifyIcon
         {
             Text = "AnimeQuoteWall",
             Visible = true,
-            ContextMenuStrip = menu,
+            ContextMenuStrip = _menu,
             Icon = _icon
         };
         _notifyIcon.DoubleClick += (_, _) => ShowWindow();
@@ -63,7 +65,7 @@ public sealed class TrayIconService : IDisposable
         }
     }
 
-    private static Icon LoadAppIcon()
+    private Icon LoadAppIcon()
     {
         try
         {
@@ -72,13 +74,18 @@ public sealed class TrayIconService : IDisposable
             {
                 var extracted = Icon.ExtractAssociatedIcon(exe);
                 if (extracted != null)
+                {
+                    _ownsIcon = true; // we created this instance, so we may dispose it
                     return extracted;
+                }
             }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"TrayIconService.LoadAppIcon: {ex.Message}");
         }
+        // SystemIcons.Application is a shared, framework-owned handle; it must NOT be disposed.
+        _ownsIcon = false;
         return SystemIcons.Application;
     }
 
@@ -114,7 +121,12 @@ public sealed class TrayIconService : IDisposable
             _notifyIcon.Dispose();
             _notifyIcon = null;
         }
-        _icon?.Dispose();
+        // NotifyIcon does not dispose an externally-assigned ContextMenuStrip, so do it here.
+        _menu?.Dispose();
+        _menu = null;
+        // Only dispose the icon if we created it; never dispose the shared SystemIcons handle.
+        if (_ownsIcon)
+            _icon?.Dispose();
         _icon = null;
     }
 }

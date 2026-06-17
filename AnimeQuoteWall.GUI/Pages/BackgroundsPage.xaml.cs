@@ -54,7 +54,11 @@ public partial class BackgroundsPage : Page
         InitializeComponent();
         _backgroundService = new BackgroundService();
         Loaded += async (s, e) => await LoadBackgroundsAsync();
-        Unloaded += (s, e) => _cancellationTokenSource?.Cancel();
+        Unloaded += (s, e) =>
+        {
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+        };
     }
 
     /// <summary>
@@ -63,8 +67,10 @@ public partial class BackgroundsPage : Page
     /// </summary>
     private async Task LoadBackgroundsAsync()
     {
-        // Cancel any previous loading operation
-        _cancellationTokenSource?.Cancel();
+        // Cancel and dispose any previous loading operation before starting a new one
+        var previousCts = _cancellationTokenSource;
+        previousCts?.Cancel();
+        previousCts?.Dispose();
         _cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = _cancellationTokenSource.Token;
 

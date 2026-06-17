@@ -326,10 +326,11 @@ public class PerformanceMonitorService : IDisposable
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            if (AutoPauseEnabled)
-            {
-                CheckFullscreen();
-            }
+            // Evaluate the full pause policy each tick (fullscreen + maximized + battery + RDP +
+            // per-app). CheckPausePolicy gates the fullscreen rule behind AutoPauseEnabled itself
+            // and updates ShouldPause / raises ShouldPauseChanged. This is the single evaluator so
+            // consumers (PlaylistWorker) can simply read ShouldPause.
+            CheckPausePolicy();
 
             try
             {

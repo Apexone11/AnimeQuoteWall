@@ -92,7 +92,11 @@ public partial class AnimatedWallpapersPage : Page
             await UpdateWallpaperEngineStatusAsync();
         };
 
-        Unloaded += (s, e) => _cancellationTokenSource?.Cancel();
+        Unloaded += (s, e) =>
+        {
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+        };
     }
 
     /// <summary>
@@ -100,8 +104,10 @@ public partial class AnimatedWallpapersPage : Page
     /// </summary>
     private async Task LoadAnimatedWallpapersAsync()
     {
-        // Cancel any previous loading operation
-        _cancellationTokenSource?.Cancel();
+        // Cancel and dispose any previous loading operation before starting a new one
+        var previousCts = _cancellationTokenSource;
+        previousCts?.Cancel();
+        previousCts?.Dispose();
         _cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = _cancellationTokenSource.Token;
 

@@ -41,10 +41,20 @@ public partial class SettingsPage : Page
     private readonly MonitorService _monitorService = new MonitorService();
 
     /// <summary>
+    /// True while controls are being populated from configuration, so their change handlers
+    /// (which write back to config, the registry, or re-apply the theme) are suppressed.
+    /// </summary>
+    private bool _initializing;
+
+    /// <summary>
     /// Initializes the settings page by loading current values.
     /// </summary>
     private void InitializeSettings()
     {
+        // Suppress control change handlers while we populate values, so setting
+        // IsChecked/SelectedIndex/Value does not re-run side effects (rewriting the HKCU startup
+        // entry, re-applying the theme, or spuriously saving settings) on every page load.
+        _initializing = true;
         try
         {
             UpdatePathsUI();
@@ -62,6 +72,10 @@ public partial class SettingsPage : Page
                 "Settings Error",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
+        }
+        finally
+        {
+            _initializing = false;
         }
     }
 
@@ -213,6 +227,7 @@ public partial class SettingsPage : Page
     /// </summary>
     private void ThemeModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_initializing) return;
         try
         {
             var index = ThemeModeComboBox.SelectedIndex;
@@ -481,6 +496,7 @@ public partial class SettingsPage : Page
     /// </summary>
     private void StartWithWindowsCheckBox_Checked(object sender, RoutedEventArgs e)
     {
+        if (_initializing) return;
         var exePath = Environment.ProcessPath;
         if (string.IsNullOrWhiteSpace(exePath))
             return;
@@ -493,6 +509,7 @@ public partial class SettingsPage : Page
     /// </summary>
     private void StartWithWindowsCheckBox_Unchecked(object sender, RoutedEventArgs e)
     {
+        if (_initializing) return;
         StartupService.SetEnabled(false, Environment.ProcessPath ?? string.Empty);
     }
 
@@ -508,6 +525,7 @@ public partial class SettingsPage : Page
 
     private void FillModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_initializing) return;
         if (FillModeComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string mode)
             AppConfiguration.WallpaperFillMode = mode;
     }
@@ -608,18 +626,21 @@ public partial class SettingsPage : Page
 
     private void CoverageThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
+        if (_initializing) return;
         AppConfiguration.MaximizedCoverageThresholdPercent = (int)e.NewValue;
         UpdateCoverageThresholdLabel();
     }
 
     private void FpsCapSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
+        if (_initializing) return;
         AppConfiguration.AnimationFpsCap = (int)e.NewValue;
         UpdateFpsCapLabel();
     }
 
     private void RenderScaleSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
+        if (_initializing) return;
         AppConfiguration.RenderScalePercent = (int)e.NewValue;
         UpdateRenderScaleLabel();
     }

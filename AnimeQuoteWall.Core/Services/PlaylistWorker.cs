@@ -119,8 +119,12 @@ public class PlaylistWorker : IDisposable
                     continue;
                 }
 
-                // Check if we should pause due to fullscreen
-                if (AppConfiguration.AutoPauseOnFullscreen && _performanceMonitor.IsFullscreenActive)
+                // Push the latest pause settings to the monitor (so Settings changes take effect
+                // without restarting the worker) and honour the full pause policy. The monitor's
+                // background loop is the single evaluator; we just read its aggregate ShouldPause
+                // (fullscreen + maximized + battery + RDP + per-app + Low-Power).
+                ApplyPausePolicySettings();
+                if (_performanceMonitor.ShouldPause)
                 {
                     await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
                     continue;

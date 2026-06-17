@@ -113,6 +113,15 @@ public class ImageCacheService : IDisposable
 
         lock (_lock)
         {
+            // Another thread may have loaded the same key while we were loading; if so, reuse it
+            // rather than adding a second entry (which would leak the previous clone and double-
+            // count memory). We still return the caller's own bitmap.
+            if (_cache.TryGetValue(cacheKey, out var existing))
+            {
+                existing.LastAccessed = DateTime.UtcNow;
+                return bitmap;
+            }
+
             // Check if we need to evict items
             EvictIfNeeded();
 
@@ -166,6 +175,14 @@ public class ImageCacheService : IDisposable
 
         lock (_lock)
         {
+            // Reuse a concurrently-loaded entry instead of adding a duplicate (avoids leaking
+            // the clone and double-counting memory).
+            if (_cache.TryGetValue(cacheKey, out var existing))
+            {
+                existing.LastAccessed = DateTime.UtcNow;
+                return bitmap;
+            }
+
             EvictIfNeeded();
 
             var memoryUsage = EstimateMemoryUsage(bitmap);
