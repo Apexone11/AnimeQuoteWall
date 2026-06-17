@@ -37,5 +37,9 @@ public class WallpaperHistoryEntry
     /// </summary>
     [JsonPropertyName("settings")]
     public WallpaperSettings? Settings { get; set; }
+
+    /// <summary>Gets or sets whether the user has marked this entry as a favorite.</summary>
+    [JsonPropertyName("isFavorite")]
+    public bool IsFavorite { get; set; }
 }
 

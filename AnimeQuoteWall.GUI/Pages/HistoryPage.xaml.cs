@@ -38,6 +38,12 @@ public class HistoryItemViewModel
     /// The underlying history entry with full metadata.
     /// </summary>
     public WallpaperHistoryEntry Entry { get; set; } = null!;
+
+    /// <summary>Whether this entry is a favorite (bound to the star icon).</summary>
+    public bool IsFavorite { get; set; }
+
+    /// <summary>Lower-cased searchable text (quote, character, anime, date) used for filtering.</summary>
+    public string SearchText { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -60,6 +66,11 @@ public partial class HistoryPage : Page
     /// List of wallpaper history entries loaded from metadata.
     /// </summary>
     private List<WallpaperHistoryEntry> _historyEntries = new();
+
+    /// <summary>All history items (unfiltered); the displayed list is filtered from this.</summary>
+    private List<HistoryItemViewModel> _allItems = new();
+    private string _searchText = string.Empty;
+    private bool _favoritesOnly;
 
     /// <summary>
     /// Initializes a new instance of the HistoryPage.
@@ -94,24 +105,18 @@ public partial class HistoryPage : Page
             {
                 if (HistoryItemsControl != null)
                 {
-                    // Create view models for each entry
-                    var items = _historyEntries.Select(e => new HistoryItemViewModel
+                    _allItems = _historyEntries.Select(e => new HistoryItemViewModel
                     {
                         ImagePath = e.ImagePath,
                         Timestamp = e.Timestamp,
-                        ThumbnailPath = e.ImagePath, // Use same path for thumbnail (could be optimized later)
-                        Entry = e
+                        ThumbnailPath = e.ImagePath,
+                        Entry = e,
+                        IsFavorite = e.IsFavorite,
+                        SearchText = BuildSearchText(e)
                     }).ToList();
 
-                    // Set items source to display in grid
-                    HistoryItemsControl.ItemsSource = items;
-
-                    // Show/hide empty state
-                    if (EmptyStateBorder != null)
-                        EmptyStateBorder.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-
-                    // Update grid columns based on available width
-                    UpdateHistoryGridColumns();
+                    // Apply the current search/favorites filter (also sets ItemsSource + empty state).
+                    ApplyFilter();
                 }
             });
         }
@@ -130,6 +135,82 @@ public partial class HistoryPage : Page
         // VirtualizingStackPanel with recycling). The previous code rebuilt a UniformGrid
         // ItemsPanel at runtime, which defeats virtualization - unacceptable for the
         // potentially thousands of history entries (CLAUDE.md Section 5).
+    }
+
+    /// <summary>Builds the lower-cased searchable text (quote, character, anime, date) for an entry.</summary>
+    private static string BuildSearchText(WallpaperHistoryEntry e)
+    {
+        var parts = new[]
+        {
+            e.Quote?.Text,
+            e.Quote?.Character,
+            e.Quote?.Anime,
+            e.Timestamp.ToString("g")
+        };
+        return string.Join(" ", parts.Where(p => !string.IsNullOrWhiteSpace(p))).ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Applies the current search text and favorites-only filter to the full item list and
+    /// updates the displayed items and the empty state.
+    /// </summary>
+    private void ApplyFilter()
+    {
+        if (HistoryItemsControl == null)
+            return;
+
+        IEnumerable<HistoryItemViewModel> filtered = _allItems;
+        if (_favoritesOnly)
+            filtered = filtered.Where(i => i.IsFavorite);
+
+        if (!string.IsNullOrWhiteSpace(_searchText))
+        {
+            var query = _searchText.Trim().ToLowerInvariant();
+            filtered = filtered.Where(i => i.SearchText.Contains(query));
+        }
+
+        var list = filtered.ToList();
+        HistoryItemsControl.ItemsSource = list;
+
+        if (EmptyStateBorder != null)
+            EmptyStateBorder.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void HistorySearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        _searchText = HistorySearchBox?.Text ?? string.Empty;
+        ApplyFilter();
+    }
+
+    private void FavoritesOnlyToggle_Click(object sender, RoutedEventArgs e)
+    {
+        _favoritesOnly = FavoritesOnlyToggle?.IsChecked == true;
+        ApplyFilter();
+    }
+
+    /// <summary>Toggles the favorite flag for an entry, persists it, and refreshes the list.</summary>
+    private async void FavoriteButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (sender is System.Windows.Controls.Button button && button.Tag is WallpaperHistoryEntry entry)
+            {
+                var newValue = !entry.IsFavorite;
+                entry.IsFavorite = newValue;
+                await _historyService.SetFavoriteAsync(entry.ImagePath, newValue).ConfigureAwait(true);
+
+                var vm = _allItems.FirstOrDefault(i => ReferenceEquals(i.Entry, entry));
+                if (vm != null)
+                    vm.IsFavorite = newValue;
+
+                // Re-render so the star (and favorites filter) reflect the change.
+                ApplyFilter();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"FavoriteButton_Click: {ex.Message}");
+        }
     }
 
     /// <summary>

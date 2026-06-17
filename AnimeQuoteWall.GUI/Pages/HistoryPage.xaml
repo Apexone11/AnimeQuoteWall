@@ -23,6 +23,8 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0"
                        FontSize="22" FontWeight="Bold"
@@ -35,7 +37,38 @@
                 </InlineUIContainer>
                 <Run Text=" Wallpaper History"/>
             </TextBlock>
-            <Button Grid.Column="1"
+            <TextBox Grid.Column="1"
+                     x:Name="HistorySearchBox"
+                     Width="220" Height="38"
+                     Margin="0,0,8,0"
+                     Padding="10,0"
+                     VerticalContentAlignment="Center"
+                     Background="{DynamicResource HoverBackground}"
+                     BorderBrush="{DynamicResource BorderColor}"
+                     BorderThickness="1"
+                     FontSize="13"
+                     Foreground="{DynamicResource TextPrimary}"
+                     TextChanged="HistorySearchBox_TextChanged"
+                     ToolTip="Search by quote text, character, anime, or date"
+                     AutomationProperties.Name="Search history"/>
+            <ToggleButton Grid.Column="2"
+                          x:Name="FavoritesOnlyToggle"
+                          Height="38"
+                          Margin="0,0,8,0"
+                          Padding="12,0"
+                          Background="{DynamicResource HoverBackground}"
+                          BorderBrush="{DynamicResource BorderColor}"
+                          BorderThickness="1"
+                          Foreground="{DynamicResource TextPrimary}"
+                          Click="FavoritesOnlyToggle_Click"
+                          ToolTip="Show favorites only"
+                          AutomationProperties.Name="Show favorites only">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="Star" Width="14" Height="14" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="{DynamicResource WarningColor}"/>
+                    <TextBlock Text="Favorites" VerticalAlignment="Center" FontSize="12"/>
+                </StackPanel>
+            </ToggleButton>
+            <Button Grid.Column="3"
                     x:Name="ClearHistoryButton"
                     MinWidth="130"
                     Height="38"
@@ -146,6 +179,26 @@
                                                    Margin="0,0,0,8"
                                                    TextOptions.TextRenderingMode="ClearType"/>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                            <Button Click="FavoriteButton_Click"
+                                                    Tag="{Binding Entry}"
+                                                    Style="{StaticResource ModernSecondaryButton}"
+                                                    Padding="9,6"
+                                                    Margin="0,0,6,0"
+                                                    ToolTip="Toggle favorite"
+                                                    AutomationProperties.Name="Toggle favorite">
+                                                <iconPacks:PackIconMaterial Kind="Star" Width="14" Height="14">
+                                                    <iconPacks:PackIconMaterial.Style>
+                                                        <Style TargetType="iconPacks:PackIconMaterial">
+                                                            <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource WarningColor}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </iconPacks:PackIconMaterial.Style>
+                                                </iconPacks:PackIconMaterial>
+                                            </Button>
                                             <Button Click="RestoreButton_Click"
                                                     Tag="{Binding Entry}"
                                                     Style="{StaticResource ModernPrimaryButton}"

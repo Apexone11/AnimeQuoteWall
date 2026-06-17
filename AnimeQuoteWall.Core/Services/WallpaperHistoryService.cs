@@ -171,6 +171,31 @@ public class WallpaperHistoryService
     }
 
     /// <summary>
+    /// Sets the favorite flag for the history entry with the given image path and persists it.
+    /// </summary>
+    public async Task SetFavoriteAsync(string imagePath, bool isFavorite)
+    {
+        if (string.IsNullOrEmpty(imagePath))
+            return;
+
+        await _metadataLock.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            var entries = await LoadHistoryEntriesAsync().ConfigureAwait(false);
+            var match = entries.FirstOrDefault(e => string.Equals(e.ImagePath, imagePath, StringComparison.OrdinalIgnoreCase));
+            if (match != null)
+            {
+                match.IsFavorite = isFavorite;
+                await SaveHistoryEntriesAsync(entries).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _metadataLock.Release();
+        }
+    }
+
+    /// <summary>
     /// Gets the history directory path.
     /// </summary>
     public static string GetHistoryDirectory() => HistoryDirectory;
