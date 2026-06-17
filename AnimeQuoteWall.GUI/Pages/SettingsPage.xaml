@@ -226,32 +226,6 @@
                              LostKeyboardFocus="PerAppPauseTextBox_LostKeyboardFocus"
                              ToolTip="Example: chrome, photoshop, obs64"
                              AutomationProperties.Name="Per-application pause list"/>
-
-                    <Separator Margin="0,14,0,14" Background="{DynamicResource BorderColor}"/>
-
-                    <StackPanel Margin="0,0,0,14">
-                        <TextBlock x:Name="FpsCapLabel"
-                                   FontSize="12"
-                                   Foreground="{DynamicResource TextSecondary}"
-                                   Margin="0,0,0,4"/>
-                        <Slider x:Name="FpsCapSlider"
-                                Minimum="5" Maximum="60" TickFrequency="5" IsSnapToTickEnabled="True"
-                                Width="280" HorizontalAlignment="Left"
-                                ValueChanged="FpsCapSlider_ValueChanged"
-                                AutomationProperties.Name="Animation framerate cap"/>
-                    </StackPanel>
-
-                    <StackPanel>
-                        <TextBlock x:Name="RenderScaleLabel"
-                                   FontSize="12"
-                                   Foreground="{DynamicResource TextSecondary}"
-                                   Margin="0,0,0,4"/>
-                        <Slider x:Name="RenderScaleSlider"
-                                Minimum="50" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
-                                Width="280" HorizontalAlignment="Left"
-                                ValueChanged="RenderScaleSlider_ValueChanged"
-                                AutomationProperties.Name="Render scale percent"/>
-                    </StackPanel>
                 </StackPanel>
             </Border>
 

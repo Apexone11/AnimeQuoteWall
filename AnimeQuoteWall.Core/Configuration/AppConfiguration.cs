@@ -304,7 +304,7 @@ public class AppConfiguration
     public static bool MinimizeToTray
     {
         get { LoadSettings(); return _userSettings?.MinimizeToTray ?? true; }
-        set { LoadSettings(); if (_userSettings != null) { _userSettings.MinimizeToTray = value; SaveSettings(); } }
+        set { LoadSettings(); if (_userSettings != null && _userSettings.MinimizeToTray != value) { _userSettings.MinimizeToTray = value; SaveSettings(); } }
     }
 
     /// <summary>Persists the main window's normal-state placement so it can be restored next launch.</summary>
@@ -685,21 +685,21 @@ public class AppConfiguration
     public static bool AutoPauseOnFullscreen
     {
         get { LoadSettings(); return _userSettings?.AutoPauseOnFullscreen ?? true; }
-        set { LoadSettings(); if (_userSettings != null) { _userSettings.AutoPauseOnFullscreen = value; SaveSettings(); } }
+        set { LoadSettings(); if (_userSettings != null && _userSettings.AutoPauseOnFullscreen != value) { _userSettings.AutoPauseOnFullscreen = value; SaveSettings(); } }
     }
 
     /// <summary>Gets or sets whether to pause animation/rotation while the device is on battery power.</summary>
     public static bool PauseOnBattery
     {
         get { LoadSettings(); return _userSettings?.PauseOnBattery ?? false; }
-        set { LoadSettings(); if (_userSettings != null) { _userSettings.PauseOnBattery = value; SaveSettings(); } }
+        set { LoadSettings(); if (_userSettings != null && _userSettings.PauseOnBattery != value) { _userSettings.PauseOnBattery = value; SaveSettings(); } }
     }
 
     /// <summary>Gets or sets whether to pause when a foreground window covers most of the screen.</summary>
     public static bool PauseOnMaximizedWindow
     {
         get { LoadSettings(); return _userSettings?.PauseOnMaximizedWindow ?? false; }
-        set { LoadSettings(); if (_userSettings != null) { _userSettings.PauseOnMaximizedWindow = value; SaveSettings(); } }
+        set { LoadSettings(); if (_userSettings != null && _userSettings.PauseOnMaximizedWindow != value) { _userSettings.PauseOnMaximizedWindow = value; SaveSettings(); } }
     }
 
     /// <summary>Gets or sets the screen-coverage percent (50-100) that counts as a maximized window.</summary>
@@ -713,7 +713,7 @@ public class AppConfiguration
     public static bool PauseOnRemoteDesktop
     {
         get { LoadSettings(); return _userSettings?.PauseOnRemoteDesktop ?? true; }
-        set { LoadSettings(); if (_userSettings != null) { _userSettings.PauseOnRemoteDesktop = value; SaveSettings(); } }
+        set { LoadSettings(); if (_userSettings != null && _userSettings.PauseOnRemoteDesktop != value) { _userSettings.PauseOnRemoteDesktop = value; SaveSettings(); } }
     }
 
     /// <summary>Gets or sets the foreground process names (without extension) that force a pause.</summary>
@@ -731,7 +731,7 @@ public class AppConfiguration
     public static bool LowPowerMode
     {
         get { LoadSettings(); return _userSettings?.LowPowerMode ?? false; }
-        set { LoadSettings(); if (_userSettings != null) { _userSettings.LowPowerMode = value; SaveSettings(); } }
+        set { LoadSettings(); if (_userSettings != null && _userSettings.LowPowerMode != value) { _userSettings.LowPowerMode = value; SaveSettings(); } }
     }
 
     /// <summary>Gets or sets the animation framerate cap (5-60 fps).</summary>

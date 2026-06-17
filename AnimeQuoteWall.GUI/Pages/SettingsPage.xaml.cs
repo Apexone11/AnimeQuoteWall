@@ -543,12 +543,8 @@ public partial class SettingsPage : Page
             if (PauseOnBatteryCheckBox != null) PauseOnBatteryCheckBox.IsChecked = AppConfiguration.PauseOnBattery;
             if (PauseOnRemoteDesktopCheckBox != null) PauseOnRemoteDesktopCheckBox.IsChecked = AppConfiguration.PauseOnRemoteDesktop;
             if (CoverageThresholdSlider != null) CoverageThresholdSlider.Value = AppConfiguration.MaximizedCoverageThresholdPercent;
-            if (FpsCapSlider != null) FpsCapSlider.Value = AppConfiguration.AnimationFpsCap;
-            if (RenderScaleSlider != null) RenderScaleSlider.Value = AppConfiguration.RenderScalePercent;
             if (PerAppPauseTextBox != null) PerAppPauseTextBox.Text = string.Join(", ", AppConfiguration.PerAppPauseProcesses);
             UpdateCoverageThresholdLabel();
-            UpdateFpsCapLabel();
-            UpdateRenderScaleLabel();
         }
         catch (Exception ex)
         {
@@ -560,18 +556,6 @@ public partial class SettingsPage : Page
     {
         if (CoverageThresholdLabel != null)
             CoverageThresholdLabel.Text = $"Maximized coverage threshold: {(int)(CoverageThresholdSlider?.Value ?? 95)}%";
-    }
-
-    private void UpdateFpsCapLabel()
-    {
-        if (FpsCapLabel != null)
-            FpsCapLabel.Text = $"Animation framerate cap: {(int)(FpsCapSlider?.Value ?? 30)} fps";
-    }
-
-    private void UpdateRenderScaleLabel()
-    {
-        if (RenderScaleLabel != null)
-            RenderScaleLabel.Text = $"Render scale: {(int)(RenderScaleSlider?.Value ?? 100)}%";
     }
 
     private void LowPowerModeCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -629,20 +613,6 @@ public partial class SettingsPage : Page
         if (_initializing) return;
         AppConfiguration.MaximizedCoverageThresholdPercent = (int)e.NewValue;
         UpdateCoverageThresholdLabel();
-    }
-
-    private void FpsCapSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        if (_initializing) return;
-        AppConfiguration.AnimationFpsCap = (int)e.NewValue;
-        UpdateFpsCapLabel();
-    }
-
-    private void RenderScaleSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        if (_initializing) return;
-        AppConfiguration.RenderScalePercent = (int)e.NewValue;
-        UpdateRenderScaleLabel();
     }
 
     /// <summary>
