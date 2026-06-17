@@ -142,6 +142,27 @@
                             <ComboBoxItem Content="Center" Tag="Center"/>
                         </ComboBox>
                     </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <TextBlock Text="Background effect:"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"/>
+                        <ComboBox x:Name="FilterEffectComboBox"
+                                  Width="200"
+                                  Height="40"
+                                  SelectionChanged="FilterEffectComboBox_SelectionChanged"
+                                  Style="{StaticResource ModernComboBox}"
+                                  ToolTip="Artistic filter applied to the background before the quote is drawn."
+                                  AutomationProperties.Name="Background effect">
+                            <ComboBoxItem Content="None" Tag="None"/>
+                            <ComboBoxItem Content="Blur" Tag="Blur"/>
+                            <ComboBoxItem Content="Sepia" Tag="Sepia"/>
+                            <ComboBoxItem Content="Grayscale" Tag="Grayscale"/>
+                            <ComboBoxItem Content="Vintage" Tag="Vintage"/>
+                        </ComboBox>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 

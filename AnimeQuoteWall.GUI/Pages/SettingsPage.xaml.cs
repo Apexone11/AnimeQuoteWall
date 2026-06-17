@@ -146,6 +146,16 @@ public partial class SettingsPage : Page
                     mode.Equals("Stretch", StringComparison.OrdinalIgnoreCase) ? 2 :
                     mode.Equals("Center", StringComparison.OrdinalIgnoreCase) ? 3 : 0;
             }
+
+            if (FilterEffectComboBox != null)
+            {
+                var effect = AppConfiguration.WallpaperFilterEffect;
+                FilterEffectComboBox.SelectedIndex =
+                    effect.Equals("Blur", StringComparison.OrdinalIgnoreCase) ? 1 :
+                    effect.Equals("Sepia", StringComparison.OrdinalIgnoreCase) ? 2 :
+                    effect.Equals("Grayscale", StringComparison.OrdinalIgnoreCase) ? 3 :
+                    effect.Equals("Vintage", StringComparison.OrdinalIgnoreCase) ? 4 : 0;
+            }
         }
         catch (Exception ex)
         {
@@ -528,6 +538,13 @@ public partial class SettingsPage : Page
         if (_initializing) return;
         if (FillModeComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string mode)
             AppConfiguration.WallpaperFillMode = mode;
+    }
+
+    private void FilterEffectComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_initializing) return;
+        if (FilterEffectComboBox?.SelectedItem is ComboBoxItem item && item.Tag is string effect)
+            AppConfiguration.WallpaperFilterEffect = effect;
     }
 
     /// <summary>

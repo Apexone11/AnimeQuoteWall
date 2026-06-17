@@ -65,8 +65,26 @@ public class WallpaperService : IWallpaperService
         // Load the background (either from file or create a solid color one)
         using var background = LoadBackgroundBitmap(backgroundPath, settings);
 
+        // Optionally apply an artistic filter (blur/sepia/grayscale/vintage) to the background
+        // before the quote is drawn. ApplyFilter returns a new bitmap we must dispose.
+        Bitmap source = background;
+        Bitmap? filtered = null;
+        if (!string.IsNullOrWhiteSpace(settings.FilterEffect)
+            && !settings.FilterEffect.Equals("None", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                filtered = new MediaEditingService().ApplyFilter(background, settings.FilterEffect);
+                source = filtered;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"CreateWallpaperImage filter '{settings.FilterEffect}' failed: {ex.Message}");
+            }
+        }
+
         // Create a new image for our wallpaper
-        var wallpaper = new Bitmap(background.Width, background.Height);
+        var wallpaper = new Bitmap(source.Width, source.Height);
 
         // Get a drawing surface to work with
         using var graphics = Graphics.FromImage(wallpaper);
@@ -74,12 +92,13 @@ public class WallpaperService : IWallpaperService
         // Configure graphics for high quality rendering
         ConfigureGraphicsQuality(graphics);
 
-        // Step 1: Draw the background image
-        graphics.DrawImage(background, 0, 0, wallpaper.Width, wallpaper.Height);
+        // Step 1: Draw the (optionally filtered) background image
+        graphics.DrawImage(source, 0, 0, wallpaper.Width, wallpaper.Height);
 
         // Step 2: Draw the quote on top
         DrawQuote(graphics, quote, wallpaper.Width, wallpaper.Height, settings);
 
+        filtered?.Dispose();
         return wallpaper;
     }
 

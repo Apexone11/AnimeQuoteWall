@@ -40,6 +40,9 @@ public class UserSettings
     // Background fit mode for generated wallpapers: Fill | Fit | Stretch | Center
     public string WallpaperFillMode { get; set; } = "Fill";
 
+    // Artistic filter applied to the background before the quote: None | Blur | Sepia | Grayscale | Vintage
+    public string WallpaperFilterEffect { get; set; } = "None";
+
     // Playlist settings
     public string? ActivePlaylistId { get; set; } // ID of the currently active playlist
 
@@ -347,6 +350,16 @@ public class AppConfiguration
     {
         get { LoadSettings(); var v = _userSettings?.WallpaperFillMode; return string.IsNullOrWhiteSpace(v) ? "Fill" : v; }
         set { LoadSettings(); if (_userSettings != null) { _userSettings.WallpaperFillMode = string.IsNullOrWhiteSpace(value) ? "Fill" : value; SaveSettings(); } }
+    }
+
+    /// <summary>
+    /// Gets or sets the artistic filter applied to the background before the quote is drawn
+    /// ("None", "Blur", "Sepia", "Grayscale", "Vintage"). Defaults to "None".
+    /// </summary>
+    public static string WallpaperFilterEffect
+    {
+        get { LoadSettings(); var v = _userSettings?.WallpaperFilterEffect; return string.IsNullOrWhiteSpace(v) ? "None" : v; }
+        set { LoadSettings(); if (_userSettings != null && _userSettings.WallpaperFilterEffect != value) { _userSettings.WallpaperFilterEffect = string.IsNullOrWhiteSpace(value) ? "None" : value; SaveSettings(); } }
     }
 
     /// <summary>

@@ -147,6 +147,12 @@ public class WallpaperSettings
     public string FillMode { get; set; } = "Fill";
 
     /// <summary>
+    /// Optional artistic filter applied to the background before the quote is drawn:
+    /// "None" (default), "Blur", "Sepia", "Grayscale", or "Vintage".
+    /// </summary>
+    public string FilterEffect { get; set; } = "None";
+
+    /// <summary>
     /// Validates all settings to make sure they're in acceptable ranges.
     /// Called automatically when creating wallpapers.
     /// </summary>
