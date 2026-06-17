@@ -96,3 +96,5 @@ settings.json
 # never bundled into the installer, MSIX, or Steam build (the installer ships build
 # output only, not repo docs).
 /docs/internal/
+# WPF build temp project files
+*_wpftmp.csproj
