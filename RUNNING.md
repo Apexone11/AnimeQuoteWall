@@ -95,10 +95,40 @@ signing certificate), use `installer\build.ps1 -Sign`.
 
 ---
 
-## 6. Status of the one-click "installs or updates" experience
+## 6. The one-click "installs or updates" experience (Velopack)
 
-You asked for the behavior where clicking the EXE installs the app if it is missing, or offers to
-update/keep it if it is already installed. That is the **Velopack bootstrapper** model and is
-tracked as a remaining task (auto-update). Until it is wired in, the **Inno Setup installer**
-(section 4) is the install path, and updates are done by running a newer installer. The Microsoft
-Store and Steam channels (planned) handle updates automatically.
+You asked for the behavior where clicking the EXE installs the app if it is missing, and updates
+are delivered automatically afterward. That is now wired in with **Velopack** (MIT). The flow:
+
+1. Install the Velopack CLI once:
+
+   ```powershell
+   dotnet tool install -g vpk
+   ```
+
+2. Publish the app, then pack a release (run from the repo root). Use a real version number:
+
+   ```powershell
+   cd "C:\Users\Abdul PC\OneDrive\Desktop\AnimeQuoteWall"
+   dotnet publish AnimeQuoteWall.GUI\AnimeQuoteWall.GUI.csproj -c Release -r win-x64 -o publish
+   vpk pack -u AnimeQuoteWall -v 2.0.0 -p publish -e AnimeQuoteWall.exe --packTitle "AnimeQuoteWall"
+   ```
+
+   This creates a `Releases\` folder containing **`AnimeQuoteWall-win-Setup.exe`** (the bootstrapper
+   that installs the app when missing), the release `.nupkg`, and a `RELEASES` feed file.
+
+3. **`Releases\AnimeQuoteWall-win-Setup.exe`** is the file you give users. Double-clicking it
+   installs AnimeQuoteWall (no admin needed; per-user) and launches it.
+
+4. To publish an update: bump the version, run `vpk pack` again with the new `-v`, and upload the
+   new `Releases\` contents to your **GitHub Releases**. Installed apps check that feed over HTTPS
+   on startup, download the update in the background, and prompt the user to restart and apply it.
+
+> Configure the feed: the update feed URL lives in
+> `AnimeQuoteWall.GUI\Services\UpdateService.cs` (`GithubRepoUrl`). Set it to your actual GitHub
+> repository before publishing direct builds. The in-app updater is automatically skipped when the
+> app is launched with `--steam` or `--store` (those stores patch the app themselves), and is a
+> no-op for the dev/`dotnet run` builds in sections 1-3.
+
+The **Inno Setup installer** (section 4) remains available as an alternative MSI-style wizard with
+custom branding; Velopack's `Setup.exe` is the lighter-weight, auto-updating path.

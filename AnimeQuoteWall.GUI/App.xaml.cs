@@ -15,6 +15,21 @@ public partial class App : System.Windows.Application
     private Services.TrayIconService? _trayIcon;
     private Services.GlobalHotkeyService? _hotkeys;
     private Services.SingleInstanceManager? _singleInstance;
+    private Services.UpdateService? _updateService;
+
+    /// <summary>
+    /// Custom WPF entry point. VelopackApp must run first so its install/update/uninstall hooks
+    /// are processed before the application window is created.
+    /// </summary>
+    [STAThread]
+    private static void Main(string[] args)
+    {
+        Velopack.VelopackApp.Build().Run();
+
+        var app = new App();
+        app.InitializeComponent();
+        app.Run();
+    }
 
     protected override void OnStartup(System.Windows.StartupEventArgs e)
     {
@@ -71,6 +86,18 @@ public partial class App : System.Windows.Application
             _singleInstance.ShowRequested += (_, _) => Dispatcher.InvokeAsync(() => ShowAndActivate(window));
             _singleInstance.StartListening();
 
+            // Auto-update (Velopack). Skipped on the Store/Steam channels (which patch the app
+            // themselves) and a no-op for dev builds not installed via Velopack.
+            var commandLine = string.Join(" ", e.Args);
+            var managedChannel = commandLine.Contains("--steam", StringComparison.OrdinalIgnoreCase)
+                                 || commandLine.Contains("--store", StringComparison.OrdinalIgnoreCase);
+            if (!managedChannel)
+            {
+                _updateService = new Services.UpdateService();
+                _updateService.UpdateReady += (_, info) => Dispatcher.InvokeAsync(() => PromptForUpdate(window, info));
+                _ = _updateService.CheckAsync();
+            }
+
             // Cleanup old thumbnails in background after window is shown
             System.Threading.Tasks.Task.Run(() =>
             {
@@ -121,6 +148,26 @@ public partial class App : System.Windows.Application
             window.Hide();
         else
             ShowAndActivate(window);
+    }
+
+    /// <summary>Asks the user whether to restart and apply a downloaded update.</summary>
+    private void PromptForUpdate(System.Windows.Window window, Velopack.UpdateInfo info)
+    {
+        try
+        {
+            var version = info.TargetFullRelease?.Version?.ToString() ?? "A new version";
+            var result = System.Windows.MessageBox.Show(window,
+                $"AnimeQuoteWall {version} has been downloaded.\n\nRestart now to update?",
+                "Update available",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Information);
+            if (result == System.Windows.MessageBoxResult.Yes)
+                _updateService?.ApplyAndRestart();
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+        }
     }
 
     private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
