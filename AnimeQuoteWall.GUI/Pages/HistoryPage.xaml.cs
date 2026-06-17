@@ -89,8 +89,8 @@ public partial class HistoryPage : Page
             // Sort by timestamp descending (newest first)
             _historyEntries = _historyEntries.OrderByDescending(e => e.Timestamp).ToList();
 
-            // Update UI on UI thread
-            Dispatcher.Invoke(() =>
+            // Update UI on the dispatcher (non-blocking InvokeAsync, not Invoke; CLAUDE.md S5)
+            await Dispatcher.InvokeAsync(() =>
             {
                 if (HistoryItemsControl != null)
                 {
@@ -126,46 +126,10 @@ public partial class HistoryPage : Page
     /// </summary>
     private void UpdateHistoryGridColumns()
     {
-        try
-        {
-            if (HistoryItemsControl == null || HistoryScrollViewer == null)
-                return;
-
-            var itemCount = HistoryItemsControl.Items.Count;
-            if (itemCount == 0)
-                return;
-
-            // Get available width
-            var availableWidth = HistoryScrollViewer.ActualWidth;
-            if (availableWidth <= 0)
-                availableWidth = HistoryScrollViewer.Width;
-            if (availableWidth <= 0)
-                availableWidth = 800; // Fallback
-
-            // Calculate optimal columns based on width
-            // Each history card needs ~300-350px width (including margins)
-            int columns;
-            if (availableWidth >= 1400)
-                columns = 4; // 4 columns for very wide screens
-            else if (availableWidth >= 1000)
-                columns = 3; // 3 columns for wide screens
-            else if (availableWidth >= 700)
-                columns = 2; // 2 columns for medium screens
-            else
-                columns = 1; // 1 column for narrow screens
-
-            // Apply the updated panel
-            var itemsPanelTemplate = new ItemsPanelTemplate();
-            var factory = new FrameworkElementFactory(typeof(UniformGrid));
-            factory.SetValue(UniformGrid.ColumnsProperty, columns);
-            factory.SetValue(UniformGrid.RowsProperty, 0);
-            itemsPanelTemplate.VisualTree = factory;
-            HistoryItemsControl.ItemsPanel = itemsPanelTemplate;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"UpdateHistoryGridColumns error: {ex.Message}");
-        }
+        // No-op. HistoryItemsControl is now a virtualizing ListBox (single-column
+        // VirtualizingStackPanel with recycling). The previous code rebuilt a UniformGrid
+        // ItemsPanel at runtime, which defeats virtualization - unacceptable for the
+        // potentially thousands of history entries (CLAUDE.md Section 5).
     }
 
     /// <summary>

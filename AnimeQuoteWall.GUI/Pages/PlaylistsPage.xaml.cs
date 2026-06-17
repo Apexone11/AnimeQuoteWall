@@ -38,14 +38,14 @@ public partial class PlaylistsPage : Page
         {
             _playlists = await _playlistService.LoadAllPlaylistsAsync().ConfigureAwait(false);
 
-            Dispatcher.Invoke(() =>
+            await Dispatcher.InvokeAsync(() =>
             {
                 UpdatePlaylistList();
             });
         }
         catch (Exception ex)
         {
-            Dispatcher.Invoke(() =>
+            await Dispatcher.InvokeAsync(() =>
             {
                 System.Windows.MessageBox.Show($"Failed to load playlists: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             });
@@ -387,8 +387,10 @@ public partial class PlaylistEditDialog : Window
                     _playlist.ScheduleType = scheduleComboBox.SelectedItem?.ToString() ?? "Interval";
                     _playlist.ShuffleMode = shuffleCheckBox.IsChecked ?? false;
 
-                    if (int.TryParse(intervalTextBox.Text, out var interval))
-                        _playlist.IntervalSeconds = interval;
+                    // Clamp to a sane range: <= 0 made the playlist silently invalid (never
+                    // rotated), and huge values overflowed the delay. 5s .. 1 day.
+                    if (int.TryParse(intervalTextBox.Text, out var interval) && interval > 0)
+                        _playlist.IntervalSeconds = Math.Clamp(interval, 5, 86400);
 
                     _playlist.ScheduleTime = timeTextBox.Text.Trim();
 

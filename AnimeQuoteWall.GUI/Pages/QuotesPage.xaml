@@ -99,7 +99,9 @@
                 CornerRadius="16"
                 Margin="0,0,0,12"
                 Padding="12">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <!-- Disabled outer ScrollViewer so it constrains the ListBox height and the
+                 VirtualizingStackPanel actually virtualizes; the ListBox scrolls itself. -->
+            <ScrollViewer VerticalScrollBarVisibility="Disabled">
                 <ListBox x:Name="QuotesListBox"
                          SelectionMode="Single"
                          BorderThickness="0"

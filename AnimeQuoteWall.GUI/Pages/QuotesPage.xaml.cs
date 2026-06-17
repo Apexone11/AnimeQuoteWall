@@ -51,7 +51,7 @@ public partial class QuotesPage : Page
             }
 
             // Update category filter dropdown and apply filters on UI thread
-            Dispatcher.Invoke(() =>
+            await Dispatcher.InvokeAsync(() =>
             {
                 UpdateCategoryFilter();
                 ApplyFilters();
@@ -59,7 +59,7 @@ public partial class QuotesPage : Page
         }
         catch (Exception ex)
         {
-            Dispatcher.Invoke(() =>
+            await Dispatcher.InvokeAsync(() =>
             {
                 System.Windows.MessageBox.Show($"Failed to load quotes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             });

@@ -90,9 +90,12 @@ public class PerMonitorWallpaperService : IDisposable
     {
         try
         {
-            // Check if running on Windows 10/11 (IDesktopWallpaper requires Windows 8+)
+            // IDesktopWallpaper requires Windows 8+ (6.2). Compare the whole version, NOT Major
+            // and Minor independently: on Windows 10/11 .NET reports 10.0, and "Major>=6 &&
+            // Minor>=2" is (true && false) = false, which silently disabled per-monitor wallpaper
+            // on every supported platform.
             var osVersion = Environment.OSVersion.Version;
-            if (osVersion.Major >= 6 && osVersion.Minor >= 2) // Windows 8+
+            if (osVersion >= new Version(6, 2)) // Windows 8+ (includes 10/11, reported as 10.0)
             {
                 // Create COM object
                 var type = Type.GetTypeFromCLSID(CLSID_DesktopWallpaper);

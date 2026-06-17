@@ -60,13 +60,17 @@ public partial class SimpleMainWindow : Window
 
     private static bool IsOnAnyScreen(double left, double top, double width, double height)
     {
-        var rect = new System.Drawing.Rectangle((int)left, (int)top, (int)Math.Max(1, width), (int)Math.Max(1, height));
-        foreach (var screen in System.Windows.Forms.Screen.AllScreens)
-        {
-            if (screen.WorkingArea.IntersectsWith(rect))
-                return true;
-        }
-        return false;
+        // Saved placement is in WPF device-independent units, so compare against the virtual
+        // screen in the SAME units. System.Windows.Forms.Screen.WorkingArea is physical pixels
+        // and would mismatch under DPI scaling, wrongly discarding valid placements.
+        double vsLeft = SystemParameters.VirtualScreenLeft;
+        double vsTop = SystemParameters.VirtualScreenTop;
+        double vsRight = vsLeft + SystemParameters.VirtualScreenWidth;
+        double vsBottom = vsTop + SystemParameters.VirtualScreenHeight;
+        double right = left + width;
+        double bottom = top + height;
+        // Require the saved rectangle to overlap the virtual desktop at all.
+        return left < vsRight && right > vsLeft && top < vsBottom && bottom > vsTop;
     }
 
     /// <summary>Saves the window placement so the next launch reopens where the user left it.</summary>

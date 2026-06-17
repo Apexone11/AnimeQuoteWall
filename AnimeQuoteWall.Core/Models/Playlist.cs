@@ -101,9 +101,20 @@ public class Playlist
 
         if (ShuffleMode)
         {
-            // Random selection for shuffle mode
-            var random = new Random();
-            return WallpaperEntries[random.Next(WallpaperEntries.Count)];
+            // Use the shared RNG (a per-call `new Random()` is time-seeded and repeats when
+            // called twice in the same tick) and avoid serving the same entry twice in a row.
+            if (WallpaperEntries.Count == 1)
+                return WallpaperEntries[0];
+
+            int next;
+            do
+            {
+                next = Random.Shared.Next(WallpaperEntries.Count);
+            }
+            while (next == CurrentIndex);
+
+            CurrentIndex = next;
+            return WallpaperEntries[next];
         }
         else
         {

@@ -20,6 +20,7 @@ public sealed class TrayIconService : IDisposable
     private Icon? _icon;
     private bool _ownsIcon;
     private bool _disposed;
+    private WindowState _lastNonMinimizedState = WindowState.Normal;
 
     /// <summary>Creates the tray service for the given main window.</summary>
     public TrayIconService(Window window)
@@ -34,7 +35,9 @@ public sealed class TrayIconService : IDisposable
         _menu.Items.Add("Open AnimeQuoteWall", null, (_, _) => ShowWindow());
         _menu.Items.Add("Hide to tray", null, (_, _) => _window.Hide());
         _menu.Items.Add(new ToolStripSeparator());
-        _menu.Items.Add("Exit", null, (_, _) => System.Windows.Application.Current.Shutdown());
+        // Close the window (not Application.Shutdown) so Window.Closing fires and the window
+        // placement is saved on this exit path; the default ShutdownMode then ends the app.
+        _menu.Items.Add("Exit", null, (_, _) => _window.Close());
 
         _icon = LoadAppIcon();
         _notifyIcon = new NotifyIcon
@@ -91,8 +94,14 @@ public sealed class TrayIconService : IDisposable
 
     private void OnWindowStateChanged(object? sender, EventArgs e)
     {
+        if (_window.WindowState != WindowState.Minimized)
+        {
+            // Remember Normal vs Maximized so a tray round-trip restores the correct state.
+            _lastNonMinimizedState = _window.WindowState;
+            return;
+        }
         // Hide from the taskbar when minimized; the tray icon remains the way back in.
-        if (_window.WindowState == WindowState.Minimized && AppConfiguration.MinimizeToTray)
+        if (AppConfiguration.MinimizeToTray)
             _window.Hide();
     }
 
@@ -100,7 +109,7 @@ public sealed class TrayIconService : IDisposable
     {
         _window.Show();
         if (_window.WindowState == WindowState.Minimized)
-            _window.WindowState = WindowState.Normal;
+            _window.WindowState = _lastNonMinimizedState; // restore Maximized if it was maximized
         _window.Activate();
         // Briefly toggle Topmost to bring the restored window to the foreground reliably.
         _window.Topmost = true;

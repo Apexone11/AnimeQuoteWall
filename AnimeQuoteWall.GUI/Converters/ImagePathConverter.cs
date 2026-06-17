@@ -25,8 +25,10 @@ public class ImagePathConverter : IValueConverter
             bitmap.BeginInit();
             bitmap.CacheOption = BitmapCacheOption.OnLoad; // Cache for performance
             bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; // Always load fresh
-            bitmap.DecodePixelWidth = 256; // Limit decode size for thumbnails (faster loading, less memory)
-            bitmap.DecodePixelHeight = 144; // Maintain aspect ratio approximately
+            // Bound decode size for thumbnails. Set ONLY one dimension so WPF preserves the
+            // source aspect ratio (setting both distorts non-16:9 images); the Image's Stretch
+            // handles the final fit. (CLAUDE.md Section 5: DecodePixelWidth OR Height, not both.)
+            bitmap.DecodePixelWidth = 256;
             bitmap.UriSource = new Uri(path, UriKind.Absolute);
             bitmap.EndInit();
             bitmap.Freeze();

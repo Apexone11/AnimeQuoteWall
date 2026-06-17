@@ -119,8 +119,11 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Backgrounds List -->
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                <!-- Backgrounds List. The outer ScrollViewer is Disabled so it constrains the
+                     ListBox to a finite height; otherwise it measures with infinite height and
+                     the ListBox's VirtualizingStackPanel realizes every item. The ListBox scrolls
+                     itself (CanContentScroll=True). -->
+                <ScrollViewer VerticalScrollBarVisibility="Disabled"
                               Visibility="Visible">
                     <ListBox x:Name="BackgroundsListBox"
                              SelectionMode="Single"

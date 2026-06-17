@@ -33,6 +33,9 @@ public class WallpaperHistoryService
     /// </summary>
     private static readonly string MetadataFile = Path.Combine(HistoryDirectory, "metadata.json");
 
+    /// <summary>Serializes the read-modify-write of metadata.json across concurrent callers.</summary>
+    private static readonly System.Threading.SemaphoreSlim _metadataLock = new(1, 1);
+
     /// <summary>
     /// Ensures the history directory exists.
     /// Creates the directory if it doesn't exist.
@@ -60,9 +63,11 @@ public class WallpaperHistoryService
         // Ensure history directory exists
         EnsureHistoryDirectory();
 
-        // Generate unique filename with timestamp to prevent conflicts
+        // Generate a unique filename. Milliseconds + a GUID avoid collisions when several
+        // wallpapers are saved in the same second (e.g. Generate-All-Monitors or fast playlist
+        // rotation), which previously overwrote earlier images while still adding a metadata entry.
         var timestamp = DateTime.Now;
-        var fileName = $"wallpaper_{timestamp:yyyyMMdd_HHmmss}.png";
+        var fileName = $"wallpaper_{timestamp:yyyyMMdd_HHmmss_fff}_{Guid.NewGuid():N}.png";
         var historyPath = Path.Combine(HistoryDirectory, fileName);
 
         // Copy wallpaper image to history folder
@@ -81,12 +86,19 @@ public class WallpaperHistoryService
             Settings = settings
         };
 
-        // Load existing entries and add new one
-        var entries = await LoadHistoryEntriesAsync().ConfigureAwait(false);
-        entries.Add(entry);
-
-        // Save updated metadata to JSON file
-        await SaveHistoryEntriesAsync(entries).ConfigureAwait(false);
+        // Serialize the read-modify-write of metadata.json so concurrent saves (per-monitor
+        // generation, fast playlist rotation) do not clobber each other's appended entries.
+        await _metadataLock.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            var entries = await LoadHistoryEntriesAsync().ConfigureAwait(false);
+            entries.Add(entry);
+            await SaveHistoryEntriesAsync(entries).ConfigureAwait(false);
+        }
+        finally
+        {
+            _metadataLock.Release();
+        }
     }
 
     /// <summary>

@@ -84,16 +84,34 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Disabled outer ScrollViewer constrains the ListBox so its VirtualizingStackPanel
+                     virtualizes (CLAUDE.md S5 - history can hold thousands of entries). -->
                 <ScrollViewer x:Name="HistoryScrollViewer"
-                              VerticalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled"
                               SizeChanged="HistoryScrollViewer_SizeChanged">
-                    <ItemsControl x:Name="HistoryItemsControl">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid x:Name="HistoryGrid" Columns="3" HorizontalAlignment="Stretch"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
+                    <ListBox x:Name="HistoryItemsControl"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             HorizontalContentAlignment="Stretch"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.VirtualizationMode="Recycling"
+                             ScrollViewer.CanContentScroll="True">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <!-- Plain ContentPresenter: no selection highlight, so cards keep their look. -->
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <ContentPresenter/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Border Margin="8"
                                         Padding="12"
@@ -155,8 +173,8 @@
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </ScrollViewer>
             </Grid>
         </Border>

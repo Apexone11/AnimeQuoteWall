@@ -160,8 +160,9 @@ public class PlaylistWorker : IDisposable
         // Execute immediately on first run
         await ExecutePlaylistAsync(playlist).ConfigureAwait(false);
 
-        // Wait for the interval
-        await Task.Delay(playlist.IntervalSeconds * 1000, cancellationToken).ConfigureAwait(false);
+        // Wait for the interval. Use TimeSpan.FromSeconds rather than (seconds * 1000) as int, so
+        // a large interval cannot overflow int and throw ArgumentOutOfRangeException.
+        await Task.Delay(TimeSpan.FromSeconds(playlist.IntervalSeconds), cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -248,9 +249,11 @@ public class PlaylistWorker : IDisposable
                         entry.BackgroundPath,
                         settings).ConfigureAwait(false);
                 }
-                catch
+                catch (Exception historyEx)
                 {
-                    // Ignore history save errors
+                    // Log rather than silently swallow (CLAUDE.md: no empty catch). A failed
+                    // history save (disk full, locked file) should not abort the rotation.
+                    System.Diagnostics.Debug.WriteLine($"PlaylistWorker history save failed: {historyEx.Message}");
                 }
             }
 
