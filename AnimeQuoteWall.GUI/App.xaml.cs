@@ -13,9 +13,20 @@ namespace AnimeQuoteWall.GUI;
 public partial class App : System.Windows.Application
 {
     private Services.TrayIconService? _trayIcon;
+    private Services.GlobalHotkeyService? _hotkeys;
+    private Services.SingleInstanceManager? _singleInstance;
 
     protected override void OnStartup(System.Windows.StartupEventArgs e)
     {
+        // Single-instance: if another instance is already running, ask it to come forward and exit.
+        _singleInstance = new Services.SingleInstanceManager();
+        if (!_singleInstance.IsPrimaryInstance())
+        {
+            Services.SingleInstanceManager.SignalExistingInstance();
+            Shutdown();
+            return;
+        }
+
         // Global exception handler
         DispatcherUnhandledException += App_DispatcherUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -51,6 +62,15 @@ public partial class App : System.Windows.Application
             _trayIcon = new Services.TrayIconService(window);
             _trayIcon.Initialize();
 
+            // Global hotkey: Ctrl+Alt+Q toggles the window's visibility.
+            _hotkeys = new Services.GlobalHotkeyService(window);
+            _hotkeys.ToggleWindowRequested += (_, _) => ToggleWindow(window);
+            _hotkeys.Initialize();
+
+            // Single-instance: when a second launch signals us, bring this window to the front.
+            _singleInstance.ShowRequested += (_, _) => Dispatcher.InvokeAsync(() => ShowAndActivate(window));
+            _singleInstance.StartListening();
+
             // Cleanup old thumbnails in background after window is shown
             System.Threading.Tasks.Task.Run(() =>
             {
@@ -75,10 +95,32 @@ public partial class App : System.Windows.Application
 
     protected override void OnExit(System.Windows.ExitEventArgs e)
     {
-        // Remove the tray icon so it does not linger in the notification area after exit.
-        try { _trayIcon?.Dispose(); }
-        catch (Exception ex) { LogException(ex); }
+        // Remove the tray icon, unregister hotkeys, and release the single-instance mutex.
+        try { _trayIcon?.Dispose(); } catch (Exception ex) { LogException(ex); }
+        try { _hotkeys?.Dispose(); } catch (Exception ex) { LogException(ex); }
+        try { _singleInstance?.Dispose(); } catch (Exception ex) { LogException(ex); }
         base.OnExit(e);
+    }
+
+    /// <summary>Brings the window to the foreground, restoring it from minimized/hidden.</summary>
+    private static void ShowAndActivate(System.Windows.Window window)
+    {
+        window.Show();
+        if (window.WindowState == System.Windows.WindowState.Minimized)
+            window.WindowState = System.Windows.WindowState.Normal;
+        window.Activate();
+        // Briefly toggle Topmost to reliably pull the window to the front.
+        window.Topmost = true;
+        window.Topmost = false;
+    }
+
+    /// <summary>Hides the window if it is visible, otherwise shows and activates it.</summary>
+    private static void ToggleWindow(System.Windows.Window window)
+    {
+        if (window.IsVisible && window.WindowState != System.Windows.WindowState.Minimized)
+            window.Hide();
+        else
+            ShowAndActivate(window);
     }
 
     private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
