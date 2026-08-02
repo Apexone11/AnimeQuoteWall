@@ -12,9 +12,13 @@ Run this checklist before tagging a new release of AnimeQuoteWall.
 ## Build verification
 
 - [ ] `dotnet restore` succeeds.
-- [ ] `dotnet build AnimeQuoteWall.GUI/AnimeQuoteWall.GUI.csproj -c Release --no-incremental` returns 0 errors.
-- [ ] No new warnings beyond the pre-existing CA1416 set.
-- [ ] `dotnet list package --vulnerable --include-transitive` shows no High or Critical entries.
+- [ ] `dotnet build AnimeQuoteWall.GUI/AnimeQuoteWall.GUI.csproj -c Release --no-incremental` returns 0 errors and 0 warnings. As of 2.0.0 the former CA1416 warning set is gone; any warning is a regression.
+- [ ] `dotnet format --verify-no-changes` is clean.
+- [ ] `dotnet list package --vulnerable --include-transitive` shows no entries at all (2.0.0 baseline is zero, not merely zero High/Critical).
+
+If `--no-incremental` fails with `BG1002: ... .baml cannot be found`, the `obj`
+directory is stale (common when the repo lives in a synced folder). Delete
+`AnimeQuoteWall.GUI/obj` and `bin` and rebuild; it is not a code error.
 
 ## Source audit (use Grep, not eyeballs)
 
@@ -67,6 +71,39 @@ For each test, record pass/fail in the PR or release notes.
 - [ ] Restore an older entry. Desktop wallpaper changes.
 - [ ] Delete a single entry. Confirmation prompt appears; entry vanishes after Yes.
 - [ ] Clear All. All entries gone.
+- [ ] Star an entry. The star turns gold and survives an app restart.
+- [ ] Toggle Favorites. Only starred entries show; the empty state reflects the filter.
+- [ ] Type in the search box. Filtering matches quote text, character, anime, and date.
+- [ ] Required after any Magick.NET upgrade (CLAUDE.md Section 12): thumbnails render, and Delete succeeds immediately after a thumbnail was displayed (no file lock).
+- [ ] Generate on all monitors twice in quick succession. Every image is distinct; no entry overwrites another.
+
+### Background fit and effects
+
+- [ ] Set Background fit to each of Fill / Fit / Stretch / Center and generate. Fill centre-crops, Fit letterboxes, Center pads, none distort except Stretch.
+- [ ] Set Background effect to each of None / Blur / Sepia / Grayscale / Vintage and generate. The effect applies under the quote text, which stays legible.
+
+### Tray, window, and startup
+
+- [ ] Enable minimize-to-tray. Minimize; the window leaves the taskbar and the tray icon remains.
+- [ ] Double-click the tray icon. The window restores, preserving a previously maximized state.
+- [ ] Tray menu Open / Hide / Exit all work. After Exit no tray icon lingers.
+- [ ] Move and resize the window, exit via the tray, relaunch. Position and size are restored.
+- [ ] Disconnect the monitor the window was on, relaunch. The window appears on-screen, not off it.
+- [ ] Toggle Start with Windows on and off. The `HKCU` run entry is created and removed. Visiting Settings again does not rewrite it.
+- [ ] Press Ctrl+Alt+Q from another application. The window toggles visibility.
+- [ ] Launch a second instance. It does not start a new window; the existing one comes to the front.
+
+### Performance and power
+
+- [ ] With a playlist rotating, unplug AC power with "pause on battery" enabled. Rotation pauses; replugging resumes it.
+- [ ] Maximize another window with "pause when maximized" enabled. Rotation pauses.
+- [ ] Toggle a pause rule while a playlist runs. The change takes effect without restarting the app.
+
+### Updater
+
+- [ ] Run a dev or portable build. The updater is a no-op and logs no error.
+- [ ] Launch with `--steam` and with `--store`. The updater is skipped in both.
+- [ ] With a newer version published, an installed build detects it, downloads in the background, and prompts to restart and apply.
 
 ### Playlists
 
@@ -87,6 +124,7 @@ For each test, record pass/fail in the PR or release notes.
 
 ## Installer
 
+- [ ] Re-run `installer/assets/build-banners.ps1` after the version bump. It reads `<Version>` from `AnimeQuoteWall.GUI.csproj`, so the side banner shows the new version. The `.bmp` files are gitignored build artifacts and must be regenerated on a clean checkout.
 - [ ] `installer/assets/wizard-side.bmp` (164x314 24-bit), `wizard-small.bmp` (55x58 24-bit), and `setup-icon.ico` (multi-resolution) are present.
 - [ ] `./installer/build.ps1` succeeds and produces `installer/dist/AnimeQuoteWall-Setup-<version>.exe`.
 - [ ] Run the installer on a clean Windows 10/11 VM:
@@ -109,4 +147,6 @@ For each test, record pass/fail in the PR or release notes.
 - [ ] Push the tag.
 - [ ] Upload the signed `AnimeQuoteWall-Setup-<version>.exe` to GitHub Releases with the changelog excerpt as the body.
 - [ ] Publish the SHA-256 hash in the release notes.
+- [ ] Run `vpk pack` (see `RUNNING.md`) and upload the Velopack output, including `Setup.exe`, to the same release. `Setup.exe` is the install-if-missing / update-if-present entry point that the in-app updater feed points at.
+- [ ] Verify an existing installed build actually sees the new release and updates.
 - [ ] Update Steamworks build (for Steam-bound releases).
