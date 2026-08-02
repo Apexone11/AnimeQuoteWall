@@ -52,102 +52,83 @@ class Program
     {
         try
         {
-            // ==================== STEP 1: Initialize ====================
-            System.Console.WriteLine("🎌 AnimeQuoteWall - Starting wallpaper generation...");
-            System.Console.WriteLine();
-            
-            // Make sure all required folders exist (quotes, backgrounds, output)
-            AppConfiguration.EnsureDirectories();
-            System.Console.WriteLine($"📁 Working directory: {AppConfiguration.BaseDirectory}");
+            System.Console.WriteLine("AnimeQuoteWall - Starting wallpaper generation...");
             System.Console.WriteLine();
 
-            // ==================== STEP 2: Load Quotes ====================
-            // Create the quotes.json file if it doesn't exist yet
+            AppConfiguration.EnsureDirectories();
+            System.Console.WriteLine($"Working directory: {AppConfiguration.BaseDirectory}");
+            System.Console.WriteLine();
+
             await _quoteService.EnsureQuotesFileAsync(AppConfiguration.QuotesFilePath);
-            
-            // Read all quotes from the JSON file
+
             var quotes = await _quoteService.LoadQuotesAsync(AppConfiguration.QuotesFilePath);
-            
-            // Check if we have any valid quotes
-            if (quotes == null || quotes.Count == 0) 
+
+            if (quotes == null || quotes.Count == 0)
             {
                 throw new InvalidOperationException(
-                    "No quotes found! Check your quotes.json file.\n" +
+                    "No quotes found. Check your quotes.json file.\n" +
                     $"Expected location: {AppConfiguration.QuotesFilePath}");
             }
-            
-            System.Console.WriteLine($"📚 Loaded {quotes.Count} quotes");
-            
-            // ==================== STEP 3: Pick a Random Quote ====================
+
+            System.Console.WriteLine($"Loaded {quotes.Count} quotes");
+
             var selectedQuote = _quoteService.GetRandomQuote(quotes);
-            System.Console.WriteLine($"✨ Selected: \"{selectedQuote.Text}\"");
-            System.Console.WriteLine($"   — {selectedQuote.Character} ({selectedQuote.Anime})");
+            System.Console.WriteLine($"Selected: \"{selectedQuote.Text}\"");
+            System.Console.WriteLine($"  - {selectedQuote.Character} ({selectedQuote.Anime})");
             System.Console.WriteLine();
-            
-            // ==================== STEP 4: Get Background Image ====================
-            // Try to find a random background image from your backgrounds folder
+
             var backgroundPath = _backgroundService.GetRandomBackgroundImage(AppConfiguration.BackgroundsDirectory);
-            
+
             if (backgroundPath != null)
             {
-                System.Console.WriteLine($"🖼️  Background: {Path.GetFileName(backgroundPath)}");
+                System.Console.WriteLine($"Background: {Path.GetFileName(backgroundPath)}");
             }
             else
             {
-                System.Console.WriteLine("🎨 No background images found - will use solid color");
-                System.Console.WriteLine($"   Tip: Add images to: {AppConfiguration.BackgroundsDirectory}");
+                System.Console.WriteLine("No background images found; will use a solid color.");
+                System.Console.WriteLine($"  Tip: add images to {AppConfiguration.BackgroundsDirectory}");
             }
             System.Console.WriteLine();
 
-            // ==================== STEP 5: Create Wallpaper Settings ====================
-            // You can customize these settings to change how your wallpaper looks
-            var settings = new WallpaperSettings();  // Uses default values
-            // To customize, try: var settings = new WallpaperSettings { Width = 1920, Height = 1080, FontSize = 48 };
-            
-            // ==================== STEP 6: Generate Wallpaper ====================
-            System.Console.WriteLine("🎨 Creating wallpaper...");
+            var settings = new WallpaperSettings();
+
+            System.Console.WriteLine("Creating wallpaper...");
             using var wallpaperBitmap = _wallpaperService.CreateWallpaperImage(backgroundPath, selectedQuote, settings);
-            
-            // Save the wallpaper to a file
+
             await _wallpaperService.SaveImageAsync(wallpaperBitmap, AppConfiguration.CurrentWallpaperPath);
-            System.Console.WriteLine($"💾 Saved: {AppConfiguration.CurrentWallpaperPath}");
-            
-            // ==================== STEP 7: Set as Desktop Wallpaper ====================
+            System.Console.WriteLine($"Saved: {AppConfiguration.CurrentWallpaperPath}");
+
             var success = SetDesktopWallpaper(AppConfiguration.CurrentWallpaperPath);
             if (success)
             {
-                System.Console.WriteLine("🖼️  Desktop wallpaper updated successfully!");
+                System.Console.WriteLine("Desktop wallpaper updated.");
             }
             else
             {
-                System.Console.WriteLine("❌ Failed to set desktop wallpaper (but the image was saved)");
+                System.Console.WriteLine("Failed to set desktop wallpaper (but the image was saved).");
             }
             System.Console.WriteLine();
-            
-            // ==================== STEP 8: Generate Animation Frames (Optional) ====================
-            // This creates multiple frames for animation - can be used to make a GIF later
-            try 
-            { 
-                System.Console.WriteLine("🎞️  Generating animation frames...");
+
+            try
+            {
+                System.Console.WriteLine("Generating animation frames...");
                 var frames = await _wallpaperService.GenerateAnimationFramesAsync(
                     backgroundPath, selectedQuote, settings, AppConfiguration.FramesDirectory);
-                System.Console.WriteLine($"✅ Generated {frames.Count} animation frames");
+                System.Console.WriteLine($"Generated {frames.Count} animation frames.");
             }
-            catch (Exception ex) 
-            { 
-                // Animation frame generation is optional - don't fail if it doesn't work
-                System.Console.WriteLine($"⚠️  Frame generation skipped: {ex.Message}"); 
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"Frame generation skipped: {ex.Message}");
             }
-            
+
             System.Console.WriteLine();
-            System.Console.WriteLine("✅ All done! Enjoy your new wallpaper!");
+            System.Console.WriteLine("Done.");
         }
-        catch (Exception ex) 
-        { 
-            // Something went wrong - show a helpful error message
+        catch (Exception ex)
+        {
             System.Console.WriteLine();
-            System.Console.WriteLine("❌ ERROR OCCURRED:");
-            System.Console.WriteLine($"   {ex.Message}");
+            System.Console.WriteLine("ERROR:");
+            System.Console.WriteLine($"  {ex.Message}");
             System.Console.WriteLine();
             System.Console.WriteLine("   Need help? Check:");
             System.Console.WriteLine($"   - Is quotes.json file present at: {AppConfiguration.QuotesFilePath}");
@@ -168,7 +149,7 @@ class Program
     {
         if (!File.Exists(imagePath))
         {
-            System.Console.WriteLine($"❌ Wallpaper file not found: {imagePath}");
+            System.Console.WriteLine($"Wallpaper file not found: {imagePath}");
             return false;
         }
 
@@ -182,7 +163,7 @@ class Program
         }
         catch (Exception ex)
         {
-            System.Console.WriteLine($"❌ Failed to set wallpaper: {ex.Message}");
+            System.Console.WriteLine($"Failed to set wallpaper: {ex.Message}");
             return false;
         }
     }

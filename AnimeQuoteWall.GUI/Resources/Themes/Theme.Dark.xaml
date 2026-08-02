@@ -18,7 +18,18 @@
     <SolidColorBrush x:Key="TextTertiary"      Color="#6B7280"/>
     <SolidColorBrush x:Key="BorderColor"       Color="#252C3B"/>
     <SolidColorBrush x:Key="HoverBackground"   Color="#1E2333"/>
-    <SolidColorBrush x:Key="SidebarBackground" Color="#0A0C12"/>
-    <SolidColorBrush x:Key="SidebarText"       Color="#A5B4FC"/>
-    <SolidColorBrush x:Key="SidebarAccent"     Color="#818CF8"/>
+    <SolidColorBrush x:Key="SidebarBackground"  Color="#0D1117"/>
+    <SolidColorBrush x:Key="SidebarBorder"      Color="#161B22"/>
+    <SolidColorBrush x:Key="SidebarText"        Color="#94A3B8"/>
+    <SolidColorBrush x:Key="SidebarTextMuted"   Color="#6B7280"/>
+    <SolidColorBrush x:Key="SidebarSectionLabel" Color="#374151"/>
+    <SolidColorBrush x:Key="SidebarHover"       Color="#1E2333"/>
+    <SolidColorBrush x:Key="SidebarItemHover"   Color="#161B22"/>
+    <SolidColorBrush x:Key="SidebarText_Selected" Color="#F9FAFB"/>
+    <SolidColorBrush x:Key="SidebarText_Hover"  Color="#C7D2FE"/>
+    <SolidColorBrush x:Key="SidebarBrandHeading" Color="#F9FAFB"/>
+    <SolidColorBrush x:Key="SidebarAccent"      Color="#818CF8"/>
+    <SolidColorBrush x:Key="DisabledForeground" Color="#4B5563"/>
+    <SolidColorBrush x:Key="DisabledBackground" Color="#1F2937"/>
+    <SolidColorBrush x:Key="ScrimBackground"    Color="#80000000"/>
 </ResourceDictionary>

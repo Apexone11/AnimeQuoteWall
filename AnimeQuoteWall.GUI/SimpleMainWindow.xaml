@@ -11,13 +11,14 @@
         MinWidth="920"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource WindowBackground}"
-        x:Name="MainWindowElement">
+        x:Name="MainWindowElement"
+        PreviewKeyDown="Window_PreviewKeyDown">
 
     <Window.Resources>
-        <!-- ── Sidebar Navigation Button ── -->
+        <!-- Sidebar Navigation Button -->
         <Style x:Key="SidebarNavButton" TargetType="Button">
             <Setter Property="Background"                Value="Transparent"/>
-            <Setter Property="Foreground"                Value="#94A3B8"/>
+            <Setter Property="Foreground"                Value="{DynamicResource SidebarText}"/>
             <Setter Property="BorderThickness"           Value="0"/>
             <Setter Property="FontSize"                  Value="14"/>
             <Setter Property="FontWeight"                Value="Medium"/>
@@ -26,18 +27,22 @@
             <Setter Property="Cursor"                    Value="Hand"/>
             <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
             <Setter Property="TextOptions.TextRenderingMode"   Value="ClearType"/>
+            <Setter Property="FocusVisualStyle"          Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <!-- Active left-border accent (visible only when selected) -->
+                            <Border x:Name="focusRing"
+                                    Margin="6,2,6,2"
+                                    CornerRadius="10"
+                                    BorderBrush="{DynamicResource SidebarAccent}"
+                                    BorderThickness="0"/>
                             <Border x:Name="accentBar"
                                     Width="4"
                                     HorizontalAlignment="Left"
                                     CornerRadius="0,4,4,0"
-                                    Background="#818CF8"
+                                    Background="{DynamicResource SidebarAccent}"
                                     Visibility="Collapsed"/>
-                            <!-- Main button background -->
                             <Border x:Name="bg"
                                     Background="{TemplateBinding Background}"
                                     CornerRadius="10"
@@ -49,14 +54,17 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bg"        Property="Background" Value="#1E2333"/>
-                                <Setter Property="Foreground" Value="#C7D2FE"/>
+                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource SidebarHover}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource SidebarText_Hover}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="focusRing" Property="BorderThickness" Value="2"/>
                             </Trigger>
                             <Trigger Property="Tag" Value="Selected">
-                                <Setter TargetName="bg"         Property="Background" Value="#1E2333"/>
-                                <Setter TargetName="accentBar"  Property="Visibility" Value="Visible"/>
-                                <Setter Property="Foreground"  Value="White"/>
-                                <Setter Property="FontWeight"  Value="SemiBold"/>
+                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource SidebarHover}"/>
+                                <Setter TargetName="accentBar" Property="Visibility" Value="Visible"/>
+                                <Setter Property="Foreground" Value="{DynamicResource SidebarText_Selected}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -64,9 +72,9 @@
             </Setter>
         </Style>
 
-        <!-- ── Sidebar Section Separator ── -->
+        <!-- Sidebar Section Separator -->
         <Style x:Key="SidebarSeparator" TargetType="Separator">
-            <Setter Property="Background"    Value="#1F2937"/>
+            <Setter Property="Background"    Value="{DynamicResource SidebarBorder}"/>
             <Setter Property="Margin"        Value="16,8"/>
             <Setter Property="Height"        Value="1"/>
         </Style>
@@ -94,15 +102,13 @@
             <ColumnDefinition Width="*" MinWidth="600"/>
         </Grid.ColumnDefinitions>
 
-        <!-- ════════════════════════════════════════════════
-             SIDEBAR
-        ════════════════════════════════════════════════ -->
+        <!-- SIDEBAR -->
         <Border Grid.Column="0"
-                Background="#0D1117"
-                BorderBrush="#161B22"
+                Background="{DynamicResource SidebarBackground}"
+                BorderBrush="{DynamicResource SidebarBorder}"
                 BorderThickness="0,0,1,0">
             <Border.Effect>
-                <DropShadowEffect Color="#000000" Opacity="0.4" BlurRadius="16" ShadowDepth="2" Direction="0"/>
+                <DropShadowEffect Color="Black" Opacity="0.4" BlurRadius="16" ShadowDepth="2" Direction="0"/>
             </Border.Effect>
             <Grid>
                 <Grid.RowDefinitions>
@@ -112,10 +118,10 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- ── App Logo / Branding ── -->
+                <!-- App Logo / Branding -->
                 <Border Grid.Row="0" Padding="16,20,16,16">
                     <DockPanel>
-                        <Border Background="#6366F1"
+                        <Border Background="{DynamicResource PrimaryDark}"
                                 CornerRadius="12"
                                 Width="40" Height="40"
                                 Margin="0,0,12,0"
@@ -133,18 +139,18 @@
                             <TextBlock Text="Anime Quote"
                                        FontSize="15"
                                        FontWeight="Bold"
-                                       Foreground="#F9FAFB"
+                                       Foreground="{DynamicResource SidebarBrandHeading}"
                                        TextOptions.TextRenderingMode="ClearType"/>
                             <TextBlock Text="Wallpaper Manager"
                                        FontSize="11"
-                                       Foreground="#6B7280"
+                                       Foreground="{DynamicResource SidebarTextMuted}"
                                        Margin="0,1,0,0"
                                        TextOptions.TextRenderingMode="ClearType"/>
                         </StackPanel>
                     </DockPanel>
                 </Border>
 
-                <!-- ── Collapse Toggle ── -->
+                <!-- Collapse Toggle -->
                 <Button Grid.Row="1"
                         x:Name="SidebarCollapseButton"
                         Click="SidebarCollapseButton_Click"
@@ -153,18 +159,19 @@
                         Height="32"
                         Cursor="Hand"
                         Margin="10,0,10,8"
-                        ToolTip="Collapse / Expand sidebar">
-                    <Border Background="#161B22" CornerRadius="8" Padding="0">
+                        ToolTip="Collapse or expand the sidebar"
+                        AutomationProperties.Name="Toggle sidebar">
+                    <Border Background="{DynamicResource SidebarItemHover}" CornerRadius="8" Padding="0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <iconPacks:PackIconMaterial x:Name="CollapseIcon"
                                                         Kind="ChevronLeft"
                                                         Width="16" Height="16"
-                                                        Foreground="#6B7280"
+                                                        Foreground="{DynamicResource SidebarTextMuted}"
                                                         VerticalAlignment="Center"/>
                             <TextBlock x:Name="CollapseLabel"
                                        Text="Collapse"
                                        FontSize="12"
-                                       Foreground="#6B7280"
+                                       Foreground="{DynamicResource SidebarTextMuted}"
                                        Margin="6,0,0,0"
                                        VerticalAlignment="Center"
                                        TextOptions.TextRenderingMode="ClearType"/>
@@ -181,7 +188,7 @@
                                    Text="GENERATE"
                                    FontSize="10"
                                    FontWeight="Bold"
-                                   Foreground="#374151"
+                                   Foreground="{DynamicResource SidebarSectionLabel}"
                                    Margin="22,8,0,4"
                                    TextOptions.TextRenderingMode="ClearType"/>
 
@@ -219,7 +226,7 @@
                                    Text="LIBRARY"
                                    FontSize="10"
                                    FontWeight="Bold"
-                                   Foreground="#374151"
+                                   Foreground="{DynamicResource SidebarSectionLabel}"
                                    Margin="22,0,0,4"
                                    TextOptions.TextRenderingMode="ClearType"/>
 
@@ -257,7 +264,7 @@
                                    Text="MANAGE"
                                    FontSize="10"
                                    FontWeight="Bold"
-                                   Foreground="#374151"
+                                   Foreground="{DynamicResource SidebarSectionLabel}"
                                    Margin="22,0,0,4"
                                    TextOptions.TextRenderingMode="ClearType"/>
 
@@ -305,15 +312,16 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <!-- ── Footer ── -->
+                <!-- Footer -->
                 <Border Grid.Row="3"
                         Padding="16,12"
-                        BorderBrush="#161B22"
+                        BorderBrush="{DynamicResource SidebarBorder}"
                         BorderThickness="0,1,0,0">
                     <StackPanel x:Name="SidebarFooter">
-                        <TextBlock Text="Anime Quote Wall  v1.4.0"
+                        <TextBlock x:Name="VersionText"
+                                   Text="Anime Quote Wall"
                                    FontSize="11"
-                                   Foreground="#374151"
+                                   Foreground="{DynamicResource SidebarSectionLabel}"
                                    HorizontalAlignment="Center"
                                    TextOptions.TextRenderingMode="ClearType"/>
                     </StackPanel>

@@ -108,7 +108,7 @@
                                         <Style TargetType="Border">
                                             <Style.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="BorderBrush" Value="#818CF8"/>
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryColor}"/>
                                                 </Trigger>
                                             </Style.Triggers>
                                         </Style>

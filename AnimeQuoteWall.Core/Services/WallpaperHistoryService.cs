@@ -103,12 +103,16 @@ public class WallpaperHistoryService
         {
             var json = await File.ReadAllTextAsync(MetadataFile).ConfigureAwait(false);
             var entries = JsonSerializer.Deserialize<List<WallpaperHistoryEntry>>(json) ?? new List<WallpaperHistoryEntry>();
-            
-            // Filter out entries where image file no longer exists
-            return entries.Where(e => File.Exists(e.ImagePath)).ToList();
+
+            return entries
+                .Where(e => !string.IsNullOrEmpty(e.ImagePath)
+                            && SafePath.IsInsideRoot(e.ImagePath, HistoryDirectory)
+                            && File.Exists(e.ImagePath))
+                .ToList();
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"WallpaperHistoryService.LoadHistoryEntriesAsync: {ex.Message}");
             return new List<WallpaperHistoryEntry>();
         }
     }
@@ -133,19 +137,24 @@ public class WallpaperHistoryService
     /// </summary>
     public async Task DeleteFromHistoryAsync(WallpaperHistoryEntry entry)
     {
-        // Delete image file
-        if (File.Exists(entry.ImagePath))
+        if (entry is null) return;
+
+        if (!string.IsNullOrEmpty(entry.ImagePath)
+            && SafePath.IsInsideRoot(entry.ImagePath, HistoryDirectory)
+            && File.Exists(entry.ImagePath))
         {
             try
             {
                 File.Delete(entry.ImagePath);
             }
-            catch { /* ignore */ }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"WallpaperHistoryService.DeleteFromHistoryAsync: {ex.Message}");
+            }
         }
 
-        // Remove from metadata
         var entries = await LoadHistoryEntriesAsync().ConfigureAwait(false);
-        entries.RemoveAll(e => e.ImagePath == entry.ImagePath);
+        entries.RemoveAll(e => string.Equals(e.ImagePath, entry.ImagePath, StringComparison.OrdinalIgnoreCase));
         await SaveHistoryEntriesAsync(entries).ConfigureAwait(false);
     }
 

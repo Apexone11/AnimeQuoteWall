@@ -1,0 +1,17 @@
+# Built installer output - never commit binaries to the repo.
+dist/
+
+# Branding placeholders. Real artwork is supplied per-build and is not
+# tracked here so designers can iterate without polluting git history.
+# If you decide to commit your final branding assets, remove the lines
+# below or add a forced negation rule such as `!assets/wizard-side.bmp`.
+assets/*.bmp
+assets/*.ico
+
+# Inno Setup compiler intermediates (rare, but possible if /O is misused).
+*.iss.bak
+*.iss~
+
+# OS clutter.
+Thumbs.db
+desktop.ini

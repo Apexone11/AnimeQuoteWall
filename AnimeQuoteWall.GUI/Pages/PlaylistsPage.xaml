@@ -144,7 +144,7 @@
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding Enabled}" Value="True">
                                                                 <Setter Property="Text" Value="Enabled"/>
-                                                                <Setter Property="Foreground" Value="#10B981"/>
+                                                                <Setter Property="Foreground" Value="{DynamicResource SuccessDark}"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>

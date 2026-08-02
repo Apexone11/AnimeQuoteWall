@@ -197,17 +197,16 @@ public partial class BackgroundsPage : Page
     {
         try
         {
-            var backgroundCountRun = (Run)BackgroundCountText.Inlines.FirstOrDefault(i => i is Run r && r.Name == "BackgroundCountRun");
+            var backgroundCountRun = BackgroundCountText.Inlines.OfType<Run>().FirstOrDefault(r => r.Name == "BackgroundCountRun");
             if (backgroundCountRun != null)
-            {
                 backgroundCountRun.Text = $"{count}";
-            }
             else
-            {
                 BackgroundCountText.Text = $"Total Backgrounds: {count}";
-            }
         }
-        catch { /* ignore */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"BackgroundsPage.UpdateCount: {ex.Message}");
+        }
     }
 
     /// <summary>

@@ -526,9 +526,9 @@ public class AppConfiguration
                         SaveSettings();
                     }
                 }
-                catch
+                catch (Exception migrateEx)
                 {
-                    // If JSON inspection fails, do not migrate to avoid unintended overrides.
+                    System.Diagnostics.Debug.WriteLine($"AppConfiguration migration skipped: {migrateEx.Message}");
                 }
             }
             else
@@ -537,8 +537,22 @@ public class AppConfiguration
                 SaveSettings();
             }
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"AppConfiguration.LoadSettings: {ex.Message}");
+            try
+            {
+                if (File.Exists(_settingsFilePath))
+                {
+                    var corruptBackup = _settingsFilePath + ".corrupt-" + DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+                    File.Copy(_settingsFilePath, corruptBackup, overwrite: true);
+                    System.Diagnostics.Debug.WriteLine($"AppConfiguration: settings file backed up to {corruptBackup}");
+                }
+            }
+            catch (Exception backupEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"AppConfiguration backup failed: {backupEx.Message}");
+            }
             _userSettings = new UserSettings();
         }
     }

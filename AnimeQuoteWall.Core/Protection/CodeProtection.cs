@@ -25,20 +25,20 @@ public static class CodeProtection
 
         try
         {
-            // Perform integrity checks
             _isValid = ValidateCodeIntegrity();
             _integrityChecked = true;
 
             if (!_isValid)
-            {
-                // Log warning but don't crash (allows debugging)
-                Debug.WriteLine("Warning: Code integrity check failed. Application may have been tampered with.");
-            }
+                Debug.WriteLine("CodeProtection: integrity check failed. The application may have been modified.");
         }
-        catch
+        catch (Exception ex)
         {
-            // Fail silently to prevent crashes during development
+            Debug.WriteLine($"CodeProtection.Initialize: {ex.Message}");
+#if DEBUG
             _isValid = true;
+#else
+            _isValid = false;
+#endif
             _integrityChecked = true;
         }
     }
@@ -114,12 +114,16 @@ public static class CodeProtection
     {
         try
         {
-            // Perform integrity checks
             return ValidateCodeIntegrity();
         }
-        catch
+        catch (Exception ex)
         {
-            return true; // Fail open
+            Debug.WriteLine($"CodeProtection.ValidateDistributionIntegrity: {ex.Message}");
+#if DEBUG
+            return true;
+#else
+            return false;
+#endif
         }
     }
 
