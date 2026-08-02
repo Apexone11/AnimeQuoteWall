@@ -1,0 +1,79 @@
+# Build and verification pipeline for AnimeQuoteWall.
+#
+# Implements the stages in CLAUDE.md Section 11, in order, all blocking. The app is
+# WPF and targets net8.0-windows, so every stage runs on a Windows runner.
+#
+# Actions are pinned to a commit SHA rather than a moving tag (CLAUDE.md Section 11,
+# supply-chain hardening). The trailing comment records the human-readable version.
+
+name: Build
+
+on:
+  push:
+    branches: ["main", "feature/**"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and verify
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: "8.0.x"
+
+      # Stage 1
+      - name: Restore
+        run: dotnet restore AnimeQuoteWall.sln
+
+      # Stage 2. Runs before the build so a formatting failure is reported quickly.
+      - name: Verify formatting
+        run: dotnet format AnimeQuoteWall.sln --verify-no-changes --no-restore -v minimal
+
+      # Stage 3. Warnings are failures: the 2.0.0 baseline is 0 errors and 0 warnings,
+      # so the former CA1416 set reappearing is a regression, not noise.
+      #
+      # NuGet audit warnings are exempt. Directory.Build.props sets NuGetAuditLevel=low,
+      # so without this a single new low-severity advisory would fail the build here -
+      # stricter than Section 11, which fails only on High or Critical. The audit stage
+      # below stays the sole authority on vulnerabilities.
+      - name: Build
+        run: dotnet build AnimeQuoteWall.sln -c Release --no-restore -warnaserror -p:WarningsNotAsErrors=NU1901%3BNU1902%3BNU1903%3BNU1904
+
+      # Stage 4
+      - name: Test
+        run: dotnet test AnimeQuoteWall.sln -c Release --no-build --collect:"XPlat Code Coverage"
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: coverage
+          path: "**/TestResults/**/coverage.cobertura.xml"
+          if-no-files-found: ignore
+
+      # Stage 5. `dotnet list package --vulnerable` exits 0 even when it finds
+      # something, so failing the job means inspecting the output ourselves.
+      - name: Audit dependencies
+        shell: pwsh
+        run: |
+          $output = dotnet list AnimeQuoteWall.sln package --vulnerable --include-transitive | Out-String
+          Write-Host $output
+          if ($output -match '\bHigh\b|\bCritical\b') {
+              Write-Error "Vulnerable packages with High or Critical severity were found."
+              exit 1
+          }
+          Write-Host "No High or Critical advisories."
