@@ -27,7 +27,7 @@
          image pipeline uses Magick.NET (Apache-2.0) and System.Drawing.Common. -->
     <PackageReference Include="System.Drawing.Common" Version="9.0.10" />
     <PackageReference Include="System.Text.Json" Version="9.0.10" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.13.1" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.16.0" />
   </ItemGroup>
 
 </Project>
