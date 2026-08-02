@@ -8,7 +8,7 @@
 ; ===========================================================================
 
 #define MyAppName            "AnimeQuoteWall"
-#define MyAppVersion         "1.3.0"
+#define MyAppVersion         "2.0.0"
 #define MyAppPublisher       "Apexone11"
 #define MyAppURL             "https://github.com/Apexone11/AnimeQuoteWall"
 #define MyAppSupportURL      "https://github.com/Apexone11/AnimeQuoteWall/issues"

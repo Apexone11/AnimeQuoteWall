@@ -2,7 +2,7 @@
 
 A professional Windows desktop application for generating, organizing, and applying anime-quote wallpapers across single or multiple monitors. Supports static images, animated wallpapers, scheduled rotations, and a personal quote library.
 
-![Version](https://img.shields.io/badge/version-1.3.1-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![.NET](https://img.shields.io/badge/.NET-8.0-purple)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-green)

@@ -124,7 +124,7 @@ See `installer\assets\README-assets.md` for the full design brief.
 The installer version is hard-coded in `AnimeQuoteWall.iss`:
 
 ```
-#define MyAppVersion "1.3.0"
+#define MyAppVersion "2.0.0"
 ```
 
 When you bump the version in `AnimeQuoteWall.GUI.csproj`, also update this

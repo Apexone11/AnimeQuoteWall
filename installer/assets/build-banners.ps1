@@ -6,12 +6,28 @@
 # icon centered on the side banner, brand wordmark below it, and just the icon
 # on the small banner. No emojis, no fancy filters - production-clean.
 
+[CmdletBinding()]
+param(
+    # Version stamped onto the side banner. Defaults to the version in
+    # AnimeQuoteWall.GUI.csproj so the banner cannot drift from the build.
+    [string] $Version
+)
+
 $ErrorActionPreference = 'Stop'
 
 Add-Type -AssemblyName 'System.Drawing'
 
 $scriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot    = Resolve-Path (Join-Path $scriptDir '..\..')
+
+if (-not $Version) {
+    $guiCsproj = Join-Path $repoRoot 'AnimeQuoteWall.GUI\AnimeQuoteWall.GUI.csproj'
+    $Version = ([xml](Get-Content -LiteralPath $guiCsproj)).Project.PropertyGroup.Version |
+        Where-Object { $_ } | Select-Object -First 1
+    if (-not $Version) {
+        throw "Could not read <Version> from $guiCsproj; pass -Version explicitly."
+    }
+}
 $appIconPath = Join-Path $repoRoot 'AnimeQuoteWall.GUI\Resources\appicon.png'
 if (-not (Test-Path $appIconPath)) {
     throw "App icon not found at $appIconPath"
@@ -92,7 +108,7 @@ try {
 
         $g.DrawString('Anime Quote',         $titleFont,    $titleBrush,    [System.Drawing.RectangleF]::new(0, 170, $sideW, 22), $titleFormat)
         $g.DrawString('Wallpaper Manager',   $titleFont,    $titleBrush,    [System.Drawing.RectangleF]::new(0, 192, $sideW, 22), $titleFormat)
-        $g.DrawString('Version 1.3.0',       $subtitleFont, $subtitleBrush, [System.Drawing.RectangleF]::new(0, 224, $sideW, 18), $titleFormat)
+        $g.DrawString("Version $Version",    $subtitleFont, $subtitleBrush, [System.Drawing.RectangleF]::new(0, 224, $sideW, 18), $titleFormat)
 
         # Decorative footer rule near the bottom (keep bottom third visually quiet).
         $rulePen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(64, 255, 255, 255)), 1

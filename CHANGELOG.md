@@ -2,11 +2,18 @@
 
 All notable changes to Anime Quote Wallpaper Manager will be documented in this file.
 
-## [Unreleased] - 2026-05-17
+## [2.0.0] - 2026-08-02
+
+Major release. Two full adversarial bug hunts (38 verified findings, all fixed),
+a security and dependency overhaul, an installer plus auto-updater pipeline, and
+a run of new user-facing features. Build is 0 errors / 0 warnings across GUI,
+Core, and CLI, with no vulnerable packages.
 
 ### Security
 
-- **CVE response**: upgraded Magick.NET-Q8-AnyCPU from 14.10.4 to 14.13.1, resolving 23 ImageMagick vulnerabilities (heap buffer overflows in MVG, MNG, JP2, JXL, FTXT decoders/encoders; stack overflows in XML parsing; etc.). `dotnet list package --vulnerable --include-transitive` now reports zero vulnerable packages in both Core and GUI.
+- **CVE response**: upgraded Magick.NET-Q8-AnyCPU from 14.10.4 to 14.13.1, resolving 23 ImageMagick vulnerabilities (heap buffer overflows in MVG, MNG, JP2, JXL, FTXT decoders/encoders; stack overflows in XML parsing; etc.), then to 14.16.0, clearing a further 328 advisories (24 of them high severity) published against 14.13.1. `dotnet list package --vulnerable --include-transitive` now reports zero vulnerable packages in both Core and GUI.
+- **License hygiene**: removed SixLabors.ImageSharp (Split License) from Core. It was unused and its license is incompatible with the closed-source store and Steam distribution. Dependencies are now permissive-only (MIT / Apache-2.0 / BSD / MS-PL).
+- **Update channel**: the in-app Velopack updater only fetches over HTTPS and is skipped entirely under `--steam` and `--store`, where the platform patches the app.
 - **Path-traversal protection**: new `AnimeQuoteWall.Core.Services.SafePath` enforces canonicalization plus root containment plus reparse-point rejection. Wired into `PlaylistService.GetPlaylistFilePath`, `WallpaperHistoryService.LoadHistoryEntriesAsync` / `DeleteFromHistoryAsync`, `HistoryPage.RestoreButton_Click`, and the backup import/export pipeline.
 - **Process argument-injection protection**: every `ffmpeg` and Wallpaper Engine `Process.Start` call migrated from string-concatenated `Arguments =` to `ProcessStartInfo.ArgumentList`. Also refuses to fall back to FFmpeg on PATH; only the bundled binary is invoked.
 - **ImageMagick hardening**: `ImageMagickHardening.Apply()` runs at startup and caps image width/height (16K), memory (512 MiB), disk (1 GiB), and worker threads.
@@ -17,6 +24,17 @@ All notable changes to Anime Quote Wallpaper Manager will be documented in this 
 
 ### Added
 
+- **Auto-update**: Velopack (MIT) integration. A custom `Main` runs `VelopackApp.Build().Run()` before the WPF app starts to handle install, update, and uninstall hooks. `UpdateService` checks GitHub Releases over HTTPS, downloads in the background, and prompts to restart and apply. It is a no-op for dev and portable builds and is skipped under `--steam` / `--store`. The `vpk pack` flow also produces a `Setup.exe` bootstrapper that installs when the app is missing and updates when it is present.
+- **System tray**: `TrayIconService` (built-in WinForms `NotifyIcon`, no new dependency) with Open / Hide / Exit, double-click to restore, and an optional minimize-to-tray mode behind a new Settings toggle.
+- **Window placement memory**: main window position, size, and maximized state persist across launches, guarded so the window never reopens off a disconnected monitor.
+- **Start with Windows**: `StartupService` plus a Settings toggle, writing only the per-user `HKCU` run entry.
+- **Global hotkey**: system-wide Ctrl+Alt+Q toggles window visibility via `GlobalHotkeyService` (`RegisterHotKey` with an `HwndSource` hook, unregistered on exit).
+- **Single instance**: a named mutex makes the app single-instance; a second launch signals the running instance over a per-user named pipe to come to the front, then exits.
+- **History favorites and search**: a per-item favorite star on `HistoryPage`, a Favorites-only toggle, and a search box filtering by quote text, character, anime, or date. Filtering runs against a cached list so the virtualizing `ListBox` stays responsive.
+- **Background fit modes**: a Fill / Fit / Stretch / Center picker. `WallpaperService.FitBackground` composes the source onto the canvas preserving aspect ratio; the default is now Fill (cover plus center-crop) rather than the previous distorting stretch.
+- **Background filter effects**: an optional Blur / Sepia / Grayscale / Vintage filter applied to the background before the quote is drawn, wiring the previously unused `MediaEditingService.ApplyFilter` into all three generation paths.
+- **Performance and power controls**: `PerformanceMonitorService` pauses wallpaper rotation on battery, when a window is maximized or fullscreen, over RDP, or when a configured app is running, plus a Low-Power mode. Surfaced as a "Performance and Power" card in Settings.
+- **`RUNNING.md`**: how to run the app and build the installer without an IDE.
 - **Installer**: full Inno Setup 6.3 installer pipeline at `installer/`. Modern wizard with welcome, license/TOS acceptance, install-location chooser, progress bar, finish-with-launch. `.NET 8 Desktop Runtime` detection that offers to fetch from `dotnet.microsoft.com` when missing. `installer/build.ps1` publishes, compiles, and reports SHA-256; `-Sign` switch invokes signtool.
 - **Themed `AddQuoteDialog`** (XAML window) replaces the old code-behind `SimpleQuoteDialog` with hardcoded white background and emoji headers.
 - **`AboutDialog`** with version detection, license, third-party credits, and GitHub links.
@@ -37,9 +55,26 @@ All notable changes to Anime Quote Wallpaper Manager will be documented in this 
 - AnimatedWallpapersPage status bar migrated to `SuccessDark` / `SuccessColor` (available state) and `WarningDark` / `WarningColor` (Wallpaper Engine missing).
 - HistoryPage, PlaylistsPage, AnimatedWallpapersPage, WallpaperPage hover/selected border colors migrated to `PrimaryColor` token.
 - Inno Setup script updated for 6.3+: `WizardResizable` removed (obsolete), `ArchitecturesAllowed=x64compatible` (replaces deprecated `x64`).
+- **Branding**: the app icon is now the original indigo quotation-mark tile, regenerated across the app icon, installer wizard art, and store tiles from `installer/assets/generate-logo.ps1`.
+- **Version reconciled to 2.0.0** across `AnimeQuoteWall.GUI.csproj`, `AnimeQuoteWall.Core.csproj`, `installer/AnimeQuoteWall.iss`, and the README badge, which had drifted between 1.3.0 and 1.3.1. `installer/assets/build-banners.ps1` now reads the version from the GUI csproj instead of hardcoding it, so the wizard banner cannot drift again.
 
 ### Fixed
 
+Findings from two five-round adversarial bug hunts (38 verified issues, all resolved):
+
+- **Per-monitor wallpaper never worked**: the OS gate `Major >= 6 && Minor >= 2` is false on Windows 10/11 (10.0), silently disabling the feature for every supported OS. Now compares the whole `Version` against 6.2.
+- **Pause policy was dead code**: `CheckPausePolicy()` was never called, so no battery / maximized / RDP / per-app / Low-Power rule had any effect. The monitor loop is now its sole evaluator and `PlaylistWorker` reads the aggregate `ShouldPause` and re-applies settings each iteration, so changes take effect live.
+- **History filename collisions**: multi-monitor and fast-rotation saves shared a one-second timestamp, overwriting images and producing duplicate entries. Names now use millisecond precision plus a GUID, and the metadata read-modify-write is serialized with a `SemaphoreSlim`.
+- **Window placement lost on tray exit**: `Application.Shutdown` skips `Window.Closing`, so tray Exit now closes the window instead. Tray restore also preserves a prior maximized state.
+- **Off-screen guard used the wrong coordinate space**: it compared DIP coordinates against physical-pixel screen bounds, misbehaving under DPI scaling. Now uses the DIP-space virtual screen.
+- **Virtualization was defeated**: `HistoryPage` used a plain `ItemsControl` plus `UniformGrid` (now a virtualizing `ListBox`), and the outer `ScrollViewer`s on `BackgroundsPage` / `QuotesPage` prevented their `VirtualizingStackPanel`s from engaging.
+- **Playlist interval overflow**: long intervals broke on an `int` millisecond overflow. Input is clamped to 5..86400 seconds and converted with `TimeSpan.FromSeconds`.
+- **`AppConfiguration` data race**: `LoadSettings` and the per-monitor dictionary accessors now run under the settings lock, ending "collection modified" failures during serialization and torn reads against the `PlaylistWorker` thread.
+- **Thumbnail file locks**: `HistoryPage` thumbnails route through `ImagePathConverter` (`OnLoad` plus `DecodePixelWidth` plus `Freeze`), so Delete now works. `ImagePathConverter` also no longer sets both `DecodePixelWidth` and `DecodePixelHeight`, which distorted aspect ratios.
+- **Settings page side effects on load**: programmatic control initialization was rewriting the `HKCU` startup entry and re-applying the theme on every visit. Handlers are suppressed during initialization, and bool config setters skip saves when the value is unchanged.
+- `ImageCacheService` leaked a GDI+ bitmap clone and double-counted memory on a cache-miss race; `TrayIconService` disposed the shared `SystemIcons.Application` handle and leaked its `ContextMenuStrip`; `AnimatedWallpapersPage` and `BackgroundsPage` leaked `CancellationTokenSource` instances on reassign and unload.
+- Replaced blocking `Dispatcher.Invoke` with `InvokeAsync` in the History, Quotes, and Playlists load paths; logged the previously empty history-save catch in `PlaylistWorker`.
+- Shuffle used a per-call time-seeded `Random` and could repeat the same entry; now uses `Random.Shared` and avoids immediate repeats.
 - `HistoryPage.DeleteButton_Click` no longer calls `.Wait()` on the UI dispatcher (latent deadlock).
 - `WallpaperPage.SetWallpaper` sync wrapper deleted; all call sites are now `async`.
 - Build now produces 0 errors and 0 warnings on both GUI and CLI projects.
@@ -49,6 +84,8 @@ All notable changes to Anime Quote Wallpaper Manager will be documented in this 
 
 ### Removed
 
+- The "Animation framerate cap" and "Render scale" sliders in Settings. Neither had a consumer in the GUI (the animation-frame API is CLI-only), so they were non-functional controls. The config fields remain for the planned animation-export feature.
+- `SixLabors.ImageSharp` from `AnimeQuoteWall.Core` (unused; Split License).
 - `*.backup` files across the GUI project.
 - `AnimeQuoteWall.CLI/TestConsole.cs` (conflicted with `Program.cs` top-level statements).
 - Code-behind `SimpleQuoteDialog` in `SimpleMainWindow.xaml.cs` (replaced by themed XAML dialog).
