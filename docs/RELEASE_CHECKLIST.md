@@ -14,6 +14,7 @@ Run this checklist before tagging a new release of AnimeQuoteWall.
 - [ ] `dotnet restore` succeeds.
 - [ ] `dotnet build AnimeQuoteWall.GUI/AnimeQuoteWall.GUI.csproj -c Release --no-incremental` returns 0 errors and 0 warnings. As of 2.0.0 the former CA1416 warning set is gone; any warning is a regression.
 - [ ] `dotnet format --verify-no-changes` is clean.
+- [ ] `dotnet test -c Release` is green. Run from the repo root so `AnimeQuoteWall.sln` picks up every project.
 - [ ] `dotnet list package --vulnerable --include-transitive` shows no entries at all (2.0.0 baseline is zero, not merely zero High/Critical).
 
 If `--no-incremental` fails with `BG1002: ... .baml cannot be found`, the `obj`

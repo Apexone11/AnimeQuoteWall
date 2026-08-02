@@ -242,17 +242,10 @@ public class PerMonitorWallpaperService : IDisposable
 
             // Apply all wallpapers in sequence without delays
             // Windows will batch these operations internally
-            foreach (var kvp in monitorWallpaperMap)
+            foreach (var assignment in PerMonitorDispatch.Resolve(monitorWallpaperMap, devicePaths, File.Exists))
             {
-                if (kvp.Key >= 0 && kvp.Key < devicePaths.Count)
-                {
-                    if (!string.IsNullOrEmpty(kvp.Value) && File.Exists(kvp.Value))
-                    {
-                        var fullPath = Path.GetFullPath(kvp.Value);
-                        _desktopWallpaper!.SetWallpaper(devicePaths[kvp.Key], fullPath);
-                        successCount++;
-                    }
-                }
+                _desktopWallpaper!.SetWallpaper(assignment.MonitorDevicePath, assignment.WallpaperPath);
+                successCount++;
             }
         }
         catch

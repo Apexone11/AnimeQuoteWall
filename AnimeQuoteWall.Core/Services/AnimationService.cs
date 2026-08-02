@@ -235,18 +235,8 @@ public class AnimationService
                 RedirectStandardOutput = true,
                 CreateNoWindow = true
             };
-            psi.ArgumentList.Add("-y");
-            psi.ArgumentList.Add("-framerate");
-            psi.ArgumentList.Add(profile.FramesPerSecond.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            psi.ArgumentList.Add("-i");
-            psi.ArgumentList.Add(inputPattern);
-            psi.ArgumentList.Add("-pix_fmt");
-            psi.ArgumentList.Add("yuv420p");
-            psi.ArgumentList.Add("-crf");
-            psi.ArgumentList.Add("18");
-            psi.ArgumentList.Add("-preset");
-            psi.ArgumentList.Add("veryfast");
-            psi.ArgumentList.Add(outputPath);
+            foreach (var a in FfmpegArguments.BuildAnimationEncode(inputPattern, profile.FramesPerSecond, outputPath))
+                psi.ArgumentList.Add(a);
 
             using var process = new Process { StartInfo = psi };
             process.Start();

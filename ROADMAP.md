@@ -75,9 +75,16 @@ long-standing roadmap entries:
 
 ## Testing
 
-- [ ] Stand up `AnimeQuoteWall.Core.Tests` (xUnit) per CLAUDE.md Section 9
-- [ ] Cover `SafePath`, magic-byte sniffing, ffmpeg `ArgumentList` construction,
-      theme switch round-trip, and per-monitor dispatch
+- [x] Stand up `AnimeQuoteWall.Core.Tests` (xUnit) per CLAUDE.md Section 9
+- [x] Cover `SafePath` containment and id sanitization, magic-byte sniffing,
+      ffmpeg and Wallpaper Engine argument construction, and per-monitor dispatch
+- [ ] Theme switch round-trip (needs a WPF/STA harness, so it does not fit the
+      current WPF-free Core test project)
+- [ ] A CI workflow implementing the CLAUDE.md Section 11 stages. Only the CodeQL
+      workflow exists today, so `dotnet build`, `dotnet format`, `dotnet test`, and
+      the vulnerability audit currently run locally only
+- [ ] Integration tests for the file and process I/O services, behind
+      `[Trait("Category","Integration")]`
 
 ## Documentation
 

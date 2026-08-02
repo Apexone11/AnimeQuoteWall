@@ -20,29 +20,29 @@ namespace AnimeQuoteWall.Console;
 class Program
 {
     #region Windows API - DO NOT MODIFY (used to set wallpaper)
-    
+
     // This is a Windows system call that lets us change the desktop wallpaper
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     static extern bool SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
-    
+
     // Constants for the Windows API call
     const int SPI_SETDESKWALLPAPER = 0x0014;      // Command to set wallpaper
     const int SPIF_UPDATEINIFILE = 0x01;          // Save change to user profile
     const int SPIF_SENDWININICHANGE = 0x02;       // Notify all windows of the change
-    
+
     #endregion
 
     #region Services - These handle all the business logic
-    
+
     // QuoteService: Loads and manages anime quotes
     private static readonly IQuoteService _quoteService = new QuoteService();
-    
+
     // BackgroundService: Finds background images
     private static readonly IBackgroundService _backgroundService = new BackgroundService();
-    
+
     // WallpaperService: Creates the actual wallpaper image
     private static readonly IWallpaperService _wallpaperService = new WallpaperService();
-    
+
     #endregion
 
     /// <summary>
@@ -134,9 +134,9 @@ class Program
             System.Console.WriteLine($"   - Is quotes.json file present at: {AppConfiguration.QuotesFilePath}");
             System.Console.WriteLine($"   - Do you have write permissions in: {AppConfiguration.BaseDirectory}");
             System.Console.WriteLine();
-            
+
             // Exit with error code so automated tools know something went wrong
-            Environment.Exit(1); 
+            Environment.Exit(1);
         }
     }
 
@@ -156,9 +156,9 @@ class Program
         try
         {
             return SystemParametersInfo(
-                SPI_SETDESKWALLPAPER, 
-                0, 
-                imagePath, 
+                SPI_SETDESKWALLPAPER,
+                0,
+                imagePath,
                 SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
         }
         catch (Exception ex)
@@ -167,4 +167,4 @@ class Program
             return false;
         }
     }
-} 
+}

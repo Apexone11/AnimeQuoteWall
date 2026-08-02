@@ -289,12 +289,7 @@ public class AnimatedWallpaperService
                 return false;
             }
 
-            var commandVariants = new[]
-            {
-                new[] { "-control", "openWallpaper", "-file", videoPath },
-                new[] { "-control", "applyWallpaper", "-file", videoPath },
-                new[] { "-file", videoPath }
-            };
+            var commandVariants = WallpaperEngineArguments.BuildApplyVariants(videoPath);
 
             foreach (var args in commandVariants)
             {
@@ -503,12 +498,7 @@ public class AnimatedWallpaperService
                 return false;
             }
 
-            var commandVariants = new[]
-            {
-                new[] { "-control", "closeWallpaper" },
-                new[] { "-control", "stopWallpaper" },
-                new[] { "-control", "clearWallpaper" }
-            };
+            var commandVariants = WallpaperEngineArguments.BuildStopVariants();
 
             foreach (var args in commandVariants)
             {
@@ -570,12 +560,8 @@ public class AnimatedWallpaperService
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
             };
-            processInfo.ArgumentList.Add("-i");
-            processInfo.ArgumentList.Add(videoPath);
-            processInfo.ArgumentList.Add("-vframes");
-            processInfo.ArgumentList.Add("1");
-            processInfo.ArgumentList.Add("-y");
-            processInfo.ArgumentList.Add(framePath);
+            foreach (var a in FfmpegArguments.BuildFirstFrameExtraction(videoPath, framePath))
+                processInfo.ArgumentList.Add(a);
 
             using var process = Process.Start(processInfo);
             process?.WaitForExit(10000);

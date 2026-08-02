@@ -97,7 +97,7 @@ This file is the source of truth for human contributors and AI coding assistants
 
 ## 9. Testing
 
-- Unit tests in a future `AnimeQuoteWall.Core.Tests` project use xUnit, Arrange-Act-Assert, one assert focus per test.
+- Unit tests live in `AnimeQuoteWall.Core.Tests` (xUnit) and use Arrange-Act-Assert, one assert focus per test.
 - Services with file/process I/O get integration tests behind a `[Trait("Category","Integration")]` filter so CI can opt in.
 - Never write XAML snapshot tests; theme/`DynamicResource` rendering is non-deterministic across DPI.
 - Always test: path validation (`SafePath`), magic-byte sniffing, ffmpeg argument construction (`ArgumentList`), theme switch round-trip, per-monitor dispatch.
@@ -122,7 +122,7 @@ GitHub Actions workflow stages (in order, all blocking):
 1. `dotnet restore`
 2. `dotnet format --verify-no-changes`
 3. `dotnet build -c Release --no-restore`
-4. `dotnet test --collect:"XPlat Code Coverage"` (once tests exist)
+4. `dotnet test --collect:"XPlat Code Coverage"`
 5. `dotnet list package --vulnerable --include-transitive` - fail on any High or Critical
 
 Release workflow additionally: code-sign the produced exe and installer, generate SBOM, upload to GitHub Releases, then to Steamworks.
@@ -224,10 +224,12 @@ AnimeQuoteWall/
 │   ├── App.xaml(.cs)
 │   ├── SimpleMainWindow.xaml(.cs)
 │   └── ThemeManager.cs
+├── AnimeQuoteWall.Core.Tests/   # xUnit tests for Core. No WPF refs; runs headless in CI
 ├── AnimeQuoteWall.CLI/          # Console entry point (legacy quotes.json updater)
 ├── installer/                   # Inno Setup script, license RTF, build script, assets
 ├── docs/                        # Architecture overview, release checklist
 ├── .github/                     # Issue templates, Dependabot, workflows
+├── AnimeQuoteWall.sln           # Solution. Run dotnet build/test/format from the repo root
 ├── CLAUDE.md                    # This file
 ├── README.md                    # Public-facing intro
 ├── SECURITY.md                  # Disclosure policy
